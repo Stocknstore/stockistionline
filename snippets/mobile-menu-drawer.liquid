@@ -1,0 +1,149 @@
+{%- comment -%}
+  Mobile menu — slide-in drawer with drill-down navigation (matches live reference:
+  tapping a parent item replaces the panel content with a back button + that
+  item's children, rather than expanding an inline accordion).
+  Params: menu (linklist), featured_count (number of top items shown in the shaded card)
+{%- endcomment -%}
+{%- liquid
+  assign featured_count = featured_count | default: 4
+-%}
+<div class="mobile-menu-drawer" data-mobile-menu-drawer aria-hidden="true">
+  <div class="mobile-menu-drawer__overlay" data-mobile-menu-close></div>
+
+  <div class="mobile-menu-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.menu' | t }}">
+
+    {%- comment -%} Root panel {%- endcomment -%}
+    <div class="mobile-nav-panel is-active" data-menu-panel data-panel-id="root">
+      <div class="mobile-menu-drawer__header">
+        <span class="mobile-menu-drawer__title">{{ 'header.menu' | t }}</span>
+        <button type="button" class="icon-close-btn" data-mobile-menu-close aria-label="{{ 'general.close' | t }}">
+          {% render 'icon', icon: 'close' %}
+        </button>
+      </div>
+
+      <ul class="mobile-nav-list mobile-nav-list--featured" role="list">
+        {%- for link in menu.links limit: featured_count -%}
+          <li class="mobile-nav-item">
+            {%- if link.links != blank -%}
+              <button type="button" class="mobile-nav-row" data-drill-in data-target="panel-{{ forloop.index }}">
+                <span>{{ link.title }}</span>
+                {% render 'icon', icon: 'arrow-right', size: 16 %}
+              </button>
+            {%- else -%}
+              <a href="{{ link.url }}" class="mobile-nav-row">
+                <span>{{ link.title }}</span>
+              </a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if menu.links.size > featured_count -%}
+        <ul class="mobile-nav-list" role="list">
+          {%- for link in menu.links offset: featured_count -%}
+            <li class="mobile-nav-item">
+              {%- if link.links != blank -%}
+                <button type="button" class="mobile-nav-row" data-drill-in data-target="panel-{{ forloop.index0 | plus: featured_count | plus: 1 }}">
+                  <span>{{ link.title }}</span>
+                  {% render 'icon', icon: 'arrow-right', size: 16 %}
+                </button>
+              {%- else -%}
+                <a href="{{ link.url }}" class="mobile-nav-row">
+                  <span>{{ link.title }}</span>
+                </a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      <div class="mobile-menu-drawer__extra">
+        <a href="{{ wishlist_url | default: '#' }}" class="mobile-nav-row mobile-nav-row--icon">
+          {% render 'icon', icon: 'heart', size: 18 %}
+          <span>{{ 'header.wishlist_label' | t }}</span>
+        </a>
+      </div>
+
+      {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
+        <button type="button" class="mobile-menu-drawer__region-toggle" data-drill-in data-target="panel-region">
+          {{ 'header.region_and_language' | t }}
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} One sub-panel per top-level item that has children {%- endcomment -%}
+    {%- for link in menu.links -%}
+      {%- if link.links != blank -%}
+        <div class="mobile-nav-panel" data-menu-panel data-panel-id="panel-{{ forloop.index }}">
+          <div class="mobile-menu-drawer__header">
+            <button type="button" class="mobile-menu-drawer__back" data-drill-out>
+              {% render 'icon', icon: 'arrow-left', size: 16 %}
+              <span>{{ link.title }}</span>
+            </button>
+            <button type="button" class="icon-close-btn" data-mobile-menu-close aria-label="{{ 'general.close' | t }}">
+              {% render 'icon', icon: 'close' %}
+            </button>
+          </div>
+
+          <ul class="mobile-nav-list" role="list">
+            <li>
+              <a href="{{ link.url }}" class="mobile-nav-row mobile-nav-row--muted">
+                {{ 'header.go_to' | t }} {{ link.title }}
+              </a>
+            </li>
+            {%- for l2 in link.links -%}
+              <li>
+                <a href="{{ l2.url }}" class="mobile-nav-row">
+                  <span>{{ l2.title }}</span>
+                  {%- if l2.links != blank -%}{% render 'icon', icon: 'arrow-right', size: 16 %}{%- endif -%}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- comment -%} Region & language sub-panel {%- endcomment -%}
+    {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}
+      <div class="mobile-nav-panel" data-menu-panel data-panel-id="panel-region">
+        <div class="mobile-menu-drawer__header">
+          <button type="button" class="mobile-menu-drawer__back" data-drill-out>
+            {% render 'icon', icon: 'arrow-left', size: 16 %}
+            <span>{{ 'header.region_and_language' | t }}</span>
+          </button>
+          <button type="button" class="icon-close-btn" data-mobile-menu-close aria-label="{{ 'general.close' | t }}">
+            {% render 'icon', icon: 'close' %}
+          </button>
+        </div>
+        <div class="mobile-menu-drawer__region-body">
+          {%- if localization.available_languages.size > 1 -%}
+            {% form 'localization', id: 'MobileLanguageForm' %}
+              <label for="MobileLanguageSelect">{{ 'header.language' | t }}</label>
+              <select name="locale_code" id="MobileLanguageSelect" onchange="this.form.submit()">
+                {%- for language in localization.available_languages -%}
+                  <option value="{{ language.iso_code }}" {% if language.iso_code == localization.language.iso_code %}selected{% endif %}>
+                    {{ language.endonym_name | capitalize }}
+                  </option>
+                {%- endfor -%}
+              </select>
+            {% endform %}
+          {%- endif -%}
+          {%- if localization.available_countries.size > 1 -%}
+            {% form 'localization', id: 'MobileCountryForm' %}
+              <label for="MobileCountrySelect">{{ 'header.region' | t }}</label>
+              <select name="country_code" id="MobileCountrySelect" onchange="this.form.submit()">
+                {%- for country in localization.available_countries -%}
+                  <option value="{{ country.iso_code }}" {% if country.iso_code == localization.country.iso_code %}selected{% endif %}>
+                    {{ country.name }}
+                  </option>
+                {%- endfor -%}
+              </select>
+            {% endform %}
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+  </div>
+</div>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code }}" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="{{ settings.color_background }}">
+
+  <title>
+    {{ page_title }}
+    {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
+    {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
+    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+  </title>
+
+  {%- if page_description -%}
+    <meta name="description" content="{{ page_description | escape }}">
+  {%- endif -%}
+
+  <link rel="canonical" href="{{ canonical_url }}">
+  {%- if settings.favicon -%}
+    <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+  {%- endif -%}
+
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+
+  {{ content_for_header }}
+
+  {{ 'theme.css' | asset_url | stylesheet_tag }}
+
+  <style>
+    :root {
+      /* ---- Colors (theme-editor driven) ---- */
+      --color-background: {{ settings.color_background }};
+      --color-background-secondary: {{ settings.color_background_secondary }};
+      --color-text: {{ settings.color_text }};
+      --color-text-secondary: {{ settings.color_text_secondary }};
+      --color-border: {{ settings.color_border }};
+      --color-primary: {{ settings.color_primary }};
+      --color-primary-contrast: {{ settings.color_primary_contrast }};
+      --color-sale: {{ settings.color_sale }};
+      --color-success: {{ settings.color_success }};
+      --color-error: {{ settings.color_error }};
+      --color-utility-background: {{ settings.color_utility_background }};
+      --color-utility-text: {{ settings.color_utility_text }};
+
+      /* ---- Typography (theme-editor driven, with system-font fallback if unhydrated) ---- */
+      --font-body: {{ settings.font_body.family | default: 'Helvetica Neue' }}, {{ settings.font_body.fallback_families | default: 'Arial, sans-serif' }};
+      --font-body-weight: {{ settings.font_body.weight | default: 400 }};
+      --font-body-style: {{ settings.font_body.style | default: 'normal' }};
+      --font-heading: {{ settings.font_heading.family | default: 'Helvetica Neue' }}, {{ settings.font_heading.fallback_families | default: 'Arial, sans-serif' }};
+      --font-heading-weight: {{ settings.font_heading.weight | default: 600 }};
+      --font-heading-style: {{ settings.font_heading.style | default: 'normal' }};
+      --font-display: {{ settings.font_display.family | default: 'Helvetica Neue' }}, {{ settings.font_display.fallback_families | default: 'Arial, sans-serif' }};
+      --font-display-weight: {{ settings.font_display.weight | default: 700 }};
+      --font-display-style: {{ settings.font_display.style | default: 'normal' }};
+
+      /* ---- Layout ---- */
+      --container-width: {{ settings.page_width }}px;
+    }
+  </style>
+
+  {%- comment -%}
+    Guarded: settings.font_* only resolves to a font drop once the theme's
+    settings_data.json is actually applied by Shopify. If a theme is ever
+    uploaded/synced in a way that leaves settings unhydrated (e.g. a zip
+    without config/ at its root), these would otherwise throw
+    "font_face can only be used with a font drop" and break the whole page.
+  {%- endcomment -%}
+  <style>
+    {%- if settings.font_body -%}{{ settings.font_body | font_face: font_display: 'swap' }}{%- endif -%}
+    {%- if settings.font_heading -%}{{ settings.font_heading | font_face: font_display: 'swap' }}{%- endif -%}
+    {%- if settings.font_display -%}{{ settings.font_display | font_face: font_display: 'swap' }}{%- endif -%}
+  </style>
+
+  <script>
+    window.theme = {
+      routes: {
+        cartAddUrl: {{ routes.cart_add_url | json }},
+        cartChangeUrl: {{ routes.cart_change_url | json }},
+        cartUrl: {{ routes.cart_url | json }},
+        searchUrl: {{ routes.search_url | json }},
+        predictiveSearchUrl: {{ routes.predictive_search_url | json }}
+      },
+      moneyFormat: {{ shop.money_format | json }},
+      animationsEnabled: {{ settings.animations_enabled | json }}
+    };
+  </script>
+  <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+</head>
+
+<body class="template-{{ request.page_type | handleize }}{% if settings.animations_enabled %} animations-enabled{% endif %}">
+
+  <a class="skip-to-content-link visually-hidden" href="#MainContent">
+    {{ 'general.skip_to_content' | t }}
+  </a>
+
+  {%- comment -%}
+    Global overlays — rendered once, outside the header, so they sit above all
+    page content regardless of which section triggers them.
+  {%- endcomment -%}
+  {% render 'mobile-menu-drawer', menu: linklists['main-menu'] %}
+  {% render 'search-drawer' %}
+  {% render 'account-drawer' %}
+  {% render 'cart-drawer' %}
+
+  {%- sections 'header-group' -%}
+
+  <main id="MainContent" class="content-for-layout" tabindex="-1">
+    {{ content_for_layout }}
+  </main>
+
+  {%- comment -%}
+    No footer in Phase 1 — global design system, announcement bar, header and
+    overlays only. Footer belongs to a later phase per spec section 06.
+  {%- endcomment -%}
+
+</body>
+</html>

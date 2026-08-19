@@ -1,0 +1,33 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "current": "Default",
+  "presets": {
+    "Default": {
+      "color_background": "#FFFFFF",
+      "color_background_secondary": "#F4F3F1",
+      "color_text": "#141414",
+      "color_text_secondary": "#6B6B6B",
+      "color_border": "#E2E0DC",
+      "color_primary": "#141414",
+      "color_primary_contrast": "#FFFFFF",
+      "color_sale": "#C0392B",
+      "color_success": "#1E7E4A",
+      "color_error": "#C0392B",
+      "color_utility_background": "#141414",
+      "color_utility_text": "#FFFFFF",
+      "font_body": "assistant_n4",
+      "font_heading": "assistant_n6",
+      "font_display": "assistant_n7",
+      "page_width": 1440,
+      "animations_enabled": true
+    }
+  }
+}

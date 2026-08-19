@@ -1,0 +1,242 @@
+{%- comment -%}
+  Section: Header
+  Two-row desktop header (utility icon row + logo/nav/search row).
+  A dedicated mobile header renders inside the same section (CSS-toggled),
+  per spec: "Do NOT simply shrink the desktop header. Create a dedicated mobile header."
+{%- endcomment -%}
+<header
+  class="site-header{% if section.settings.sticky %} site-header--sticky{% endif %}"
+  data-site-header
+  {{ section.shopify_attributes }}
+>
+
+  {%- comment -%} ===== Desktop: utility icon row ===== {%- endcomment -%}
+  <div class="site-header__utility hidden-mobile">
+    <div class="site-header__utility-inner container container--full">
+      <div class="site-header__utility-icons">
+        {%- if shop.customer_accounts_enabled -%}
+          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{{ 'header.account' | t }}">
+            {% render 'icon', icon: 'user' %}
+          </a>
+        {%- endif -%}
+
+        {%- if section.settings.show_language_selector and localization.available_languages.size > 1 -%}
+          <button type="button" class="header-icon-btn" data-language-toggle aria-label="{{ 'header.language' | t }}" aria-expanded="false">
+            {% render 'icon', icon: 'globe' %}
+          </button>
+        {%- endif -%}
+
+        {%- if section.settings.show_wishlist -%}
+          <a href="{{ section.settings.wishlist_url | default: '#' }}" class="header-icon-btn" aria-label="{{ 'header.wishlist' | t }}">
+            {% render 'icon', icon: 'heart' %}
+            <span class="header-icon-btn__count" data-wishlist-count>0</span>
+          </a>
+        {%- endif -%}
+
+        <button type="button" class="header-icon-btn" data-cart-toggle aria-label="{{ 'header.cart' | t }}" aria-haspopup="dialog">
+          {% render 'icon', icon: 'bag' %}
+          <span class="header-icon-btn__count" data-cart-count {% if cart.item_count == 0 %}hidden{% endif %}>{{ cart.item_count }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} ===== Desktop: main row (logo / nav / search) ===== {%- endcomment -%}
+  <div class="site-header__main hidden-mobile">
+    <div class="site-header__main-inner container container--full">
+      <div class="site-header__logo">
+        {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width %}
+      </div>
+
+      <nav class="site-header__nav main-nav" aria-label="{{ 'header.main_navigation' | t }}">
+        {% render 'navigation-desktop', menu: section.settings.main_menu, badge_blocks: section.blocks %}
+      </nav>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="site-header__search-form">
+        <input type="hidden" name="type" value="product">
+        <label for="HeaderSearch-{{ section.id }}" class="visually-hidden">{{ 'header.search' | t }}</label>
+        <input
+          type="search"
+          name="q"
+          id="HeaderSearch-{{ section.id }}"
+          class="site-header__search-input"
+          placeholder="{{ 'header.search' | t }}"
+          value="{{ search.terms | escape }}"
+          autocomplete="off"
+        >
+        <button type="submit" class="site-header__search-submit" aria-label="{{ 'header.search' | t }}">
+          {% render 'icon', icon: 'search' %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {%- comment -%} ===== Mobile header: dedicated composition, not a shrunk desktop header ===== {%- endcomment -%}
+  <div class="site-header__mobile hidden-desktop">
+    <div class="site-header__mobile-inner">
+      <div class="site-header__mobile-left">
+        <button type="button" class="header-icon-btn" data-mobile-menu-toggle aria-label="{{ 'header.menu' | t }}" aria-expanded="false">
+          {% render 'icon', icon: 'menu' %}
+        </button>
+        <button type="button" class="header-icon-btn" data-search-toggle aria-label="{{ 'header.search' | t }}">
+          {% render 'icon', icon: 'search' %}
+        </button>
+      </div>
+
+      <div class="site-header__mobile-logo">
+        {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width_mobile %}
+      </div>
+
+      <div class="site-header__mobile-right">
+        {%- if shop.customer_accounts_enabled -%}
+          <button type="button" class="header-icon-btn" data-account-toggle aria-label="{{ 'header.account' | t }}">
+            {% render 'icon', icon: 'user' %}
+          </button>
+        {%- endif -%}
+        <button type="button" class="header-icon-btn" data-cart-toggle aria-label="{{ 'header.cart' | t }}">
+          {% render 'icon', icon: 'bag' %}
+          <span class="header-icon-btn__count" data-cart-count {% if cart.item_count == 0 %}hidden{% endif %}>{{ cart.item_count }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width (desktop)",
+      "min": 80,
+      "max": 260,
+      "step": 10,
+      "unit": "px",
+      "default": 130
+    },
+    {
+      "type": "range",
+      "id": "logo_width_mobile",
+      "label": "Logo width (mobile)",
+      "min": 60,
+      "max": 180,
+      "step": 10,
+      "unit": "px",
+      "default": 110
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "main_menu",
+      "label": "Menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Sticky header",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Utility icons"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language_selector",
+      "label": "Show language/region selector",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist",
+      "label": "Show wishlist icon",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "wishlist_url",
+      "label": "Wishlist page link"
+    },
+    {
+      "type": "header",
+      "content": "Color scheme"
+    },
+    {
+      "type": "color",
+      "id": "color_background",
+      "label": "Header background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "color_text",
+      "label": "Header text",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "color_utility_background",
+      "label": "Utility row background",
+      "default": "#141414"
+    },
+    {
+      "type": "color",
+      "id": "color_utility_text",
+      "label": "Utility row text",
+      "default": "#FFFFFF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "nav_badge",
+      "name": "Navigation badge",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item_title",
+          "label": "Menu item label (must match exactly)",
+          "info": "e.g. \"Product\" — must match the menu item's label exactly."
+        },
+        {
+          "type": "text",
+          "id": "badge_text",
+          "label": "Badge text",
+          "default": "New"
+        },
+        {
+          "type": "select",
+          "id": "badge_style",
+          "label": "Badge style",
+          "options": [
+            { "value": "default", "label": "Default" },
+            { "value": "sale", "label": "Sale" },
+            { "value": "hot", "label": "Hot" }
+          ],
+          "default": "default"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8
+}
+{% endschema %}

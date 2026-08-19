@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Typography",
+    "settings": [
+      {
+        "type": "font_picker",
+        "id": "font_body",
+        "default": "assistant_n4",
+        "label": "Body font"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_heading",
+        "default": "assistant_n6",
+        "label": "Heading font"
+      },
+      {
+        "type": "font_picker",
+        "id": "font_display",
+        "default": "assistant_n7",
+        "label": "Display font"
+      }
+    ]
+  }
+]

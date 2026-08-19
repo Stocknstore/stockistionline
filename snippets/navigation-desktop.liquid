@@ -1,0 +1,51 @@
+{%- comment -%}
+  Desktop main navigation with mega-menu panels and optional badges.
+  Params:
+    menu          - a linklist object (section.settings.main_menu)
+    badge_blocks  - section.blocks (filtered internally for type == 'nav_badge')
+{%- endcomment -%}
+<ul class="main-nav__list" role="list">
+  {%- for link in menu.links -%}
+    {%- liquid
+      assign badge_text = blank
+      assign badge_style = 'default'
+      for block in badge_blocks
+        if block.type == 'nav_badge' and block.settings.menu_item_title == link.title
+          assign badge_text = block.settings.badge_text
+          assign badge_style = block.settings.badge_style
+        endif
+      endfor
+    -%}
+    <li class="main-nav__item{% if link.links != blank %} has-mega-menu{% endif %}">
+      <a
+        href="{{ link.url }}"
+        class="main-nav__link{% if link.active %} is-active{% endif %}"
+        {% if link.links != blank %}aria-haspopup="true" aria-expanded="false"{% endif %}
+      >
+        <span>{{ link.title }}</span>
+        {%- if badge_text != blank -%}
+          <span class="nav-badge nav-badge--{{ badge_style }}">{{ badge_text }}</span>
+        {%- endif -%}
+      </a>
+
+      {%- if link.links != blank -%}
+        <div class="mega-menu" data-mega-menu>
+          <div class="mega-menu__inner container container--full">
+            {%- for l2 in link.links -%}
+              <div class="mega-menu__column">
+                <a href="{{ l2.url }}" class="mega-menu__column-title">{{ l2.title }}</a>
+                {%- if l2.links != blank -%}
+                  <ul role="list">
+                    {%- for l3 in l2.links -%}
+                      <li><a href="{{ l3.url }}">{{ l3.title }}</a></li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ul>

@@ -1,0 +1,61 @@
+{%- comment -%}
+  Search overlay. Full backend (live predictive results) is out of Phase 1 scope —
+  this establishes visual appearance, open/close animation, focus handling and
+  responsive behavior per spec section 19-20. Trending/popular content below is
+  placeholder copy — move to section blocks in a later phase if merchant editing
+  is needed.
+{%- endcomment -%}
+<div class="search-drawer" data-search-drawer aria-hidden="true">
+  <div class="search-drawer__overlay" data-search-close></div>
+
+  <div class="search-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.search' | t }}">
+    <div class="search-drawer__header">
+      <h2 class="search-drawer__title">{{ 'header.search' | t }}</h2>
+      <button type="button" class="icon-close-btn icon-close-btn--circle" data-search-close aria-label="{{ 'general.close' | t }}">
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+
+    <form action="{{ routes.search_url }}" method="get" role="search" class="search-drawer__form">
+      <input type="hidden" name="type" value="product">
+      <input
+        type="search"
+        name="q"
+        class="search-drawer__input"
+        placeholder="{{ 'header.search' | t }}"
+        value="{{ search.terms | escape }}"
+        data-search-input
+        autocomplete="off"
+      >
+    </form>
+
+    <div class="search-drawer__body">
+      <div class="search-drawer__section">
+        <h3 class="search-drawer__section-title">{{ 'header.trending_searches' | t }}</h3>
+        <div class="search-drawer__chips">
+          {%- assign trending = 'fashion,dresses,skirts' | split: ',' -%}
+          {%- for term in trending -%}
+            <a href="{{ routes.search_url }}?q={{ term | url_encode }}" class="search-chip">
+              {% render 'icon', icon: 'search', size: 14 %}
+              <span>{{ term }}</span>
+            </a>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <div class="search-drawer__section">
+        <h3 class="search-drawer__section-title">{{ 'header.popular_categories' | t }}</h3>
+        <ul class="search-drawer__category-list" role="list">
+          <li><a href="{{ routes.all_products_collection_url }}">{{ 'header.popular_category_1' | t }}</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}">{{ 'header.popular_category_2' | t }}</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}">{{ 'header.popular_category_3' | t }}</a></li>
+        </ul>
+      </div>
+
+      <div class="search-drawer__section" data-search-results-section hidden>
+        <h3 class="search-drawer__section-title">{{ 'header.products' | t }}</h3>
+        <div data-search-results></div>
+      </div>
+    </div>
+  </div>
+</div>

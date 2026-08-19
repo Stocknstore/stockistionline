@@ -1,0 +1,56 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "announcement-bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "message-1": {
+          "type": "message",
+          "settings": {
+            "text": "End of season sale up to 50% off.",
+            "link_label": "Shop Now"
+          }
+        },
+        "message-2": {
+          "type": "message",
+          "settings": {
+            "text": "Extra 10% off on first order.",
+            "link_label": "Shop Now"
+          }
+        }
+      },
+      "block_order": ["message-1", "message-2"],
+      "settings": {
+        "enable": true,
+        "autoplay_seconds": 5,
+        "color_background": "#141414",
+        "color_text": "#FFFFFF"
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "logo_width": 130,
+        "logo_width_mobile": 110,
+        "sticky": true,
+        "show_language_selector": true,
+        "show_wishlist": true,
+        "color_background": "#FFFFFF",
+        "color_text": "#141414",
+        "color_utility_background": "#141414",
+        "color_utility_text": "#FFFFFF"
+      }
+    }
+  },
+  "order": ["announcement-bar", "header"]
+}

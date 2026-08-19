@@ -1,0 +1,19 @@
+{%- comment -%}
+  Reusable logo component.
+  Params: logo_image, logo_width
+  Reused by: header.liquid, mobile-header (rendered via header.liquid), footer (later phase)
+{%- endcomment -%}
+<a href="{{ routes.root_url }}" class="site-logo" aria-label="{{ shop.name }}">
+  {%- if logo_image != blank -%}
+    <img
+      src="{{ logo_image | image_url: width: 400 }}"
+      alt="{{ shop.name }}"
+      width="{{ logo_width }}"
+      height="{{ logo_width | divided_by: logo_image.aspect_ratio | default: logo_width }}"
+      loading="eager"
+      class="site-logo__image"
+    >
+  {%- else -%}
+    <span class="site-logo__text">{{ shop.name }}</span>
+  {%- endif -%}
+</a>

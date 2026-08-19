@@ -1,0 +1,49 @@
+{%- comment -%}
+  Cart drawer. Phase 1 ships the empty state only (per spec section 23), but the
+  markup is structured so CartItems / QuantityControls / RemoveItem /
+  RecommendedProducts / Subtotal / Terms / ViewCart / Checkout can be added in a
+  later phase without restructuring this shell.
+{%- endcomment -%}
+<div class="cart-drawer" data-cart-drawer aria-hidden="true">
+  <div class="cart-drawer__overlay" data-cart-close></div>
+
+  <div class="cart-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.cart' | t }}">
+    <button type="button" class="icon-close-btn icon-close-btn--circle cart-drawer__close" data-cart-close aria-label="{{ 'general.close' | t }}">
+      {% render 'icon', icon: 'close' %}
+    </button>
+
+    {%- comment -%} ----- Populated state (hidden while cart.item_count == 0) ----- {%- endcomment -%}
+    <div class="cart-drawer__items" data-cart-items {% if cart.item_count == 0 %}hidden{% endif %}>
+      {%- comment -%} CartItems / QuantityControls / RemoveItem render here in a later phase {%- endcomment -%}
+    </div>
+
+    {%- comment -%} ----- Empty state (matches reference) ----- {%- endcomment -%}
+    <div class="cart-drawer__empty" data-cart-empty {% if cart.item_count > 0 %}hidden{% endif %}>
+      <h2 class="cart-drawer__empty-title">{{ 'header.cart_empty' | t }}</h2>
+
+      <a href="{{ routes.all_products_collection_url }}" class="button button--primary">
+        {{ 'header.continue_shopping' | t }}
+      </a>
+
+      {%- unless shop.customer_accounts_enabled == false -%}
+        <p class="cart-drawer__account-prompt">
+          {{ 'header.have_account' | t }}
+          <button type="button" class="cart-drawer__login-link" data-open-account>
+            {{ 'header.login_link' | t }}
+          </button>
+          {{ 'header.login_faster_checkout' | t }}
+        </p>
+      {%- endunless -%}
+    </div>
+
+    {%- comment -%} ----- Footer: Subtotal / Terms / ViewCart / Checkout (later phase) ----- {%- endcomment -%}
+    <div class="cart-drawer__footer" data-cart-footer hidden>
+      <div class="cart-drawer__subtotal">
+        <span>{{ 'header.subtotal' | t }}</span>
+        <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+      </div>
+      <a href="{{ routes.cart_url }}" class="button button--outline button--full">{{ 'header.view_cart' | t }}</a>
+      <a href="{{ routes.cart_url }}/checkout" class="button button--primary button--full">{{ 'header.checkout' | t }}</a>
+    </div>
+  </div>
+</div>

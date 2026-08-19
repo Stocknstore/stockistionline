@@ -1,0 +1,36 @@
+{%- comment -%}
+  Account overlay — visual + interaction shell (login form wired to Shopify's
+  real customer_login route; full account pages are a later phase).
+{%- endcomment -%}
+<div class="account-drawer" data-account-drawer aria-hidden="true">
+  <div class="account-drawer__overlay" data-account-close></div>
+
+  <div class="account-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.login' | t }}">
+    <div class="account-drawer__header">
+      <h2 class="account-drawer__title">{{ 'header.login' | t }}</h2>
+      <button type="button" class="icon-close-btn icon-close-btn--circle" data-account-close aria-label="{{ 'general.close' | t }}">
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+
+    <div class="account-drawer__body">
+      {%- form 'customer_login', id: 'AccountDrawerLoginForm' -%}
+        {%- if form.errors -%}
+          <p class="form-error">{{ form.errors | default_errors }}</p>
+        {%- endif -%}
+
+        <label for="AccountDrawerEmail">{{ 'header.email' | t }}</label>
+        <input type="email" name="customer[email]" id="AccountDrawerEmail" autocomplete="email" required>
+
+        <label for="AccountDrawerPassword">{{ 'header.password' | t }}</label>
+        <input type="password" name="customer[password]" id="AccountDrawerPassword" autocomplete="current-password" required>
+
+        <button type="submit" class="button button--primary button--full">{{ 'header.login' | t }}</button>
+
+        <a href="{{ routes.account_recover_url }}" class="account-drawer__forgot">{{ 'header.forgot_password' | t }}</a>
+
+        <a href="{{ routes.account_register_url }}" class="button button--outline button--full">{{ 'header.create_account' | t }}</a>
+      {%- endform -%}
+    </div>
+  </div>
+</div>

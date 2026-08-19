@@ -1,0 +1,27 @@
+{%- comment -%}
+  Neutral temporary placeholder so the global shell has something to sit above
+  during Phase 1 QA. Not homepage content — replaced entirely in a later phase
+  (hero, product grids, etc. per spec section 06/35).
+{%- endcomment -%}
+<div class="container container--large placeholder-content" {{ section.shopify_attributes }}>
+  <p class="placeholder-content__note">
+    {{ section.settings.note }}
+  </p>
+</div>
+
+{% schema %}
+{
+  "name": "Placeholder content",
+  "settings": [
+    {
+      "type": "text",
+      "id": "note",
+      "label": "Note",
+      "default": "Phase 1 — global design system, announcement bar, header and navigation only. Homepage content is implemented in a later phase."
+    }
+  ],
+  "presets": [
+    { "name": "Placeholder content" }
+  ]
+}
+{% endschema %}
