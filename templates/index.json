@@ -86,7 +86,10 @@
         "brand-07", "brand-08", "brand-09", "brand-10", "brand-11", "brand-12",
         "brand-13", "brand-14", "brand-15", "brand-16", "brand-17", "brand-18"
       ]
+    },
+    "home-just-arrived": {
+      "type": "home-just-arrived"
     }
   },
-  "order": ["home-hero", "home-start-shopping", "home-brand-wall"]
+  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived"]
 }

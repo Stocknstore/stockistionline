@@ -1,0 +1,239 @@
+{%- comment -%}
+  Section: Home just arrived
+  Phase 2, Step 4. Reconstructs "Just arrived" from prototype-reference's
+  renderLanding() (prototype-reference/templates.js ~L121-136): a desktop
+  product grid, plus mobile-only "New today" / "Last pair" horizontal rails
+  (prototype-reference/styles.css --prodCols/--secHeadDir/--secHeadAlign/
+  --secHeadGap, and the .mobile-only/.not-mobile-only toggle, which lands on
+  the exact same 768px boundary as this theme's existing .hidden-mobile/
+  .hidden-desktop utilities — reused here rather than duplicated).
+
+  Badge priority: product.metafields.custom.stock_badge (normalized
+  "new_today"/"last_pair") first, then a fallback match against the product
+  tags "New today"/"Last pair". Computed once per product here and passed
+  into snippets/product-card-home.liquid so the logic lives in one place.
+
+  If no collection is selected, or the collection has no products, a plain
+  onboarding message is shown instead — no fake/placeholder products.
+{%- endcomment -%}
+{%- liquid
+  assign collection = section.settings.collection
+  assign limit = section.settings.product_limit | default: 12
+  assign products = blank
+  if collection != blank
+    assign products = collection.products | slice: 0, limit
+  endif
+-%}
+<section class="home-just-arrived" {{ section.shopify_attributes }}>
+  <div class="home-just-arrived__header">
+    <div>
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="home-just-arrived__eyebrow">{{ section.settings.eyebrow }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="home-just-arrived__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+    </div>
+    <div class="home-just-arrived__filters">
+      {%- if section.settings.women_label != blank -%}
+        <a href="{{ section.settings.women_link | default: '#' }}" class="home-just-arrived__pill">{{ section.settings.women_label }}</a>
+      {%- endif -%}
+      {%- if section.settings.men_label != blank -%}
+        <a href="{{ section.settings.men_link | default: '#' }}" class="home-just-arrived__pill">{{ section.settings.men_label }}</a>
+      {%- endif -%}
+      {%- if section.settings.kids_label != blank -%}
+        <a href="{{ section.settings.kids_link | default: '#' }}" class="home-just-arrived__pill">{{ section.settings.kids_label }}</a>
+      {%- endif -%}
+      {%- if section.settings.see_all_label != blank -%}
+        <a href="{{ section.settings.see_all_link | default: '#' }}" class="home-just-arrived__see-all">{{ section.settings.see_all_label }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if products.size > 0 -%}
+    {%- liquid
+      assign grid_html = ''
+      assign new_today_html = ''
+      assign new_today_count = 0
+      assign last_pair_html = ''
+      assign last_pair_count = 0
+
+      for product in products
+        assign badge_key = ''
+        for tag in product.tags
+          assign tag_down = tag | downcase
+          if tag_down == 'new today'
+            assign badge_key = 'new_today'
+          endif
+          if tag_down == 'last pair'
+            assign badge_key = 'last_pair'
+          endif
+        endfor
+        assign stock_badge_mf = product.metafields.custom.stock_badge
+        if stock_badge_mf != blank
+          assign mf_down = stock_badge_mf | downcase | strip
+          if mf_down == 'new_today' or mf_down == 'last_pair'
+            assign badge_key = mf_down
+          endif
+        endif
+
+        capture card_grid
+          render 'product-card-home', product: product, variant: 'grid', show_badge: true, badge_key: badge_key
+        endcapture
+        assign grid_html = grid_html | append: card_grid
+
+        if badge_key == 'new_today'
+          assign new_today_count = new_today_count | plus: 1
+          capture card_rail
+            render 'product-card-home', product: product, variant: 'rail'
+          endcapture
+          assign new_today_html = new_today_html | append: card_rail
+        endif
+        if badge_key == 'last_pair'
+          assign last_pair_count = last_pair_count | plus: 1
+          capture card_rail
+            render 'product-card-home', product: product, variant: 'rail'
+          endcapture
+          assign last_pair_html = last_pair_html | append: card_rail
+        endif
+      endfor
+    -%}
+
+    <div class="home-just-arrived__grid hidden-mobile">{{ grid_html }}</div>
+
+    <div class="home-just-arrived__rails hidden-desktop">
+      {%- if new_today_count == 0 and last_pair_count == 0 -%}
+        <div class="home-just-arrived__rail-group">
+          <div class="home-just-arrived__rail-header">
+            <span class="home-just-arrived__rail-tag">{{ 'home_just_arrived.rail_fallback_label' | t }}</span>
+            <span class="home-just-arrived__rail-hint">{{ 'home_just_arrived.swipe_hint' | t }}</span>
+          </div>
+          <div class="home-just-arrived__rail">
+            {%- for product in products -%}
+              {%- render 'product-card-home', product: product, variant: 'rail' -%}
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- else -%}
+        {%- if new_today_count > 0 -%}
+          <div class="home-just-arrived__rail-group">
+            <div class="home-just-arrived__rail-header">
+              <span class="home-just-arrived__rail-tag home-just-arrived__rail-tag--new-today">{{ 'home_just_arrived.badge_new_today' | t }}</span>
+              <span class="home-just-arrived__rail-hint">{{ 'home_just_arrived.swipe_hint' | t }}</span>
+            </div>
+            <div class="home-just-arrived__rail">{{ new_today_html }}</div>
+          </div>
+        {%- endif -%}
+        {%- if last_pair_count > 0 -%}
+          <div class="home-just-arrived__rail-group">
+            <div class="home-just-arrived__rail-header">
+              <span class="home-just-arrived__rail-tag home-just-arrived__rail-tag--last-pair">{{ 'home_just_arrived.badge_last_pair' | t }}</span>
+              <span class="home-just-arrived__rail-hint">{{ 'home_just_arrived.swipe_hint' | t }}</span>
+            </div>
+            <div class="home-just-arrived__rail">{{ last_pair_html }}</div>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    </div>
+  {%- else -%}
+    <div class="home-just-arrived__empty">
+      <p class="home-just-arrived__empty-title">{{ 'home_just_arrived.empty_title' | t }}</p>
+      <p class="home-just-arrived__empty-body">{{ 'home_just_arrived.empty_body' | t }}</p>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Home just arrived",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "Updated today at 14:20"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Just arrived"
+    },
+    {
+      "type": "header",
+      "content": "Product source"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_limit",
+      "label": "Number of products to show",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Filter pills"
+    },
+    {
+      "type": "text",
+      "id": "women_label",
+      "label": "\"Women\" pill label",
+      "default": "Women"
+    },
+    {
+      "type": "url",
+      "id": "women_link",
+      "label": "\"Women\" pill link"
+    },
+    {
+      "type": "text",
+      "id": "men_label",
+      "label": "\"Men\" pill label",
+      "default": "Men"
+    },
+    {
+      "type": "url",
+      "id": "men_link",
+      "label": "\"Men\" pill link"
+    },
+    {
+      "type": "text",
+      "id": "kids_label",
+      "label": "\"Kids\" pill label",
+      "default": "Kids"
+    },
+    {
+      "type": "url",
+      "id": "kids_link",
+      "label": "\"Kids\" pill link"
+    },
+    {
+      "type": "header",
+      "content": "See all"
+    },
+    {
+      "type": "text",
+      "id": "see_all_label",
+      "label": "\"See all\" link label",
+      "default": "See all"
+    },
+    {
+      "type": "url",
+      "id": "see_all_link",
+      "label": "\"See all\" link"
+    }
+  ]
+}
+{% endschema %}
