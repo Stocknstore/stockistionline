@@ -38,6 +38,17 @@
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair"
   },
+  "collection_hero": {
+    "placeholder": "Add an image"
+  },
+  "collection_department_nav": {
+    "placeholder": "Add an image",
+    "no_collection": "Select a collection",
+    "style_count": {
+      "one": "{{ count }} style",
+      "other": "{{ count }} styles"
+    }
+  },
   "home_just_arrived": {
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair",

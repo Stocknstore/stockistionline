@@ -1903,3 +1903,158 @@ body.scroll-locked { overflow: hidden; }
 @media (max-width: 767px) {
   .home-coming-soon { --soon-pad-x: 16px; --teaser-img-h: 140px; }
 }
+
+/* --------------------------------------------------------------------------
+   26. Category landing — Collection hero + department nav
+   Phase 3, Stage 2. Scoped to .collection-hero (sections/collection-hero.
+   liquid) and .collection-department-nav (snippets/collection-department-
+   nav.liquid, always rendered as its descendant). Custom properties mirror
+   prototype-reference/styles.css's --h1Size/--padX/--deptCols/--deptDisplay/
+   --deptOverflow/--deptSnap/--deptCardW tokens (desktop at least 1280px,
+   tablet 768 to 1279px, mobile up to 767px). The hero banner height (320px)
+   and department card image height (220px) are fixed, unresponsive values
+   in the prototype too (prototype-reference/templates.js ~L179-192), so no
+   custom properties are needed for those. Used only by the alternate
+   templates/collection.category.json template.
+   -------------------------------------------------------------------------- */
+.collection-hero {
+  --hero-pad-x: 40px;
+  --hero-title-size: 48px;
+  --dept-cols: repeat(3, 1fr);
+  --dept-display: grid;
+  --dept-overflow: visible;
+  --dept-snap: none;
+  --dept-card-w: auto;
+
+  background: var(--color-background);
+}
+
+.collection-hero__banner {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+.collection-hero__image,
+.collection-hero__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.collection-hero__image { object-fit: cover; }
+.collection-hero__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.collection-hero__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+.collection-hero__title {
+  position: absolute;
+  left: var(--hero-pad-x);
+  right: var(--hero-pad-x);
+  bottom: 28px;
+  color: var(--color-text);
+  font-weight: 900;
+  font-size: var(--hero-title-size);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.collection-hero__description-wrap { padding: 24px var(--hero-pad-x) 0; background: var(--color-background); }
+.collection-hero__description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.collection-hero__departments {
+  background: var(--color-background);
+  padding: 34px var(--hero-pad-x);
+  border-bottom: 2px solid var(--color-primary);
+}
+.collection-hero__departments-heading {
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+}
+
+.collection-department-nav__grid {
+  display: var(--dept-display);
+  grid-template-columns: var(--dept-cols);
+  overflow-x: var(--dept-overflow);
+  scroll-snap-type: var(--dept-snap);
+  min-width: 0;
+  gap: 2px;
+  background: var(--color-primary);
+}
+.collection-department-nav__card {
+  background: var(--color-background);
+  flex: 0 0 var(--dept-card-w);
+  scroll-snap-align: start;
+  display: block;
+}
+.collection-department-nav__image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+.collection-department-nav__img,
+.collection-department-nav__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.collection-department-nav__img { object-fit: cover; }
+.collection-department-nav__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.collection-department-nav__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+.collection-department-nav__meta {
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.collection-department-nav__title { font-weight: 800; font-size: 20px; line-height: 1; }
+.collection-department-nav__count {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.55);
+  white-space: nowrap;
+}
+
+@media (max-width: 1279px) {
+  .collection-hero { --hero-pad-x: 28px; --hero-title-size: 40px; }
+}
+
+@media (max-width: 767px) {
+  .collection-hero {
+    --hero-pad-x: 16px;
+    --hero-title-size: 31px;
+    --dept-cols: 1fr;
+    --dept-display: flex;
+    --dept-overflow: auto;
+    --dept-snap: x proximity;
+    --dept-card-w: 88%;
+  }
+}

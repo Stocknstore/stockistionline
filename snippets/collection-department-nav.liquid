@@ -1,0 +1,68 @@
+{%- comment -%}
+  Snippet: collection-department-nav
+  Phase 3, Stage 2. Renders the "department" blocks owned by
+  sections/collection-hero.liquid as a row of collection cards. Each block
+  points at a real Shopify collection (picked in the theme editor, never
+  hardcoded); title/image/style-count each fall back to that collection's
+  own values when no override is entered. A block with no collection picked
+  yet renders a clean placeholder card instead of a broken link.
+
+  Params:
+    blocks - required, the section's block list (filtered here to type
+             'department' so the caller doesn't have to pre-filter)
+{%- endcomment -%}
+<div class="collection-department-nav">
+  <div class="collection-department-nav__grid">
+    {%- for block in blocks -%}
+      {%- if block.type == 'department' -%}
+        {%- assign picked = block.settings.collection -%}
+        {%- if picked != blank -%}
+          {%- assign dept_title = block.settings.title | default: picked.title -%}
+          {%- assign dept_image = block.settings.image | default: picked.image -%}
+          {%- if block.settings.style_count != blank -%}
+            {%- assign dept_count = block.settings.style_count -%}
+          {%- else -%}
+            {%- assign dept_count = 'collection_department_nav.style_count' | t: count: picked.all_products_count -%}
+          {%- endif -%}
+          <a href="{{ picked.url }}" class="collection-department-nav__card" {{ block.shopify_attributes }}>
+            <div class="collection-department-nav__image">
+              {%- if dept_image != blank -%}
+                {%- assign widths = "300,450,600,800" | split: ',' -%}
+                <img
+                  class="collection-department-nav__img"
+                  src="{{ dept_image | image_url: width: 600 }}"
+                  srcset="
+                    {%- for w in widths -%}
+                      {{ dept_image | image_url: width: w }} {{ w }}w{%- unless forloop.last -%},{%- endunless -%}
+                    {%- endfor -%}
+                  "
+                  sizes="(min-width: 768px) 33vw, 88vw"
+                  alt="{{ dept_image.alt | default: dept_title | strip_newlines }}"
+                  width="{{ dept_image.width }}"
+                  height="{{ dept_image.height }}"
+                  loading="lazy"
+                >
+              {%- else -%}
+                <div class="collection-department-nav__placeholder">
+                  <span class="collection-department-nav__placeholder-label">{{ 'collection_department_nav.placeholder' | t }}</span>
+                </div>
+              {%- endif -%}
+            </div>
+            <div class="collection-department-nav__meta">
+              <span class="collection-department-nav__title">{{ dept_title }}</span>
+              <span class="collection-department-nav__count">{{ dept_count }}</span>
+            </div>
+          </a>
+        {%- else -%}
+          <div class="collection-department-nav__card collection-department-nav__card--empty" {{ block.shopify_attributes }}>
+            <div class="collection-department-nav__image">
+              <div class="collection-department-nav__placeholder">
+                <span class="collection-department-nav__placeholder-label">{{ 'collection_department_nav.no_collection' | t }}</span>
+              </div>
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</div>
