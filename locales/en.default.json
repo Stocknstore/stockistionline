@@ -34,6 +34,10 @@
   "home_coming_soon": {
     "placeholder": "Add an image"
   },
+  "product_card": {
+    "badge_new_today": "New today",
+    "badge_last_pair": "Last pair"
+  },
   "home_just_arrived": {
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair",

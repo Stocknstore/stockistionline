@@ -1,0 +1,118 @@
+{%- comment -%}
+  Snippet: product-card
+  Phase 3, Stage 1. General-purpose product card for collection/search pages
+  (not used by the homepage — snippets/product-card-home.liquid stays
+  separate and unchanged so the two can evolve independently). Renders real
+  Shopify product data: image, vendor, title, price/compare-at price, and
+  available size-option values, plus the same badge priority already
+  established for the homepage card.
+
+  Params:
+    product     - required, a Shopify product object
+    card_view   - 'grid' or 'list' (default 'grid')
+    above_fold  - true to load the image eagerly (first rows of a grid/list);
+                  omit/false for lazy loading everywhere else
+{%- endcomment -%}
+{%- liquid
+  assign view = card_view | default: 'grid'
+  assign loading = 'lazy'
+  assign fetchpriority = 'auto'
+  if above_fold
+    assign loading = 'eager'
+    assign fetchpriority = 'high'
+  endif
+
+  assign badge_key = ''
+  for tag in product.tags
+    assign tag_down = tag | downcase
+    if tag_down == 'new today'
+      assign badge_key = 'new_today'
+    endif
+    if tag_down == 'last pair'
+      assign badge_key = 'last_pair'
+    endif
+  endfor
+  assign stock_badge_mf = product.metafields.custom.stock_badge
+  if stock_badge_mf != blank
+    assign mf_down = stock_badge_mf | downcase | strip
+    if mf_down == 'new_today' or mf_down == 'last_pair'
+      assign badge_key = mf_down
+    endif
+  endif
+  if badge_key == 'new_today'
+    assign badge_label = 'product_card.badge_new_today' | t
+  elsif badge_key == 'last_pair'
+    assign badge_label = 'product_card.badge_last_pair' | t
+  endif
+
+  assign size_position = 0
+  for option in product.options_with_values
+    if option.name == 'Size'
+      assign size_position = forloop.index
+    endif
+  endfor
+  assign available_size_values = ''
+  if size_position > 0
+    for v in product.variants
+      if v.available
+        case size_position
+          when 1
+            assign available_size_values = available_size_values | append: v.option1 | append: '||'
+          when 2
+            assign available_size_values = available_size_values | append: v.option2 | append: '||'
+          when 3
+            assign available_size_values = available_size_values | append: v.option3 | append: '||'
+        endcase
+      endif
+    endfor
+  endif
+  assign available_sizes = available_size_values | split: '||' | uniq
+-%}
+<a
+  href="{{ product.url }}"
+  class="product-card product-card--{{ view }}"
+  aria-label="{{ product.title | strip_newlines }}{% if badge_label != blank %}, {{ badge_label }}{% endif %}"
+>
+  <div class="product-card__image-wrap">
+    {%- if badge_label != blank -%}
+      <span class="product-card__badge product-card__badge--{{ badge_key }}">{{ badge_label }}</span>
+    {%- endif -%}
+    {%- if product.featured_image != blank -%}
+      {%- assign widths = "200,300,450,600,800" | split: ',' -%}
+      <img
+        class="product-card__image"
+        src="{{ product.featured_image | image_url: width: 600 }}"
+        srcset="
+          {%- for w in widths -%}
+            {{ product.featured_image | image_url: width: w }} {{ w }}w{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        "
+        sizes="{% if view == 'list' %}96px{% else %}(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw{% endif %}"
+        alt="{{ product.featured_image.alt | default: product.title | strip_newlines }}"
+        width="{{ product.featured_image.width }}"
+        height="{{ product.featured_image.height }}"
+        loading="{{ loading }}"
+        fetchpriority="{{ fetchpriority }}"
+      >
+    {%- else -%}
+      <div class="product-card__placeholder">
+        <span class="product-card__placeholder-label">{{ product.title | strip_newlines }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+  <div class="product-card__meta">
+    {%- if product.vendor != blank -%}
+      <span class="product-card__vendor">{{ product.vendor }}</span>
+    {%- endif -%}
+    <span class="product-card__title">{{ product.title }}</span>
+    <span class="product-card__price-row">
+      <span class="product-card__price">{{ product.price | money }}</span>
+      {%- if product.compare_at_price > product.price -%}
+        <span class="product-card__compare-at">{{ product.compare_at_price | money }}</span>
+      {%- endif -%}
+    </span>
+    {%- if available_sizes.size > 0 -%}
+      <span class="product-card__sizes">{{ available_sizes | join: ' · ' }}</span>
+    {%- endif -%}
+  </div>
+</a>
