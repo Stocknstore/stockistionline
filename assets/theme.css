@@ -2310,3 +2310,148 @@ body.scroll-locked { overflow: hidden; }
 @media (max-width: 767px) {
   .collection-toolbar__columns { display: none; }
 }
+
+/* --------------------------------------------------------------------------
+   30. Collection filters rail — snippets/collection-filters.liquid
+   Phase 3, Stage 5. Matches the prototype's "Filter by" rail from
+   prototype-reference/templates.js ~L275-299 (chips, grouped checkbox
+   lists, price range) and the --plpLayout rail width (280px desktop /
+   240px tablet). Hidden on mobile for now via the existing .hidden-mobile
+   utility — deliberately not fighting it with an unconditional `display`
+   on .collection-grid__filters-rail (see the section 20/21 history of that
+   exact bug): the rail's own display:flex is scoped inside the same
+   min-width:768px range .hidden-mobile already uses to show elements, so
+   there's never a competing declaration at the width where it must stay
+   hidden.
+   -------------------------------------------------------------------------- */
+.collection-grid__layout {
+  --plp-layout: 280px 1fr;
+  display: grid;
+  grid-template-columns: var(--plp-layout);
+  gap: 2px;
+  background: var(--color-primary);
+  padding-bottom: 2px;
+}
+.collection-grid__content { min-width: 0; }
+
+@media (min-width: 768px) {
+  .collection-grid__filters-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--color-background);
+    padding: 24px 22px 30px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .collection-grid__layout { --plp-layout: 240px 1fr; }
+}
+
+@media (max-width: 767px) {
+  .collection-grid__layout { --plp-layout: 1fr; }
+}
+
+.collection-filters__empty {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 24px 22px 30px;
+  margin: 0;
+}
+
+.collection-filters__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.collection-filters__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.collection-filters__active-count {
+  font-family: ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: rgba(2, 38, 63, 0.5);
+}
+.collection-filters__clear-all {
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-link);
+}
+
+.collection-filters__chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.collection-filters__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 10.5px;
+  padding: 8px 10px;
+}
+.collection-filters__chip a { color: inherit; opacity: 0.75; }
+.collection-filters__chip a:hover { opacity: 1; }
+
+.collection-filters__form { display: flex; flex-direction: column; gap: 16px; }
+.collection-filters__group { border-top: 1px solid rgba(2, 38, 63, 0.22); padding-top: 16px; }
+.collection-filters__group-title {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.collection-filters__brand-search {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 9px 11px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.collection-filters__options { display: flex; flex-direction: column; gap: 9px; }
+.collection-filters__option { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.collection-filters__option input[type="checkbox"] { width: 15px; height: 15px; flex: none; accent-color: var(--color-primary); }
+.collection-filters__option label { flex: 1; min-width: 0; }
+.collection-filters__option--disabled label { color: rgba(2, 38, 63, 0.35); }
+.collection-filters__count {
+  margin-left: auto;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.5);
+}
+
+.collection-filters__price { display: flex; align-items: center; gap: 8px; }
+.collection-filters__price-field { flex: 1; min-width: 0; }
+.collection-filters__price-field input {
+  width: 100%;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 9px 11px;
+  font-size: 12px;
+}
+.collection-filters__price-sep { color: rgba(2, 38, 63, 0.5); flex: none; }
+
+.collection-filters__apply {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px;
+  width: 100%;
+}

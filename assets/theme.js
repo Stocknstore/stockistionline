@@ -253,6 +253,23 @@
       }
     });
 
+    // Brand/vendor filter search: progressive enhancement over an
+    // already-rendered checkbox list (snippets/collection-filters.liquid).
+    // With no JS the input simply does nothing and every checkbox stays
+    // visible and fully usable.
+    document.addEventListener('input', function (e) {
+      var searchInput = e.target.closest('[data-brand-search-input]');
+      if (!searchInput) return;
+      var list = searchInput.parentElement && searchInput.parentElement.querySelector('[data-brand-search-list]');
+      if (!list) return;
+      var query = searchInput.value.trim().toLowerCase();
+      list.querySelectorAll('.collection-filters__option').forEach(function (option) {
+        var label = option.querySelector('label');
+        var text = label ? label.textContent.trim().toLowerCase() : '';
+        option.hidden = query.length > 0 && text.indexOf(query) === -1;
+      });
+    });
+
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       if (anyDrawerOpen()) {

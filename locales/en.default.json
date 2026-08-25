@@ -64,6 +64,20 @@
     "columns_3": "3 columns",
     "columns_4": "4 columns"
   },
+  "collection_filters": {
+    "filter_by": "Filter by",
+    "active_count": {
+      "one": "{{ count }} applied",
+      "other": "{{ count }} applied"
+    },
+    "clear_all": "Clear all",
+    "remove_filter": "Remove {{ label }} filter",
+    "apply": "Apply filters",
+    "price_min": "Minimum price",
+    "price_max": "Maximum price",
+    "search_brand": "Search brand…",
+    "setup_hint": "No filters are configured for this collection yet. Install and configure Search & Discovery, then add filters for this collection in the Shopify admin."
+  },
   "collection_department_nav": {
     "placeholder": "Add an image",
     "no_collection": "Select a collection",

@@ -23,9 +23,22 @@
   homepage-only product-card-home.liquid. Only the first 4 products (the
   widest breakpoint's/default column count) are marked above_fold so they
   load eagerly; the rest lazy-load regardless of which view is active.
+
+  Filters (Stage 5, snippets/collection-filters.liquid) use
+  collection.filters, populated only when Search & Discovery is installed
+  and configured. With none configured, real visitors see no rail at all
+  (the layout collapses to a single full-width column) rather than a
+  broken empty sidebar; the theme editor still shows a setup hint. The
+  desktop/tablet rail (--plp-layout, matching the prototype's --plpLayout:
+  280px desktop / 240px tablet) is hidden on mobile for now — Stage 6 adds
+  the mobile drawer.
 {%- endcomment -%}
 {%- liquid
   assign per_page = section.settings.products_per_page | default: 16
+  assign has_filters = false
+  if collection.filters.size > 0
+    assign has_filters = true
+  endif
 -%}
 <section class="collection-grid" data-view="grid" data-columns="4" {{ section.shopify_attributes }}>
   <div class="collection-grid__breadcrumb">
@@ -57,46 +70,59 @@
     </div>
   {%- else -%}
     {%- paginate collection.products by per_page -%}
-      <div class="collection-grid__products">
-        {%- for product in collection.products -%}
-          {%- assign above_fold = false -%}
-          {%- if forloop.index <= 4 -%}
-            {%- assign above_fold = true -%}
-          {%- endif -%}
-          {%- render 'product-card', product: product, above_fold: above_fold -%}
-        {%- endfor -%}
-      </div>
+      {%- capture products_markup -%}
+        <div class="collection-grid__products">
+          {%- for product in collection.products -%}
+            {%- assign above_fold = false -%}
+            {%- if forloop.index <= 4 -%}
+              {%- assign above_fold = true -%}
+            {%- endif -%}
+            {%- render 'product-card', product: product, above_fold: above_fold -%}
+          {%- endfor -%}
+        </div>
 
-      {%- if paginate.pages > 1 -%}
-        <nav class="collection-grid__pagination" aria-label="{{ 'collection_grid.pagination_label' | t }}">
-          <ul class="collection-grid__pagination-list" role="list">
-            <li>
-              {%- if paginate.previous -%}
-                <a href="{{ paginate.previous.url }}" class="collection-grid__page-link collection-grid__page-link--prev" aria-label="{{ 'collection_grid.previous' | t }}">{{ 'collection_grid.previous' | t }}</a>
-              {%- else -%}
-                <span class="collection-grid__page-link collection-grid__page-link--prev collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.previous' | t }}</span>
-              {%- endif -%}
-            </li>
-            {%- for part in paginate.parts -%}
+        {%- if paginate.pages > 1 -%}
+          <nav class="collection-grid__pagination" aria-label="{{ 'collection_grid.pagination_label' | t }}">
+            <ul class="collection-grid__pagination-list" role="list">
               <li>
-                {%- if part.is_link -%}
-                  <a href="{{ part.url }}" class="collection-grid__page-link" aria-label="{{ 'collection_grid.go_to_page' | t: number: part.title }}">{{ part.title }}</a>
-                {%- elsif part.title == paginate.current_page -%}
-                  <span class="collection-grid__page-link collection-grid__page-link--current" aria-current="page" aria-label="{{ 'collection_grid.current_page' | t: number: part.title }}">{{ part.title }}</span>
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="collection-grid__page-link collection-grid__page-link--prev" aria-label="{{ 'collection_grid.previous' | t }}">{{ 'collection_grid.previous' | t }}</a>
                 {%- else -%}
-                  <span class="collection-grid__page-link collection-grid__page-link--ellipsis" aria-hidden="true">{{ part.title }}</span>
+                  <span class="collection-grid__page-link collection-grid__page-link--prev collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.previous' | t }}</span>
                 {%- endif -%}
               </li>
-            {%- endfor -%}
-            <li>
-              {%- if paginate.next -%}
-                <a href="{{ paginate.next.url }}" class="collection-grid__page-link collection-grid__page-link--next" aria-label="{{ 'collection_grid.next' | t }}">{{ 'collection_grid.next' | t }}</a>
-              {%- else -%}
-                <span class="collection-grid__page-link collection-grid__page-link--next collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.next' | t }}</span>
-              {%- endif -%}
-            </li>
-          </ul>
-        </nav>
+              {%- for part in paginate.parts -%}
+                <li>
+                  {%- if part.is_link -%}
+                    <a href="{{ part.url }}" class="collection-grid__page-link" aria-label="{{ 'collection_grid.go_to_page' | t: number: part.title }}">{{ part.title }}</a>
+                  {%- elsif part.title == paginate.current_page -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--current" aria-current="page" aria-label="{{ 'collection_grid.current_page' | t: number: part.title }}">{{ part.title }}</span>
+                  {%- else -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--ellipsis" aria-hidden="true">{{ part.title }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+              <li>
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="collection-grid__page-link collection-grid__page-link--next" aria-label="{{ 'collection_grid.next' | t }}">{{ 'collection_grid.next' | t }}</a>
+                {%- else -%}
+                  <span class="collection-grid__page-link collection-grid__page-link--next collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.next' | t }}</span>
+                {%- endif -%}
+              </li>
+            </ul>
+          </nav>
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- if has_filters or request.design_mode -%}
+        <div class="collection-grid__layout">
+          <aside class="collection-grid__filters-rail hidden-mobile">
+            {%- render 'collection-filters', collection: collection, id_prefix: 'Desktop' -%}
+          </aside>
+          <div class="collection-grid__content">{{ products_markup }}</div>
+        </div>
+      {%- else -%}
+        {{ products_markup }}
       {%- endif -%}
     {%- endpaginate -%}
   {%- endif -%}
