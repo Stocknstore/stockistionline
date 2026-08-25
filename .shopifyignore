@@ -1,0 +1,3 @@
+# Exclude the HTML/CSS/JS prototype reference from theme uploads —
+# it's a design reference only, not part of the Shopify theme.
+prototype-reference/
