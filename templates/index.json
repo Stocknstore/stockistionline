@@ -89,7 +89,18 @@
     },
     "home-just-arrived": {
       "type": "home-just-arrived"
+    },
+    "home-special-stock": {
+      "type": "home-special-stock",
+      "blocks": {
+        "tile-1": { "type": "photo" },
+        "tile-2": { "type": "stat", "settings": { "number": "96", "label": "last pairs\nin single sizes" } },
+        "tile-3": { "type": "photo" },
+        "tile-4": { "type": "stat", "settings": { "number": "−62%", "label": "average discount\noff list price" } },
+        "tile-5": { "type": "photo" }
+      },
+      "block_order": ["tile-1", "tile-2", "tile-3", "tile-4", "tile-5"]
     }
   },
-  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived"]
+  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived", "home-special-stock"]
 }

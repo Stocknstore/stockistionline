@@ -25,6 +25,9 @@
   "home_start_shopping": {
     "placeholder": "Add an image"
   },
+  "home_special_stock": {
+    "placeholder": "Add an image"
+  },
   "home_just_arrived": {
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair",
