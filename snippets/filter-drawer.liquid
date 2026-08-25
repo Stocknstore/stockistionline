@@ -9,12 +9,23 @@
 
   Renders snippets/collection-filters.liquid a second time with
   id_prefix: 'Mobile' so every form/input id is distinct from the desktop
-  rail's FacetFilterForm-Desktop instance (sections/collection-grid.liquid)
-  while sharing identical field names/values — Stage 5's snippet already
-  accepts id_prefix, so nothing about its filtering logic changes here.
+  rail's FacetFilterForm-Desktop instance while sharing identical field
+  names/values — Stage 5's snippet already accepts id_prefix, so nothing
+  about its filtering logic changes here.
+
+  Works for both a collection page and the search results page (Stage 7)
+  without any logic of its own: every param below is simply forwarded
+  as-is to collection-filters.liquid, which does the actual collection-vs-
+  generic-params resolution. sections/collection-grid.liquid's existing
+  call (collection: collection) is unchanged; sections/search-results.
+  liquid passes the generic params directly.
 
   Params:
-    collection - required, the current collection object
+    collection    - a collection object (collection-page usage)
+    results_url   - form action target (search-page usage)
+    filters       - filter array, collection.filters or search.filters
+    sort_by       - current sort value
+    search_terms  - search.terms; preserves q/type/options[prefix] when set
 {%- endcomment -%}
 <div class="filter-drawer" id="FilterDrawer" data-filter-drawer aria-hidden="true">
   <div class="filter-drawer__overlay" data-filter-drawer-close></div>
@@ -26,7 +37,14 @@
       </button>
     </div>
     <div class="filter-drawer__body">
-      {%- render 'collection-filters', collection: collection, id_prefix: 'Mobile' -%}
+      {%- render 'collection-filters',
+        collection: collection,
+        results_url: results_url,
+        filters: filters,
+        sort_by: sort_by,
+        search_terms: search_terms,
+        id_prefix: 'Mobile'
+      -%}
     </div>
   </div>
 </div>

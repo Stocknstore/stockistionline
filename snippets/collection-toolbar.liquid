@@ -1,19 +1,25 @@
 {%- comment -%}
   Snippet: collection-toolbar
-  Phase 3, Stage 4. Sort selector + grid/list/column view controls for
-  sections/collection-grid.liquid, matching the prototype's toolbar row
-  from prototype-reference/templates.js ~L253-261 (rendered as a sibling of
-  the title inside .collection-grid__header, which already has the
-  matching flex/wrap layout from Stage 3).
+  Phase 3, Stage 4 (generalized Stage 7). Sort selector + grid/list/column
+  view controls + mobile filter trigger, matching the prototype's toolbar
+  row from prototype-reference/templates.js ~L253-261.
+
+  Works for both a collection page and the search results page without
+  duplicating logic: pass either `collection` (sections/collection-grid.
+  liquid's existing call — unchanged, still works exactly as before) or the
+  generic `results_url`/`filters`/`sort_by`/`sort_options` params directly
+  (sections/search-results.liquid). Whichever generic param is supplied
+  wins; otherwise it falls back to the matching collection.* property, so
+  collection-page behavior is byte-for-byte identical to before Stage 7.
 
   Sort is a real, standard GET <form> — no JS required to use it. It
   preserves every currently active filter by explicitly re-emitting each
   filter's active_values (param_name/value) and, for price-range filters,
-  the active min/max values as hidden inputs; there is no filters UI yet
-  (a later stage adds one), so today these loops simply produce no hidden
-  inputs, but the form is already correct once filtering exists. Because
-  it's a plain GET form with no hidden "page" field, submitting always
-  lands on page 1 with the old sort_by replaced by the new selection.
+  the active min/max values as hidden inputs. On search, `search_terms`
+  (search.terms) additionally preserves q/type/options[prefix] as hidden
+  inputs so changing sort never drops the search query. Because it's a
+  plain GET form with no hidden "page" field, submitting always lands on
+  page 1 with the old sort_by replaced by the new selection.
 
   View/column state lives on the ancestor .collection-grid section via
   data-view/data-columns attributes (assets/theme.js reads/writes these
@@ -21,20 +27,34 @@
   with no JS (each click still updates aria-pressed via the delegated
   handler) and degrade to "grid, 4 columns" if JS never runs.
 
-  The mobile "Filters" trigger (Stage 6) only renders when
-  collection.filters isn't empty — sections/collection-grid.liquid renders
-  snippets/filter-drawer.liquid under the same condition, so the trigger
-  always has a real drawer with id="FilterDrawer" to control. Opening/
-  closing and its aria-expanded state are handled entirely by the theme's
-  existing drawer infrastructure (assets/theme.js) via data-filter-drawer-
-  toggle — no bespoke JS here.
+  The mobile "Filters" trigger (Stage 6) only renders when there are
+  filters to show. Its target drawer (id="FilterDrawer") is rendered by
+  the caller (sections/collection-grid.liquid or sections/search-results.
+  liquid) under the same condition. Opening/closing and its aria-expanded
+  state are handled entirely by the theme's existing drawer infrastructure
+  (assets/theme.js) via data-filter-drawer-toggle — no bespoke JS here.
 
   Params:
-    collection - required, the current collection object
+    collection    - a collection object (collection-page usage)
+    results_url   - form action target (search-page usage; defaults to
+                    collection.url)
+    filters       - filter array, collection.filters or search.filters
+                    (defaults to collection.filters)
+    sort_by       - current sort value (defaults to collection.sort_by)
+    sort_options  - available sort options (defaults to
+                    collection.sort_options)
+    search_terms  - search.terms; only ever set on the search page, used
+                    to preserve q/type/options[prefix] through sort/filter
+                    submissions
 {%- endcomment -%}
 {%- liquid
+  assign ctx_url = results_url | default: collection.url
+  assign ctx_filters = filters | default: collection.filters
+  assign ctx_sort_by = sort_by | default: collection.sort_by
+  assign ctx_sort_options = sort_options | default: collection.sort_options
+
   assign active_filter_count = 0
-  for filter in collection.filters
+  for filter in ctx_filters
     if filter.type == 'price_range'
       if filter.min_value.value or filter.max_value.value
         assign active_filter_count = active_filter_count | plus: 1
@@ -45,7 +65,7 @@
   endfor
 -%}
 <div class="collection-toolbar">
-  {%- if collection.filters.size > 0 -%}
+  {%- if ctx_filters.size > 0 -%}
     <button
       type="button"
       class="collection-toolbar__filters-toggle hidden-desktop"
@@ -60,8 +80,13 @@
     </button>
   {%- endif -%}
 
-  <form method="get" action="{{ collection.url }}" class="collection-toolbar__sort-form">
-    {%- for filter in collection.filters -%}
+  <form method="get" action="{{ ctx_url }}" class="collection-toolbar__sort-form">
+    {%- if search_terms != blank -%}
+      <input type="hidden" name="q" value="{{ search_terms }}">
+      <input type="hidden" name="type" value="product">
+      <input type="hidden" name="options[prefix]" value="last">
+    {%- endif -%}
+    {%- for filter in ctx_filters -%}
       {%- if filter.type == 'price_range' -%}
         {%- if filter.min_value.value -%}
           <input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value }}">
@@ -78,8 +103,8 @@
 
     <label for="CollectionSortSelect" class="visually-hidden">{{ 'collection_toolbar.sort_label' | t }}</label>
     <select name="sort_by" id="CollectionSortSelect" class="collection-toolbar__sort-select" data-sort-select>
-      {%- for option in collection.sort_options -%}
-        <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected{% endif %}>{{ option.name }}</option>
+      {%- for option in ctx_sort_options -%}
+        <option value="{{ option.value }}" {% if option.value == ctx_sort_by %}selected{% endif %}>{{ option.name }}</option>
       {%- endfor -%}
     </select>
     <button type="submit" class="collection-toolbar__sort-submit" data-sort-submit>{{ 'collection_toolbar.sort_apply' | t }}</button>

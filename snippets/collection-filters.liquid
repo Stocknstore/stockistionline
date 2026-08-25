@@ -1,13 +1,25 @@
 {%- comment -%}
   Snippet: collection-filters
-  Phase 3, Stage 5. Native Shopify filter form for sections/collection-grid.
-  liquid's desktop/tablet rail, matching the prototype's "Filter by" rail
-  from prototype-reference/templates.js ~L275-299 (chips, grouped checkbox
-  lists, size grid, price range, availability). collection.filters is only
-  populated when Search & Discovery is installed and filters are configured
-  in Admin — with none configured this snippet renders nothing for real
-  visitors (see sections/collection-grid.liquid, which then skips the rail
-  entirely) and a discreet setup hint only in the theme editor.
+  Phase 3, Stage 5 (generalized Stage 7). Native Shopify filter form for the
+  desktop/tablet rail and the mobile drawer, matching the prototype's
+  "Filter by" rail from prototype-reference/templates.js ~L275-299 (chips,
+  grouped checkbox lists, price range). collection.filters/search.filters
+  are only populated when Search & Discovery is installed and filters are
+  configured in Admin — with none configured this snippet renders nothing
+  for real visitors (the caller then skips the rail/drawer entirely) and a
+  discreet setup hint only in the theme editor.
+
+  Works for both a collection page and the search results page without
+  duplicating logic: pass either `collection` (existing collection-page
+  usage — unchanged) or the generic `results_url`/`filters`/`sort_by`
+  params directly (search-results.liquid). Whichever generic param is
+  supplied wins; otherwise it falls back to the matching collection.*
+  property, so collection-page behavior is unchanged. `search_terms`
+  (search.terms) is only ever set on the search page, and additionally
+  preserves q/type/options[prefix] through the filter form and the
+  Clear all link — filter-value removal (chips) already preserves them
+  automatically via Shopify's own url_to_remove, which is computed from
+  the full current request regardless of context.
 
   A plain HTML GET <form> — no {% form 'facets' %} tag exists in Liquid.
   Checkbox name/value pairs use each filter value's own param_name/value
@@ -17,15 +29,26 @@
   plain, fully-functional checkbox list with no JS.
 
   Params:
-    collection - required, the current collection object
-    id_prefix  - required, e.g. 'Desktop' — combined into every form/input
-                 id so this snippet can be rendered a second time (Stage 6,
-                 with id_prefix 'Mobile') without id collisions between the
-                 two instances.
+    collection   - a collection object (collection-page usage)
+    results_url  - form action target (search-page usage; defaults to
+                   collection.url)
+    filters      - filter array, collection.filters or search.filters
+                   (defaults to collection.filters)
+    sort_by      - current sort value, for the hidden preservation input
+                   (defaults to collection.sort_by)
+    search_terms - search.terms; preserves q/type/options[prefix] when set
+    id_prefix    - required, e.g. 'Desktop' — combined into every form/input
+                   id so this snippet can be rendered a second time (Stage 6,
+                   with id_prefix 'Mobile') without id collisions between
+                   the two instances.
 {%- endcomment -%}
 {%- liquid
+  assign ctx_url = results_url | default: collection.url
+  assign ctx_filters = filters | default: collection.filters
+  assign ctx_sort_by = sort_by | default: collection.sort_by
+
   assign active_count = 0
-  for filter in collection.filters
+  for filter in ctx_filters
     if filter.type == 'price_range'
       if filter.min_value.value or filter.max_value.value
         assign active_count = active_count | plus: 1
@@ -35,13 +58,16 @@
     endif
   endfor
 
-  if collection.sort_by != blank
-    assign clear_all_url = collection.url | append: '?sort_by=' | append: collection.sort_by
+  if ctx_sort_by != blank
+    assign clear_all_url = ctx_url | append: '?sort_by=' | append: ctx_sort_by
   else
-    assign clear_all_url = collection.url
+    assign clear_all_url = ctx_url
+  endif
+  if search_terms != blank
+    assign clear_all_url = clear_all_url | append: '&q=' | append: search_terms | url_encode | append: '&type=product&options%5Bprefix%5D=last'
   endif
 -%}
-{%- if collection.filters.size == 0 -%}
+{%- if ctx_filters.size == 0 -%}
   {%- if request.design_mode -%}
     <p class="collection-filters__empty">{{ 'collection_filters.setup_hint' | t }}</p>
   {%- endif -%}
@@ -61,7 +87,7 @@
 
     {%- if active_count > 0 -%}
       <div class="collection-filters__chips">
-        {%- for filter in collection.filters -%}
+        {%- for filter in ctx_filters -%}
           {%- if filter.type == 'price_range' -%}
             {%- if filter.min_value.value or filter.max_value.value -%}
               <span class="collection-filters__chip">
@@ -81,10 +107,15 @@
       </div>
     {%- endif -%}
 
-    <form method="get" action="{{ collection.url }}" id="FacetFilterForm-{{ id_prefix }}" class="collection-filters__form">
-      <input type="hidden" name="sort_by" value="{{ collection.sort_by }}">
+    <form method="get" action="{{ ctx_url }}" id="FacetFilterForm-{{ id_prefix }}" class="collection-filters__form">
+      <input type="hidden" name="sort_by" value="{{ ctx_sort_by }}">
+      {%- if search_terms != blank -%}
+        <input type="hidden" name="q" value="{{ search_terms }}">
+        <input type="hidden" name="type" value="product">
+        <input type="hidden" name="options[prefix]" value="last">
+      {%- endif -%}
 
-      {%- for filter in collection.filters -%}
+      {%- for filter in ctx_filters -%}
         <div class="collection-filters__group">
           <div class="collection-filters__group-title">{{ filter.label }}</div>
 

@@ -81,6 +81,21 @@
   "filter_drawer": {
     "heading": "Filters"
   },
+  "search_results": {
+    "heading": "Search",
+    "heading_with_query": "Search results for \"{{ query }}\"",
+    "product_count": {
+      "one": "{{ count }} product found",
+      "other": "{{ count }} products found"
+    },
+    "search_label": "Search",
+    "search_placeholder": "Search products…",
+    "search_submit": "Search",
+    "no_query_title": "Search our products",
+    "no_query_body": "Enter a search term above to find products.",
+    "no_results_title": "No results found",
+    "no_results_body": "Try a different search term."
+  },
   "collection_department_nav": {
     "placeholder": "Add an image",
     "no_collection": "Select a collection",
