@@ -32,6 +32,14 @@
   desktop/tablet rail (--plp-layout, matching the prototype's --plpLayout:
   280px desktop / 240px tablet) is hidden on mobile for now — Stage 6 adds
   the mobile drawer.
+
+  Mobile filter drawer (Stage 6, snippets/filter-drawer.liquid) is rendered
+  once here, alongside the toolbar's trigger button, so it always has
+  collection context. It reuses snippets/collection-filters.liquid with
+  id_prefix: 'Mobile', independent of the desktop rail's 'Desktop' instance
+  rendered further down — both share identical filter names/values via
+  distinct ids, so either can be submitted on its own as a normal GET
+  navigation.
 {%- endcomment -%}
 {%- liquid
   assign per_page = section.settings.products_per_page | default: 16
@@ -58,6 +66,10 @@
       {%- render 'collection-toolbar', collection: collection -%}
     {%- endif -%}
   </div>
+
+  {%- if collection.products.size > 0 and has_filters -%}
+    {%- render 'filter-drawer', collection: collection -%}
+  {%- endif -%}
 
   {%- if collection.description != blank -%}
     <div class="collection-grid__description">{{ collection.description }}</div>

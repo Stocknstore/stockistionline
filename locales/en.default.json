@@ -78,6 +78,9 @@
     "search_brand": "Search brand…",
     "setup_hint": "No filters are configured for this collection yet. Install and configure Search & Discovery, then add filters for this collection in the Shopify admin."
   },
+  "filter_drawer": {
+    "heading": "Filters"
+  },
   "collection_department_nav": {
     "placeholder": "Add an image",
     "no_collection": "Select a collection",

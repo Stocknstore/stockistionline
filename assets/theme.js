@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-account-drawer]', '[data-cart-drawer]'];
+  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-account-drawer]', '[data-cart-drawer]', '[data-filter-drawer]'];
   var lastFocusedElement = null;
 
   /* ---------------- Scroll lock ---------------- */
@@ -20,6 +20,17 @@
     document.body.classList.toggle('scroll-locked', anyDrawerOpen());
   }
 
+  /* Any trigger that declares aria-controls="<drawer id>" gets its
+     aria-expanded kept in sync automatically — a no-op for existing
+     triggers that don't set aria-controls, functional for the filter
+     drawer's toggle button (Stage 6). */
+  function syncDrawerTriggers(drawerId, expanded) {
+    if (!drawerId) return;
+    document.querySelectorAll('[aria-controls="' + drawerId + '"]').forEach(function (trigger) {
+      trigger.setAttribute('aria-expanded', String(expanded));
+    });
+  }
+
   /* ---------------- Generic drawer open/close ---------------- */
   function openDrawer(selector, focusSelector) {
     var el = document.querySelector(selector);
@@ -27,6 +38,7 @@
     lastFocusedElement = document.activeElement;
     el.setAttribute('data-open', '');
     el.setAttribute('aria-hidden', 'false');
+    syncDrawerTriggers(el.id, true);
     updateScrollLock();
     var focusTarget = focusSelector ? el.querySelector(focusSelector) : el.querySelector('button, [href], input');
     if (focusTarget) {
@@ -41,6 +53,7 @@
     if (!el) return;
     el.removeAttribute('data-open');
     el.setAttribute('aria-hidden', 'true');
+    syncDrawerTriggers(el.id, false);
     updateScrollLock();
     if (lastFocusedElement) {
       lastFocusedElement.focus();
@@ -205,6 +218,16 @@
       }
       if (e.target.closest('[data-cart-close]')) {
         closeDrawer('[data-cart-drawer]');
+        return;
+      }
+
+      // Mobile filter drawer
+      if (e.target.closest('[data-filter-drawer-toggle]')) {
+        openDrawer('[data-filter-drawer]');
+        return;
+      }
+      if (e.target.closest('[data-filter-drawer-close]')) {
+        closeDrawer('[data-filter-drawer]');
         return;
       }
 

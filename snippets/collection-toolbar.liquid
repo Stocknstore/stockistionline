@@ -21,10 +21,45 @@
   with no JS (each click still updates aria-pressed via the delegated
   handler) and degrade to "grid, 4 columns" if JS never runs.
 
+  The mobile "Filters" trigger (Stage 6) only renders when
+  collection.filters isn't empty — sections/collection-grid.liquid renders
+  snippets/filter-drawer.liquid under the same condition, so the trigger
+  always has a real drawer with id="FilterDrawer" to control. Opening/
+  closing and its aria-expanded state are handled entirely by the theme's
+  existing drawer infrastructure (assets/theme.js) via data-filter-drawer-
+  toggle — no bespoke JS here.
+
   Params:
     collection - required, the current collection object
 {%- endcomment -%}
+{%- liquid
+  assign active_filter_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value or filter.max_value.value
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    else
+      assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    endif
+  endfor
+-%}
 <div class="collection-toolbar">
+  {%- if collection.filters.size > 0 -%}
+    <button
+      type="button"
+      class="collection-toolbar__filters-toggle hidden-desktop"
+      data-filter-drawer-toggle
+      aria-controls="FilterDrawer"
+      aria-expanded="false"
+    >
+      {{- 'collection_filters.filter_by' | t -}}
+      {%- if active_filter_count > 0 -%}
+        <span class="collection-toolbar__filters-count">{{ active_filter_count }}</span>
+      {%- endif -%}
+    </button>
+  {%- endif -%}
+
   <form method="get" action="{{ collection.url }}" class="collection-toolbar__sort-form">
     {%- for filter in collection.filters -%}
       {%- if filter.type == 'price_range' -%}

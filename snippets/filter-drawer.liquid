@@ -1,0 +1,32 @@
+{%- comment -%}
+  Snippet: filter-drawer
+  Phase 3, Stage 6. Mobile collection-filter drawer. Reuses the theme's
+  existing overlay-drawer infrastructure (assets/theme.js openDrawer/
+  closeDrawer — body-scroll locking, Escape-to-close, focus restore — and
+  assets/theme.css section 11's shared drawer base) rather than a separate
+  drawer system; only .filter-drawer/__overlay/__panel are added to those
+  shared selector groups.
+
+  Renders snippets/collection-filters.liquid a second time with
+  id_prefix: 'Mobile' so every form/input id is distinct from the desktop
+  rail's FacetFilterForm-Desktop instance (sections/collection-grid.liquid)
+  while sharing identical field names/values — Stage 5's snippet already
+  accepts id_prefix, so nothing about its filtering logic changes here.
+
+  Params:
+    collection - required, the current collection object
+{%- endcomment -%}
+<div class="filter-drawer" id="FilterDrawer" data-filter-drawer aria-hidden="true">
+  <div class="filter-drawer__overlay" data-filter-drawer-close></div>
+  <div class="filter-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'filter_drawer.heading' | t }}">
+    <div class="filter-drawer__header">
+      <h2 class="filter-drawer__title">{{ 'filter_drawer.heading' | t }}</h2>
+      <button type="button" class="icon-close-btn icon-close-btn--circle" data-filter-drawer-close aria-label="{{ 'general.close' | t }}">
+        {%- render 'icon', icon: 'close' -%}
+      </button>
+    </div>
+    <div class="filter-drawer__body">
+      {%- render 'collection-filters', collection: collection, id_prefix: 'Mobile' -%}
+    </div>
+  </div>
+</div>

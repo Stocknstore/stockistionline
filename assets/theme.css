@@ -480,7 +480,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer,
 .search-drawer,
 .account-drawer,
-.cart-drawer {
+.cart-drawer,
+.filter-drawer {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -490,14 +491,16 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer[data-open],
 .search-drawer[data-open],
 .account-drawer[data-open],
-.cart-drawer[data-open] {
+.cart-drawer[data-open],
+.filter-drawer[data-open] {
   visibility: visible;
   pointer-events: auto;
 }
 .mobile-menu-drawer__overlay,
 .search-drawer__overlay,
 .account-drawer__overlay,
-.cart-drawer__overlay {
+.cart-drawer__overlay,
+.filter-drawer__overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -507,7 +510,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer[data-open] .mobile-menu-drawer__overlay,
 .search-drawer[data-open] .search-drawer__overlay,
 .account-drawer[data-open] .account-drawer__overlay,
-.cart-drawer[data-open] .cart-drawer__overlay { opacity: 1; }
+.cart-drawer[data-open] .cart-drawer__overlay,
+.filter-drawer[data-open] .filter-drawer__overlay { opacity: 1; }
 
 /* Mobile menu + account: slide from left. Search: slide from top. Cart: slide from right. */
 .mobile-menu-drawer__panel,
@@ -528,6 +532,21 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .account-drawer__panel {
   padding: var(--space-6);
 }
+
+/* Filter drawer: also slides from the left, but unlike the two panels above
+   it's used exclusively below the 768px breakpoint, where width:100% would
+   make the panel exactly cover the overlay and leave no clickable backdrop
+   area at all — a percentage width (capped at the same 400px) guarantees a
+   visible, tappable backdrop strip even at narrow phone widths. */
+.filter-drawer__panel {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 88%; max-width: 400px;
+  background: var(--color-background);
+  transform: translateX(-100%);
+  transition: transform var(--transition-normal) var(--ease);
+  overflow-y: auto;
+}
+.filter-drawer[data-open] .filter-drawer__panel { transform: translateX(0); }
 
 .cart-drawer__panel {
   position: absolute; top: 0; right: 0; bottom: 0;
@@ -556,17 +575,19 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer__header,
 .account-drawer__header,
-.search-drawer__header {
+.search-drawer__header,
+.filter-drawer__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-5);
 }
 .search-drawer__header, .account-drawer__header { padding: 0 0 var(--space-5); }
-.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title {
+.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title, .filter-drawer__title {
   font-size: var(--text-xl);
   font-weight: 700;
 }
+.filter-drawer__body { padding: 0 var(--space-5) var(--space-5); }
 .mobile-menu-drawer__back {
   display: flex;
   align-items: center;
@@ -2454,4 +2475,44 @@ body.scroll-locked { overflow: hidden; }
   text-transform: uppercase;
   padding: 14px;
   width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   31. Mobile filter drawer trigger — snippets/collection-toolbar.liquid
+   Phase 3, Stage 6. The trigger only renders in markup when
+   collection.filters isn't empty, and only needs to be visible below the
+   768px breakpoint (the desktop/tablet rail covers everything above it) —
+   .hidden-desktop already provides that toggle, so display is intentionally
+   scoped inside the same @media (max-width: 767px) range rather than set
+   unconditionally on .collection-toolbar__filters-toggle, which would
+   otherwise silently defeat .hidden-desktop's display:none above 768px
+   (the same cascade bug documented in sections 20-21).
+   -------------------------------------------------------------------------- */
+.collection-toolbar__filters-toggle {
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 16px;
+}
+.collection-toolbar__filters-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+}
+
+@media (max-width: 767px) {
+  .collection-toolbar__filters-toggle { display: inline-flex; }
 }
