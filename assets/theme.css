@@ -1203,3 +1203,97 @@ body.scroll-locked { overflow: hidden; }
     --dept-card-w: 88%;
   }
 }
+
+/* --------------------------------------------------------------------------
+   20. Homepage — Brand wall
+   Custom properties scoped to .home-brand-wall, mirroring
+   prototype-reference/styles.css's --brandCols and --padX tokens: 6 columns
+   desktop (at least 1280px), 4 columns tablet (768 to 1279px), 2 columns
+   mobile (up to 767px). Each tile reserves a fixed-height mark area so a
+   logo (object-fit contain, never stretched) and a text-name fallback line
+   up identically from tile to tile.
+   -------------------------------------------------------------------------- */
+.home-brand-wall {
+  --wall-pad-x: 40px;
+  --brand-cols: repeat(6, 1fr);
+  --wall-mark-h: 34px;
+
+  background: var(--color-background);
+  padding: 34px var(--wall-pad-x) 40px;
+  border-bottom: 2px solid var(--color-primary);
+}
+.home-brand-wall__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.home-brand-wall__eyebrow {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-link);
+}
+.home-brand-wall__heading {
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 10px 0 0;
+}
+.home-brand-wall__az {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-link);
+  white-space: nowrap;
+}
+.home-brand-wall__az::after { content: " \2192"; }
+
+.home-brand-wall__grid {
+  display: grid;
+  grid-template-columns: var(--brand-cols);
+  gap: 2px;
+  background: rgba(2, 38, 63, 0.4);
+  border: 1px solid rgba(2, 38, 63, 0.4);
+}
+.home-brand-wall__tile {
+  background: var(--color-background);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.home-brand-wall__mark {
+  height: var(--wall-mark-h);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.home-brand-wall__logo {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.home-brand-wall__name { font-weight: 800; font-size: 17px; line-height: 1; }
+.home-brand-wall__note {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(2, 38, 63, 0.55);
+}
+.home-brand-wall__note--new { color: var(--color-link); }
+
+@media (max-width: 1279px) {
+  .home-brand-wall { --wall-pad-x: 28px; --brand-cols: repeat(4, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .home-brand-wall { --wall-pad-x: 16px; --brand-cols: repeat(2, 1fr); }
+}

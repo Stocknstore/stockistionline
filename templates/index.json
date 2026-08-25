@@ -58,7 +58,35 @@
         }
       },
       "block_order": ["dept-women", "dept-men", "dept-kids", "arriving-home-living", "arriving-clothing"]
+    },
+    "home-brand-wall": {
+      "type": "home-brand-wall",
+      "blocks": {
+        "brand-01": { "type": "brand", "settings": { "name": "Solo Suprani", "note": "new today" } },
+        "brand-02": { "type": "brand", "settings": { "name": "US GRAND Polo", "note": "32 styles" } },
+        "brand-03": { "type": "brand", "settings": { "name": "Carrera", "note": "11 styles" } },
+        "brand-04": { "type": "brand", "settings": { "name": "MARS", "note": "new today" } },
+        "brand-05": { "type": "brand", "settings": { "name": "Zaenobi", "note": "7 styles" } },
+        "brand-06": { "type": "brand", "settings": { "name": "NASA", "note": "58 styles" } },
+        "brand-07": { "type": "brand", "settings": { "name": "Brand 07", "note": "24 styles" } },
+        "brand-08": { "type": "brand", "settings": { "name": "Brand 08", "note": "new today" } },
+        "brand-09": { "type": "brand", "settings": { "name": "Brand 09", "note": "16 styles" } },
+        "brand-10": { "type": "brand", "settings": { "name": "Brand 10", "note": "9 styles" } },
+        "brand-11": { "type": "brand", "settings": { "name": "Brand 11", "note": "41 styles" } },
+        "brand-12": { "type": "brand", "settings": { "name": "Brand 12", "note": "13 styles" } },
+        "brand-13": { "type": "brand", "settings": { "name": "Brand 13", "note": "22 styles" } },
+        "brand-14": { "type": "brand", "settings": { "name": "Brand 14", "note": "new today" } },
+        "brand-15": { "type": "brand", "settings": { "name": "Brand 15", "note": "6 styles" } },
+        "brand-16": { "type": "brand", "settings": { "name": "Brand 16", "note": "35 styles" } },
+        "brand-17": { "type": "brand", "settings": { "name": "Brand 17", "note": "19 styles" } },
+        "brand-18": { "type": "brand", "settings": { "name": "Brand 18", "note": "new today" } }
+      },
+      "block_order": [
+        "brand-01", "brand-02", "brand-03", "brand-04", "brand-05", "brand-06",
+        "brand-07", "brand-08", "brand-09", "brand-10", "brand-11", "brand-12",
+        "brand-13", "brand-14", "brand-15", "brand-16", "brand-17", "brand-18"
+      ]
     }
   },
-  "order": ["home-hero", "home-start-shopping"]
+  "order": ["home-hero", "home-start-shopping", "home-brand-wall"]
 }
