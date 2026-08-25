@@ -41,6 +41,20 @@
   "collection_hero": {
     "placeholder": "Add an image"
   },
+  "collection_grid": {
+    "breadcrumb_home": "Home",
+    "product_count": {
+      "one": "{{ count }} style in stock",
+      "other": "{{ count }} styles in stock"
+    },
+    "empty_title": "No products in this collection yet",
+    "empty_body": "Check back soon — new stock is added regularly.",
+    "pagination_label": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "go_to_page": "Go to page {{ number }}",
+    "current_page": "Page {{ number }}, current page"
+  },
   "collection_department_nav": {
     "placeholder": "Add an image",
     "no_collection": "Select a collection",

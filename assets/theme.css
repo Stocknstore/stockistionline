@@ -2058,3 +2058,170 @@ body.scroll-locked { overflow: hidden; }
     --dept-card-w: 88%;
   }
 }
+
+/* --------------------------------------------------------------------------
+   27. Collection grid (PLP core) — sections/collection-grid.liquid
+   Phase 3, Stage 3. Custom properties scoped to .collection-grid, mirroring
+   prototype-reference/styles.css's --padX/--prodCols tokens: 4 columns
+   desktop (at least 1280px), 3 columns tablet (768 to 1279px), 2 columns
+   mobile (up to 767px). Filters/sorting/view-toggle styling intentionally
+   not included yet — later stages extend this section.
+   -------------------------------------------------------------------------- */
+.collection-grid {
+  --grid-pad-x: 40px;
+  --grid-cols: repeat(4, 1fr);
+
+  background: var(--color-background);
+}
+.collection-grid__breadcrumb {
+  padding: 20px var(--grid-pad-x) 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+}
+.collection-grid__breadcrumb a:hover { color: var(--color-text); }
+.collection-grid__breadcrumb-current { color: var(--color-text); }
+
+.collection-grid__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px var(--grid-pad-x) 24px;
+}
+.collection-grid__title { font-weight: 900; font-size: 40px; line-height: 1; letter-spacing: -0.03em; margin: 0; }
+.collection-grid__count {
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: rgba(2, 38, 63, 0.55);
+  margin-top: 10px;
+}
+
+.collection-grid__description {
+  padding: 0 var(--grid-pad-x) 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.collection-grid__products {
+  padding: 24px var(--grid-pad-x) 30px;
+  display: grid;
+  grid-template-columns: var(--grid-cols);
+  gap: 24px;
+}
+
+.collection-grid__empty {
+  padding: 60px var(--grid-pad-x) 70px;
+  text-align: center;
+}
+.collection-grid__empty-title { font-weight: 800; font-size: 18px; margin: 0 0 8px; }
+.collection-grid__empty-body { color: var(--color-text-secondary); margin: 0 auto; max-width: 46ch; }
+
+.collection-grid__pagination { padding: 0 var(--grid-pad-x) 30px; }
+.collection-grid__pagination-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 6px;
+}
+.collection-grid__page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  font-weight: 700;
+  font-size: 12px;
+}
+.collection-grid__page-link--current { background: var(--color-primary); color: var(--color-primary-contrast); border-color: var(--color-primary); }
+.collection-grid__page-link--disabled { color: rgba(2, 38, 63, 0.35); cursor: default; }
+.collection-grid__page-link--ellipsis { border-color: transparent; }
+
+@media (max-width: 1279px) {
+  .collection-grid { --grid-pad-x: 28px; --grid-cols: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .collection-grid { --grid-pad-x: 16px; --grid-cols: repeat(2, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   28. Product card (grid) — snippets/product-card.liquid
+   Phase 3, Stage 3. Grid-variant styling only, sized to match the PLP grid
+   card from prototype-reference/templates.js ~L222-226 (250px image,
+   16px price). The list variant's markup already exists in the snippet
+   (Stage 1) but is intentionally left unstyled until a later stage wires
+   up an actual list-view toggle.
+   -------------------------------------------------------------------------- */
+.product-card { display: block; }
+.product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); }
+.product-card--grid .product-card__image-wrap { height: 250px; }
+
+.product-card__image,
+.product-card__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.product-card__image {
+  object-fit: cover;
+  transition: filter var(--transition-fast) var(--ease);
+}
+.product-card:hover .product-card__image { filter: brightness(0.96); }
+.product-card__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.product-card__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+
+.product-card__badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  z-index: 1;
+}
+.product-card__badge--new_today { background: var(--color-primary); color: var(--color-primary-contrast); }
+.product-card__badge--last_pair { background: var(--color-accent); color: var(--color-text); }
+
+.product-card--grid .product-card__meta { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+.product-card__vendor {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+.product-card--grid .product-card__title { font-size: 13.5px; line-height: 1.35; }
+.product-card--grid .product-card__price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.product-card--grid .product-card__price { font-weight: 800; font-size: 16px; }
+.product-card__compare-at {
+  font-size: 12.5px;
+  color: rgba(2, 38, 63, 0.5);
+  text-decoration: line-through;
+}
+.product-card__sizes {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(2, 38, 63, 0.55);
+  margin-top: 2px;
+}
