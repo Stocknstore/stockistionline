@@ -17,7 +17,48 @@
         }
       },
       "block_order": ["brand-a", "brand-d"]
+    },
+    "home-start-shopping": {
+      "type": "home-start-shopping",
+      "blocks": {
+        "dept-women": {
+          "type": "department",
+          "settings": {
+            "title": "Women",
+            "style_count": "3 styles"
+          }
+        },
+        "dept-men": {
+          "type": "department",
+          "settings": {
+            "title": "Men",
+            "style_count": "4 styles"
+          }
+        },
+        "dept-kids": {
+          "type": "department",
+          "settings": {
+            "title": "Kids",
+            "style_count": "1 style"
+          }
+        },
+        "arriving-home-living": {
+          "type": "arriving_soon_item",
+          "settings": {
+            "title": "Home & Living",
+            "arrival_text": "arriving September"
+          }
+        },
+        "arriving-clothing": {
+          "type": "arriving_soon_item",
+          "settings": {
+            "title": "Clothing",
+            "arrival_text": "arriving Winter 2026"
+          }
+        }
+      },
+      "block_order": ["dept-women", "dept-men", "dept-kids", "arriving-home-living", "arriving-clothing"]
     }
   },
-  "order": ["home-hero"]
+  "order": ["home-hero", "home-start-shopping"]
 }

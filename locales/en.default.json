@@ -22,6 +22,9 @@
   "home_hero": {
     "placeholder": "Add a hero image"
   },
+  "home_start_shopping": {
+    "placeholder": "Add an image"
+  },
   "header": {
     "menu": "Menu",
     "main_navigation": "Main navigation",
