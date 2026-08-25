@@ -809,3 +809,187 @@ body.scroll-locked { overflow: hidden; }
     transition-duration: 0.001ms !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   18. Homepage — Hero
+   Custom properties are scoped to .home-hero and overridden per breakpoint,
+   mirroring prototype-reference/styles.css's --heroCols/--heroRowSpan/
+   --textSpan/--brandsSpan/--counter.../--heroPad/--h1Size/--heroBtn... tokens
+   (desktop >=1280px, tablet 768-1279px, mobile <=767px).
+   -------------------------------------------------------------------------- */
+.home-hero {
+  --hero-cols: repeat(4, 1fr);
+  --hero-row-height: minmax(230px, auto);
+  --hero-row-span: 2;
+  --hero-text-span: 2;
+  --hero-brands-span: 1;
+  --hero-photo-min-h: auto;
+  --hero-content-pad: 30px 30px 26px;
+  --hero-h1-size: 48px;
+  --hero-btn-dir: row;
+  --hero-btn-align: center;
+  --hero-counter-pad: 24px;
+  --hero-counter-num-size: 66px;
+  --hero-counter-updated-display: block;
+
+  display: grid;
+  grid-template-columns: var(--hero-cols);
+  grid-auto-rows: var(--hero-row-height);
+  gap: 2px;
+  background: var(--color-primary);
+  padding-bottom: 2px;
+}
+
+.home-hero__photo {
+  position: relative;
+  grid-column: span 2;
+  grid-row: span var(--hero-row-span);
+  min-height: var(--hero-photo-min-h);
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+.home-hero__photo-img,
+.home-hero__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.home-hero__photo-img { object-fit: cover; }
+.home-hero__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.home-hero__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+
+.home-hero__content {
+  grid-column: span var(--hero-text-span);
+  background: var(--color-background);
+  padding: var(--hero-content-pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+.home-hero__eyebrow {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-link);
+}
+.home-hero__heading {
+  font-weight: 900;
+  font-size: var(--hero-h1-size);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  margin: 14px 0 12px;
+}
+.home-hero__body {
+  font-weight: 400;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: rgba(2, 38, 63, 0.72);
+  margin: 0;
+  max-width: 38ch;
+}
+.home-hero__buttons {
+  display: flex;
+  flex-direction: var(--hero-btn-dir);
+  align-items: var(--hero-btn-align);
+  gap: 10px;
+}
+.home-hero__button {
+  padding: 17px 20px;
+  font-size: var(--text-base);
+  font-weight: 800;
+  text-align: center;
+}
+.home-hero__button--primary { background: var(--color-primary); color: var(--color-primary-contrast); }
+.home-hero__button--secondary { border: 1px solid var(--color-border); color: var(--color-text); }
+
+.home-hero__counter {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  padding: var(--hero-counter-pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+.home-hero__counter-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(246, 244, 240, 0.6);
+}
+.home-hero__counter-number {
+  font-weight: 900;
+  font-size: var(--hero-counter-num-size);
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  color: var(--color-accent);
+}
+.home-hero__counter-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: rgba(246, 244, 240, 0.75);
+  margin-top: 8px;
+}
+.home-hero__counter-updated { display: var(--hero-counter-updated-display); }
+
+.home-hero__brands {
+  grid-column: span var(--hero-brands-span);
+  background: var(--color-background);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+}
+.home-hero__brands-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+}
+.home-hero__brands-list { display: flex; flex-direction: column; gap: 8px; }
+.home-hero__brand-name { font-size: 19px; font-weight: 800; }
+.home-hero__brands-more {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-link);
+  border-top: 1px solid rgba(2, 38, 63, 0.25);
+  padding-top: 8px;
+}
+
+@media (max-width: 1279px) {
+  .home-hero { --hero-cols: repeat(2, 1fr); --hero-h1-size: 40px; }
+}
+
+@media (max-width: 767px) {
+  .home-hero {
+    --hero-cols: 3fr 1fr;
+    --hero-row-height: auto;
+    --hero-row-span: 1;
+    --hero-text-span: 1;
+    --hero-brands-span: 2;
+    --hero-photo-min-h: 320px;
+    --hero-content-pad: 24px 16px 22px;
+    --hero-h1-size: 31px;
+    --hero-btn-dir: column;
+    --hero-btn-align: stretch;
+    --hero-counter-pad: 14px 12px;
+    --hero-counter-num-size: 30px;
+    --hero-counter-updated-display: none;
+  }
+}

@@ -1,4 +1,23 @@
 {
-  "sections": {},
-  "order": []
+  "sections": {
+    "home-hero": {
+      "type": "home-hero",
+      "blocks": {
+        "brand-a": {
+          "type": "featured_brand",
+          "settings": {
+            "name": "Brand A"
+          }
+        },
+        "brand-d": {
+          "type": "featured_brand",
+          "settings": {
+            "name": "Brand D"
+          }
+        }
+      },
+      "block_order": ["brand-a", "brand-d"]
+    }
+  },
+  "order": ["home-hero"]
 }
