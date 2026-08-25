@@ -2114,6 +2114,18 @@ body.scroll-locked { overflow: hidden; }
   grid-template-columns: var(--grid-cols);
   gap: 24px;
 }
+.collection-grid[data-view="list"] .collection-grid__products {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(2, 38, 63, 0.25);
+}
+
+@media (min-width: 768px) {
+  .collection-grid[data-columns="2"] { --grid-cols: repeat(2, 1fr); }
+  .collection-grid[data-columns="3"] { --grid-cols: repeat(3, 1fr); }
+  .collection-grid[data-columns="4"] { --grid-cols: repeat(4, 1fr); }
+}
 
 .collection-grid__empty {
   padding: 60px var(--grid-pad-x) 70px;
@@ -2154,16 +2166,18 @@ body.scroll-locked { overflow: hidden; }
 }
 
 /* --------------------------------------------------------------------------
-   28. Product card (grid) — snippets/product-card.liquid
-   Phase 3, Stage 3. Grid-variant styling only, sized to match the PLP grid
-   card from prototype-reference/templates.js ~L222-226 (250px image,
-   16px price). The list variant's markup already exists in the snippet
-   (Stage 1) but is intentionally left unstyled until a later stage wires
-   up an actual list-view toggle.
+   28. Product card — snippets/product-card.liquid
+   Phase 3, Stage 3 (revised Stage 4). Each product is rendered exactly
+   once by sections/collection-grid.liquid; grid is the base/default
+   presentation (matching the PLP grid card from prototype-reference/
+   templates.js ~L222-226: 250px image, 16px price), and list presentation
+   (matching the PLP list card from prototype-reference/templates.js
+   ~L227-232: 96px square thumb, single row, 20px gap) is applied to that
+   same DOM purely via the ancestor .collection-grid[data-view="list"]
+   selector — no duplicate markup, no second render pass.
    -------------------------------------------------------------------------- */
 .product-card { display: block; }
-.product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); }
-.product-card--grid .product-card__image-wrap { height: 250px; }
+.product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); height: 250px; }
 
 .product-card__image,
 .product-card__placeholder {
@@ -2203,7 +2217,7 @@ body.scroll-locked { overflow: hidden; }
 .product-card__badge--new_today { background: var(--color-primary); color: var(--color-primary-contrast); }
 .product-card__badge--last_pair { background: var(--color-accent); color: var(--color-text); }
 
-.product-card--grid .product-card__meta { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+.product-card__meta { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
 .product-card__vendor {
   font-size: 10.5px;
   font-weight: 700;
@@ -2211,9 +2225,9 @@ body.scroll-locked { overflow: hidden; }
   text-transform: uppercase;
   color: rgba(2, 38, 63, 0.55);
 }
-.product-card--grid .product-card__title { font-size: 13.5px; line-height: 1.35; }
-.product-card--grid .product-card__price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
-.product-card--grid .product-card__price { font-weight: 800; font-size: 16px; }
+.product-card__title { font-size: 13.5px; line-height: 1.35; }
+.product-card__price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.product-card__price { font-weight: 800; font-size: 16px; }
 .product-card__compare-at {
   font-size: 12.5px;
   color: rgba(2, 38, 63, 0.5);
@@ -2224,4 +2238,75 @@ body.scroll-locked { overflow: hidden; }
   font-size: 10px;
   color: rgba(2, 38, 63, 0.55);
   margin-top: 2px;
+}
+
+/* List presentation — same card DOM, restyled via the ancestor's data-view */
+.collection-grid[data-view="list"] .product-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--color-background);
+  padding: 16px 18px;
+}
+.collection-grid[data-view="list"] .product-card__image-wrap { flex: none; width: 96px; height: 96px; }
+.collection-grid[data-view="list"] .product-card__badge { padding: 5px 7px; font-size: 8px; }
+.collection-grid[data-view="list"] .product-card__meta { flex: 1; min-width: 0; margin-top: 0; gap: 4px; }
+.collection-grid[data-view="list"] .product-card__title { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   29. Collection toolbar — snippets/collection-toolbar.liquid
+   Phase 3, Stage 4. Sort form + grid/list/column view controls, matching
+   the prototype's toolbar row from prototype-reference/templates.js
+   ~L254-259 (bordered sort dropdown, 38x38 icon-swap view buttons). Column
+   buttons are hidden on mobile — the grid is always forced to 2 columns
+   there regardless of any stored preference (see section 27's
+   @media (min-width: 768px) guard on the [data-columns] overrides).
+   -------------------------------------------------------------------------- */
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.collection-toolbar__sort-form { display: flex; align-items: stretch; gap: 8px; }
+.collection-toolbar__sort-select {
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 16px;
+}
+.collection-toolbar__sort-submit {
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 16px;
+}
+
+.collection-toolbar__view-controls { display: flex; gap: 6px; }
+.collection-toolbar__columns { display: flex; gap: 6px; }
+.collection-toolbar__view-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid rgba(2, 38, 63, 0.4);
+}
+.collection-toolbar__view-btn[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+@media (max-width: 767px) {
+  .collection-toolbar__columns { display: none; }
 }

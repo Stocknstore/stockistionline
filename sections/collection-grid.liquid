@@ -1,25 +1,33 @@
 {%- comment -%}
   Section: Collection grid
-  Phase 3, Stage 3. Standard product-listing template for ordinary
+  Phase 3, Stage 3-4. Standard product-listing template for ordinary
   collections (Women, Men, Kids, etc — not the Footwear category landing,
   which uses templates/collection.category.json + sections/collection-hero.
-  liquid instead). Matches the core title/count/grid presentation from
-  prototype-reference's renderPlp() (prototype-reference/templates.js
-  ~L249-252, L302-303): breadcrumb, H1, "N styles in stock", and a
-  --prodCols-equivalent grid (4 desktop / 3 tablet / 2 mobile). Filters,
-  sorting, view toggles and the mobile filter drawer are deliberately not
-  included yet — later Phase 3 stages layer those onto this same section.
+  liquid instead). Matches the core title/count/grid/toolbar presentation
+  from prototype-reference's renderPlp() (prototype-reference/templates.js
+  ~L249-261, L302-303): breadcrumb, H1, "N styles in stock", a sort +
+  view-controls row, and a --prodCols-equivalent grid (4 desktop / 3 tablet
+  / 2 mobile). Filters and the mobile filter drawer are deliberately not
+  included yet — a later Phase 3 stage layers those onto this same section.
 
-  Cards are rendered through snippets/product-card.liquid (card_view: grid),
-  never the homepage-only product-card-home.liquid. Only the first grid row
-  (the first 4 products — the widest breakpoint's column count, matching
-  the standard "eager-load the first row, lazy everything else" pattern) is
-  marked above_fold so it loads eagerly; the rest lazy-load.
+  Sort (snippets/collection-toolbar.liquid) is a plain GET form — a normal
+  Shopify navigation, no AJAX. The grid/list/column view controls are
+  client-side only (assets/theme.js, persisted to localStorage) and just
+  flip the data-view attribute on this section; CSS alone (assets/theme.css
+  section 28) restyles the single rendered set of cards between grid and
+  list presentation — each product is rendered exactly once, never
+  duplicated, so analytics, accessibility and future quick-add wiring all
+  attach to one real DOM node per product.
+
+  Cards are rendered through snippets/product-card.liquid, never the
+  homepage-only product-card-home.liquid. Only the first 4 products (the
+  widest breakpoint's/default column count) are marked above_fold so they
+  load eagerly; the rest lazy-load regardless of which view is active.
 {%- endcomment -%}
 {%- liquid
   assign per_page = section.settings.products_per_page | default: 16
 -%}
-<section class="collection-grid" {{ section.shopify_attributes }}>
+<section class="collection-grid" data-view="grid" data-columns="4" {{ section.shopify_attributes }}>
   <div class="collection-grid__breadcrumb">
     <a href="{{ routes.root_url }}">{{ 'collection_grid.breadcrumb_home' | t }}</a>
     <span aria-hidden="true">/</span>
@@ -33,6 +41,9 @@
         {{- 'collection_grid.product_count' | t: count: collection.all_products_count -}}
       </div>
     </div>
+    {%- if collection.products.size > 0 -%}
+      {%- render 'collection-toolbar', collection: collection -%}
+    {%- endif -%}
   </div>
 
   {%- if collection.description != blank -%}
@@ -52,7 +63,7 @@
           {%- if forloop.index <= 4 -%}
             {%- assign above_fold = true -%}
           {%- endif -%}
-          {%- render 'product-card', product: product, card_view: 'grid', above_fold: above_fold -%}
+          {%- render 'product-card', product: product, above_fold: above_fold -%}
         {%- endfor -%}
       </div>
 

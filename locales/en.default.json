@@ -55,6 +55,15 @@
     "go_to_page": "Go to page {{ number }}",
     "current_page": "Page {{ number }}, current page"
   },
+  "collection_toolbar": {
+    "sort_label": "Sort by",
+    "sort_apply": "Sort",
+    "view_grid": "Grid view",
+    "view_list": "List view",
+    "columns_2": "2 columns",
+    "columns_3": "3 columns",
+    "columns_4": "4 columns"
+  },
   "collection_department_nav": {
     "placeholder": "Add an image",
     "no_collection": "Select a collection",

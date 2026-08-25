@@ -82,6 +82,61 @@
     showPanel('root');
   }
 
+  /* ---------------- Collection toolbar: view + column state ----------------
+     Client-side only, no AJAX product loading — every value is validated
+     before use so a corrupted/foreign localStorage value can never apply an
+     unsupported view or column count. State lives on the ancestor
+     .collection-grid section via data-view/data-columns; both the grid and
+     list product sets are already server-rendered (see sections/
+     collection-grid.liquid), so toggling is a pure attribute flip with no
+     re-fetch. */
+  var COLLECTION_VIEW_KEY = 'collectionView';
+  var COLLECTION_COLUMNS_KEY = 'collectionColumns';
+  var VALID_COLLECTION_VIEWS = ['grid', 'list'];
+  var VALID_COLLECTION_COLUMNS = ['2', '3', '4'];
+
+  function readStoredValue(key, validValues) {
+    try {
+      var value = window.localStorage.getItem(key);
+      return validValues.indexOf(value) !== -1 ? value : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeStoredValue(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      /* storage unavailable (private mode, quota, etc.) — state stays session-only */
+    }
+  }
+
+  function syncCollectionToolbar(grid) {
+    var view = grid.getAttribute('data-view');
+    var columns = grid.getAttribute('data-columns');
+    grid.querySelectorAll('[data-view-btn]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-view-btn') === view));
+    });
+    grid.querySelectorAll('[data-columns-btn]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-columns-btn') === columns));
+    });
+  }
+
+  function initCollectionToolbar() {
+    var grids = document.querySelectorAll('.collection-grid[data-view]');
+    if (!grids.length) return;
+
+    var storedView = readStoredValue(COLLECTION_VIEW_KEY, VALID_COLLECTION_VIEWS);
+    var storedColumns = readStoredValue(COLLECTION_COLUMNS_KEY, VALID_COLLECTION_COLUMNS);
+
+    grids.forEach(function (grid) {
+      if (storedView) grid.setAttribute('data-view', storedView);
+      if (storedColumns) grid.setAttribute('data-columns', storedColumns);
+      syncCollectionToolbar(grid);
+    });
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -160,6 +215,42 @@
         var expanded = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', String(!expanded));
       }
+
+      // Collection view (grid/list) toggle
+      var viewBtn = e.target.closest('[data-view-btn]');
+      if (viewBtn) {
+        var viewGrid = viewBtn.closest('.collection-grid');
+        var view = viewBtn.getAttribute('data-view-btn');
+        if (viewGrid && VALID_COLLECTION_VIEWS.indexOf(view) !== -1) {
+          viewGrid.setAttribute('data-view', view);
+          writeStoredValue(COLLECTION_VIEW_KEY, view);
+          syncCollectionToolbar(viewGrid);
+        }
+        return;
+      }
+
+      // Collection column-count toggle (desktop/tablet grid view only)
+      var columnsBtn = e.target.closest('[data-columns-btn]');
+      if (columnsBtn) {
+        var columnsGrid = columnsBtn.closest('.collection-grid');
+        var columns = columnsBtn.getAttribute('data-columns-btn');
+        if (columnsGrid && VALID_COLLECTION_COLUMNS.indexOf(columns) !== -1) {
+          columnsGrid.setAttribute('data-columns', columns);
+          writeStoredValue(COLLECTION_COLUMNS_KEY, columns);
+          syncCollectionToolbar(columnsGrid);
+        }
+        return;
+      }
+    });
+
+    // Sort select: progressive enhancement — the form already works via its
+    // visible submit button with no JS; this just auto-submits on change.
+    document.addEventListener('change', function (e) {
+      var sortSelect = e.target.closest('[data-sort-select]');
+      if (sortSelect) {
+        var form = sortSelect.closest('form');
+        if (form) form.submit();
+      }
     });
 
     document.addEventListener('keydown', function (e) {
@@ -175,5 +266,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     initEvents();
     initAnnouncementBar();
+    initCollectionToolbar();
   });
 })();
