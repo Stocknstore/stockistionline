@@ -109,7 +109,17 @@
         "stat-3": { "type": "stat", "settings": { "value": "2–4 days", "label": "delivery\nin Italy" } }
       },
       "block_order": ["stat-1", "stat-2", "stat-3"]
+    },
+    "home-coming-soon": {
+      "type": "home-coming-soon",
+      "blocks": {
+        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels" } },
+        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding" } },
+        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion" } },
+        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories" } }
+      },
+      "block_order": ["teaser-1", "teaser-2", "teaser-3", "teaser-4"]
     }
   },
-  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived", "home-special-stock", "home-story"]
+  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived", "home-special-stock", "home-story", "home-coming-soon"]
 }
