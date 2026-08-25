@@ -1,8 +1,11 @@
 {%- comment -%}
   Section: Announcement Bar
-  Compact promotional strip. Supports multiple rotating messages via blocks.
+  Compact promotional strip: rotating messages via blocks (left) plus a short
+  static utility strip of merchant-editable text items (right) — e.g.
+  shipping/returns copy — matching the reference design's two-part bar.
 {%- endcomment -%}
 {%- if section.settings.enable and section.blocks.size > 0 -%}
+  {%- assign utility_items = section.settings.utility_text | split: '|' -%}
   <div
     class="announcement-bar"
     {{ section.shopify_attributes }}
@@ -13,25 +16,38 @@
     data-announcement-bar
     {% if section.blocks.size > 1 %}data-autoplay="{{ section.settings.autoplay_seconds }}"{% endif %}
   >
-    <div class="announcement-bar__track" data-announcement-track>
-      {%- for block in section.blocks -%}
-        <div
-          class="announcement-bar__item{% if forloop.first %} is-active{% endif %}"
-          data-announcement-item
-          {{ block.shopify_attributes }}
-        >
-          {%- if block.settings.link != blank -%}
-            <a href="{{ block.settings.link }}" class="announcement-bar__link">
+    <div class="announcement-bar__inner container container--full">
+      <div class="announcement-bar__track" data-announcement-track>
+        {%- for block in section.blocks -%}
+          <div
+            class="announcement-bar__item{% if forloop.first %} is-active{% endif %}"
+            data-announcement-item
+            {{ block.shopify_attributes }}
+          >
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}" class="announcement-bar__link">
+                <span>{{ block.settings.text }}</span>
+                {%- if block.settings.link_label != blank -%}
+                  <span class="announcement-bar__cta">{{ block.settings.link_label }}</span>
+                {%- endif -%}
+              </a>
+            {%- else -%}
               <span>{{ block.settings.text }}</span>
-              {%- if block.settings.link_label != blank -%}
-                <span class="announcement-bar__cta">{{ block.settings.link_label }}</span>
-              {%- endif -%}
-            </a>
-          {%- else -%}
-            <span>{{ block.settings.text }}</span>
-          {%- endif -%}
-        </div>
-      {%- endfor -%}
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if utility_items.size > 0 -%}
+        <ul class="announcement-bar__utility" role="list">
+          {%- for item in utility_items -%}
+            {%- assign trimmed_item = item | strip -%}
+            {%- if trimmed_item != blank -%}
+              <li>{{ trimmed_item }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
     </div>
   </div>
 {%- endif -%}
@@ -55,6 +71,17 @@
       "max": 12,
       "step": 1,
       "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Utility strip"
+    },
+    {
+      "type": "text",
+      "id": "utility_text",
+      "label": "Utility text items",
+      "info": "Short items shown on the right, separated by a vertical bar ( | ). Leave blank to hide.",
+      "default": "Free shipping over €79|30-day returns"
     },
     {
       "type": "header",

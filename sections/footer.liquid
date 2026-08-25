@@ -1,0 +1,181 @@
+{%- comment -%}
+  Section: Footer
+  Newsletter signup — a real Shopify customer form tagged "newsletter", not
+  decorative markup — plus a block-based column footer. Column headings and
+  links are fully merchant-configurable via blocks; nothing here is
+  hardcoded navigation. Rendered once, statically, from layout/theme.liquid.
+{%- endcomment -%}
+<footer class="site-footer" {{ section.shopify_attributes }}>
+
+  <div class="site-footer__newsletter">
+    <div class="site-footer__newsletter-inner container container--full">
+      <div class="site-footer__newsletter-copy">
+        {%- if section.settings.newsletter_eyebrow != blank -%}
+          <span class="site-footer__eyebrow">{{ section.settings.newsletter_eyebrow }}</span>
+        {%- endif -%}
+        {%- if section.settings.newsletter_heading != blank -%}
+          <h2 class="site-footer__newsletter-heading">{{ section.settings.newsletter_heading }}</h2>
+        {%- endif -%}
+      </div>
+
+      {%- form 'customer', id: 'FooterNewsletterForm', class: 'site-footer__newsletter-form' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="site-footer__newsletter-field">
+          <label for="FooterNewsletterEmail" class="visually-hidden">{{ 'footer.newsletter_email_label' | t }}</label>
+          <input
+            type="email"
+            name="contact[email]"
+            id="FooterNewsletterEmail"
+            class="site-footer__newsletter-input"
+            placeholder="{{ 'footer.newsletter_email_label' | t }}"
+            autocomplete="email"
+            required
+          >
+          <button type="submit" class="site-footer__newsletter-submit">
+            {{ section.settings.newsletter_button_label }}
+          </button>
+        </div>
+
+        {%- if form.posted_successfully? -%}
+          <p class="site-footer__newsletter-message site-footer__newsletter-message--success" role="status">
+            {{ 'footer.newsletter_success' | t }}
+          </p>
+        {%- elsif form.errors -%}
+          <p class="site-footer__newsletter-message site-footer__newsletter-message--error" role="alert">
+            {{ form.errors | default_errors }}
+          </p>
+        {%- endif -%}
+
+        {%- if section.settings.newsletter_note != blank -%}
+          <span class="site-footer__newsletter-note">{{ section.settings.newsletter_note }}</span>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+
+  <div class="site-footer__main">
+    <div class="site-footer__main-inner container container--full">
+      <div class="site-footer__brand">
+        {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width %}
+        {%- if section.settings.tagline != blank -%}
+          <p class="site-footer__tagline">{{ section.settings.tagline }}</p>
+        {%- endif -%}
+      </div>
+
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'link_column' -%}
+          <div class="site-footer__column" {{ block.shopify_attributes }}>
+            {%- if block.settings.heading != blank -%}
+              <span class="site-footer__column-heading">{{ block.settings.heading }}</span>
+            {%- endif -%}
+            {%- if block.settings.menu != blank -%}
+              <ul class="site-footer__column-list" role="list">
+                {%- for link in block.settings.menu.links -%}
+                  <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="site-footer__bottom container container--full">
+      <span>&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}</span>
+      {%- if section.settings.footer_note != blank -%}
+        <span>{{ section.settings.footer_note }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "tag": "footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width",
+      "min": 80,
+      "max": 260,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "textarea",
+      "id": "tagline",
+      "label": "Tagline",
+      "default": "Wholesale and retail since 2000. Genuine branded stock, selected in Italy."
+    },
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_eyebrow",
+      "label": "Eyebrow text",
+      "default": "One email a week, new stock only"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Heading",
+      "default": "Know what lands before anyone else."
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button_label",
+      "label": "Button label",
+      "default": "Sign me up"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_note",
+      "label": "Note below form",
+      "default": "No ads: just the brands that landed in the warehouse. Unsubscribe in one click."
+    },
+    {
+      "type": "header",
+      "content": "Bottom bar"
+    },
+    {
+      "type": "text",
+      "id": "footer_note",
+      "label": "Secondary note"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link_column",
+      "name": "Link column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shop"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6
+}
+{% endschema %}

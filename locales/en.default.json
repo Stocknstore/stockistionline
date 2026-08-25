@@ -10,7 +10,14 @@
 {
   "general": {
     "skip_to_content": "Skip to content",
-    "close": "Close"
+    "close": "Close",
+    "home": "Home",
+    "shop": "Shop",
+    "soon": "soon"
+  },
+  "footer": {
+    "newsletter_email_label": "Your email",
+    "newsletter_success": "Thanks — you're on the list."
   },
   "header": {
     "menu": "Menu",

@@ -1,7 +1,100 @@
 [
   {
+    "name": "Colors",
+    "settings": [
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Background",
+        "default": "#F6F4F0"
+      },
+      {
+        "type": "color",
+        "id": "color_background_secondary",
+        "label": "Secondary background",
+        "default": "#E8E4DC"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Text",
+        "default": "#02263F"
+      },
+      {
+        "type": "color",
+        "id": "color_text_secondary",
+        "label": "Secondary text",
+        "default": "#5A6B78"
+      },
+      {
+        "type": "color",
+        "id": "color_border",
+        "label": "Border",
+        "default": "#B9C2C9"
+      },
+      {
+        "type": "color",
+        "id": "color_primary",
+        "label": "Primary (buttons, dark surfaces)",
+        "default": "#02263F"
+      },
+      {
+        "type": "color",
+        "id": "color_primary_contrast",
+        "label": "Primary contrast text",
+        "default": "#F6F4F0"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Accent (CTAs, highlights)",
+        "default": "#CE9C59"
+      },
+      {
+        "type": "color",
+        "id": "color_link",
+        "label": "Links / eyebrow text",
+        "default": "#8A5F22"
+      },
+      {
+        "type": "color",
+        "id": "color_sale",
+        "label": "Sale / discount text",
+        "default": "#8A5F22"
+      },
+      {
+        "type": "color",
+        "id": "color_success",
+        "label": "Success",
+        "default": "#1E7E4A"
+      },
+      {
+        "type": "color",
+        "id": "color_error",
+        "label": "Error",
+        "default": "#B3261E"
+      },
+      {
+        "type": "color",
+        "id": "color_utility_background",
+        "label": "Utility row background",
+        "default": "#02263F"
+      },
+      {
+        "type": "color",
+        "id": "color_utility_text",
+        "label": "Utility row text",
+        "default": "#F6F4F0"
+      }
+    ]
+  },
+  {
     "name": "Typography",
     "settings": [
+      {
+        "type": "paragraph",
+        "content": "The prototype's Archivo typeface is not part of Shopify's font library and no local Archivo font files are included in this theme yet. Pick the closest available font below; if pixel-exact match to the prototype is required, upload Archivo as a custom font file first."
+      },
       {
         "type": "font_picker",
         "id": "font_body",
@@ -19,6 +112,31 @@
         "id": "font_display",
         "default": "assistant_n7",
         "label": "Display font"
+      }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      {
+        "type": "range",
+        "id": "page_width",
+        "label": "Page width",
+        "min": 1080,
+        "max": 1600,
+        "step": 20,
+        "unit": "px",
+        "default": 1440
+      },
+      {
+        "type": "range",
+        "id": "container_padding",
+        "label": "Side padding",
+        "min": 16,
+        "max": 48,
+        "step": 4,
+        "unit": "px",
+        "default": 24
       }
     ]
   }
