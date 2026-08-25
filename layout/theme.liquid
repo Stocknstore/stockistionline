@@ -38,25 +38,35 @@
       --color-border: {{ settings.color_border }};
       --color-primary: {{ settings.color_primary }};
       --color-primary-contrast: {{ settings.color_primary_contrast }};
+      --color-accent: {{ settings.color_accent }};
+      --color-link: {{ settings.color_link }};
       --color-sale: {{ settings.color_sale }};
       --color-success: {{ settings.color_success }};
       --color-error: {{ settings.color_error }};
       --color-utility-background: {{ settings.color_utility_background }};
       --color-utility-text: {{ settings.color_utility_text }};
 
+      {%- comment -%}
+        "Archivo" is prepended ahead of the theme-editor font so it is used
+        automatically if a future update adds the asset (uploaded custom font
+        file or a font_picker entry) — until then browsers skip straight past
+        it since no such font is installed or served, and fall through to the
+        editor-selected font below. See settings_schema.json Typography note.
+      {%- endcomment -%}
       /* ---- Typography (theme-editor driven, with system-font fallback if unhydrated) ---- */
-      --font-body: {{ settings.font_body.family | default: 'Helvetica Neue' }}, {{ settings.font_body.fallback_families | default: 'Arial, sans-serif' }};
+      --font-body: "Archivo", {{ settings.font_body.family | default: 'Helvetica Neue' }}, {{ settings.font_body.fallback_families | default: 'Arial, sans-serif' }};
       --font-body-weight: {{ settings.font_body.weight | default: 400 }};
       --font-body-style: {{ settings.font_body.style | default: 'normal' }};
-      --font-heading: {{ settings.font_heading.family | default: 'Helvetica Neue' }}, {{ settings.font_heading.fallback_families | default: 'Arial, sans-serif' }};
+      --font-heading: "Archivo", {{ settings.font_heading.family | default: 'Helvetica Neue' }}, {{ settings.font_heading.fallback_families | default: 'Arial, sans-serif' }};
       --font-heading-weight: {{ settings.font_heading.weight | default: 600 }};
       --font-heading-style: {{ settings.font_heading.style | default: 'normal' }};
-      --font-display: {{ settings.font_display.family | default: 'Helvetica Neue' }}, {{ settings.font_display.fallback_families | default: 'Arial, sans-serif' }};
+      --font-display: "Archivo", {{ settings.font_display.family | default: 'Helvetica Neue' }}, {{ settings.font_display.fallback_families | default: 'Arial, sans-serif' }};
       --font-display-weight: {{ settings.font_display.weight | default: 700 }};
       --font-display-style: {{ settings.font_display.style | default: 'normal' }};
 
       /* ---- Layout ---- */
       --container-width: {{ settings.page_width }}px;
+      --container-padding: {{ settings.container_padding | default: 24 }}px;
     }
   </style>
 
@@ -97,9 +107,12 @@
 
   {%- comment -%}
     Global overlays — rendered once, outside the header, so they sit above all
-    page content regardless of which section triggers them.
+    page content regardless of which section triggers them. The mobile menu
+    drawer is rendered inside sections/header.liquid instead of here, so it
+    can be passed the header's own configured menu setting directly rather
+    than re-resolving a hardcoded linklist handle that could drift out of
+    sync with what the merchant picked in the header section.
   {%- endcomment -%}
-  {% render 'mobile-menu-drawer', menu: linklists['main-menu'] %}
   {% render 'search-drawer' %}
   {% render 'account-drawer' %}
   {% render 'cart-drawer' %}
@@ -110,10 +123,9 @@
     {{ content_for_layout }}
   </main>
 
-  {%- comment -%}
-    No footer in Phase 1 — global design system, announcement bar, header and
-    overlays only. Footer belongs to a later phase per spec section 06.
-  {%- endcomment -%}
+  {% section 'footer' %}
+
+  {% render 'mobile-bottom-bar' %}
 
 </body>
 </html>

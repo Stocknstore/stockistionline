@@ -1,0 +1,224 @@
+{%- comment -%}
+  Section: Home hero
+  Phase 2, Step 1. Reconstructs the hero block from prototype-reference's
+  renderLanding() (prototype-reference/templates.js ~L63-83): a 4-column grid
+  (photo / text panel / stock counter / featured brands) that collapses to
+  2 columns on tablet and a compact 2-column mobile layout, matching the
+  prototype's --heroCols/--heroRowSpan/--textSpan/--brandsSpan breakpoint
+  behavior exactly (prototype-reference/styles.css L16-165).
+{%- endcomment -%}
+{%- assign hero_image = section.settings.hero_image -%}
+<section class="home-hero" {{ section.shopify_attributes }}>
+  <div class="home-hero__photo">
+    {%- if hero_image != blank -%}
+      {%- assign widths = "375,550,750,1100,1500,1780" | split: ',' -%}
+      <img
+        class="home-hero__photo-img"
+        src="{{ hero_image | image_url: width: 1500 }}"
+        srcset="
+          {%- for w in widths -%}
+            {{ hero_image | image_url: width: w }} {{ w }}w{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        "
+        sizes="(min-width: 1280px) 50vw, 100vw"
+        alt="{{ hero_image.alt | default: section.settings.heading | strip_newlines }}"
+        width="{{ hero_image.width }}"
+        height="{{ hero_image.height }}"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {%- else -%}
+      <div class="home-hero__placeholder">
+        <span class="home-hero__placeholder-label">{{ 'home_hero.placeholder' | t }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+
+  <div class="home-hero__content">
+    <div class="home-hero__content-top">
+      {%- if section.settings.eyebrow != blank -%}
+        <span class="home-hero__eyebrow">{{ section.settings.eyebrow }}</span>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 class="home-hero__heading">{{ section.settings.heading | newline_to_br }}</h1>
+      {%- endif -%}
+      {%- if section.settings.body != blank -%}
+        <p class="home-hero__body">{{ section.settings.body }}</p>
+      {%- endif -%}
+    </div>
+    <div class="home-hero__buttons">
+      {%- if section.settings.primary_button_label != blank -%}
+        <a href="{{ section.settings.primary_button_link | default: '#' }}" class="home-hero__button home-hero__button--primary">
+          {{ section.settings.primary_button_label }}
+        </a>
+      {%- endif -%}
+      {%- if section.settings.secondary_button_label != blank -%}
+        <a href="{{ section.settings.secondary_button_link | default: '#' }}" class="home-hero__button home-hero__button--secondary">
+          {{ section.settings.secondary_button_label }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="home-hero__counter">
+    {%- if section.settings.counter_label != blank -%}
+      <span class="home-hero__counter-label">{{ section.settings.counter_label }}</span>
+    {%- endif -%}
+    <div class="home-hero__counter-body">
+      {%- if section.settings.counter_number != blank -%}
+        <div class="home-hero__counter-number">{{ section.settings.counter_number }}</div>
+      {%- endif -%}
+      <div class="home-hero__counter-note">
+        {{ section.settings.counter_note }}<span class="home-hero__counter-updated"><br>{{ section.settings.counter_updated_text }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-hero__brands">
+    {%- if section.settings.brands_heading != blank -%}
+      <span class="home-hero__brands-eyebrow">{{ section.settings.brands_heading }}</span>
+    {%- endif -%}
+    <div class="home-hero__brands-list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'featured_brand' -%}
+          <span class="home-hero__brand-name" {{ block.shopify_attributes }}>{{ block.settings.name }}</span>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if section.settings.brands_more_text != blank -%}
+        <a href="{{ section.settings.brands_more_link | default: '#' }}" class="home-hero__brands-more">{{ section.settings.brands_more_text }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Home hero",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Photo"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "The warehouse, open to everyone"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "A new line controls where the heading breaks.",
+      "default": "New brands\nevery week."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body text",
+      "default": "Twenty-six years of wholesale and retail, now online. See what landed today."
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Primary button label",
+      "default": "Discover the shoes"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_link",
+      "label": "Primary button link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Secondary button label",
+      "default": "Arrived today (214)"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Secondary button link"
+    },
+    {
+      "type": "header",
+      "content": "Stock counter"
+    },
+    {
+      "type": "text",
+      "id": "counter_label",
+      "label": "Label",
+      "default": "Stock counter"
+    },
+    {
+      "type": "text",
+      "id": "counter_number",
+      "label": "Number",
+      "default": "214"
+    },
+    {
+      "type": "text",
+      "id": "counter_note",
+      "label": "Note",
+      "default": "pairs arrived today, 9 brands."
+    },
+    {
+      "type": "text",
+      "id": "counter_updated_text",
+      "label": "Updated-at text",
+      "info": "Hidden on mobile.",
+      "default": "Updated at 14:20."
+    },
+    {
+      "type": "header",
+      "content": "Featured brands panel"
+    },
+    {
+      "type": "text",
+      "id": "brands_heading",
+      "label": "Heading",
+      "default": "This week's brands"
+    },
+    {
+      "type": "text",
+      "id": "brands_more_text",
+      "label": "\"More brands\" link label",
+      "default": "+ 41 brands"
+    },
+    {
+      "type": "url",
+      "id": "brands_more_link",
+      "label": "\"More brands\" link"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "featured_brand",
+      "name": "Featured brand",
+      "settings": [
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Brand name",
+          "default": "Brand name"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4
+}
+{% endschema %}

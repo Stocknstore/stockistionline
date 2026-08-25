@@ -1,20 +1,125 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "placeholder": {
-      "type": "placeholder-content",
-      "settings": {
-        "note": "Phase 1 — global design system, announcement bar, header and navigation only. Homepage content is implemented in a later phase."
-      }
+    "home-hero": {
+      "type": "home-hero",
+      "blocks": {
+        "brand-a": {
+          "type": "featured_brand",
+          "settings": {
+            "name": "Brand A"
+          }
+        },
+        "brand-d": {
+          "type": "featured_brand",
+          "settings": {
+            "name": "Brand D"
+          }
+        }
+      },
+      "block_order": ["brand-a", "brand-d"]
+    },
+    "home-start-shopping": {
+      "type": "home-start-shopping",
+      "blocks": {
+        "dept-women": {
+          "type": "department",
+          "settings": {
+            "title": "Women",
+            "style_count": "3 styles"
+          }
+        },
+        "dept-men": {
+          "type": "department",
+          "settings": {
+            "title": "Men",
+            "style_count": "4 styles"
+          }
+        },
+        "dept-kids": {
+          "type": "department",
+          "settings": {
+            "title": "Kids",
+            "style_count": "1 style"
+          }
+        },
+        "arriving-home-living": {
+          "type": "arriving_soon_item",
+          "settings": {
+            "title": "Home & Living",
+            "arrival_text": "arriving September"
+          }
+        },
+        "arriving-clothing": {
+          "type": "arriving_soon_item",
+          "settings": {
+            "title": "Clothing",
+            "arrival_text": "arriving Winter 2026"
+          }
+        }
+      },
+      "block_order": ["dept-women", "dept-men", "dept-kids", "arriving-home-living", "arriving-clothing"]
+    },
+    "home-brand-wall": {
+      "type": "home-brand-wall",
+      "blocks": {
+        "brand-01": { "type": "brand", "settings": { "name": "Solo Suprani", "note": "new today" } },
+        "brand-02": { "type": "brand", "settings": { "name": "US GRAND Polo", "note": "32 styles" } },
+        "brand-03": { "type": "brand", "settings": { "name": "Carrera", "note": "11 styles" } },
+        "brand-04": { "type": "brand", "settings": { "name": "MARS", "note": "new today" } },
+        "brand-05": { "type": "brand", "settings": { "name": "Zaenobi", "note": "7 styles" } },
+        "brand-06": { "type": "brand", "settings": { "name": "NASA", "note": "58 styles" } },
+        "brand-07": { "type": "brand", "settings": { "name": "Brand 07", "note": "24 styles" } },
+        "brand-08": { "type": "brand", "settings": { "name": "Brand 08", "note": "new today" } },
+        "brand-09": { "type": "brand", "settings": { "name": "Brand 09", "note": "16 styles" } },
+        "brand-10": { "type": "brand", "settings": { "name": "Brand 10", "note": "9 styles" } },
+        "brand-11": { "type": "brand", "settings": { "name": "Brand 11", "note": "41 styles" } },
+        "brand-12": { "type": "brand", "settings": { "name": "Brand 12", "note": "13 styles" } },
+        "brand-13": { "type": "brand", "settings": { "name": "Brand 13", "note": "22 styles" } },
+        "brand-14": { "type": "brand", "settings": { "name": "Brand 14", "note": "new today" } },
+        "brand-15": { "type": "brand", "settings": { "name": "Brand 15", "note": "6 styles" } },
+        "brand-16": { "type": "brand", "settings": { "name": "Brand 16", "note": "35 styles" } },
+        "brand-17": { "type": "brand", "settings": { "name": "Brand 17", "note": "19 styles" } },
+        "brand-18": { "type": "brand", "settings": { "name": "Brand 18", "note": "new today" } }
+      },
+      "block_order": [
+        "brand-01", "brand-02", "brand-03", "brand-04", "brand-05", "brand-06",
+        "brand-07", "brand-08", "brand-09", "brand-10", "brand-11", "brand-12",
+        "brand-13", "brand-14", "brand-15", "brand-16", "brand-17", "brand-18"
+      ]
+    },
+    "home-just-arrived": {
+      "type": "home-just-arrived"
+    },
+    "home-special-stock": {
+      "type": "home-special-stock",
+      "blocks": {
+        "tile-1": { "type": "photo" },
+        "tile-2": { "type": "stat", "settings": { "number": "96", "label": "last pairs\nin single sizes" } },
+        "tile-3": { "type": "photo" },
+        "tile-4": { "type": "stat", "settings": { "number": "−62%", "label": "average discount\noff list price" } },
+        "tile-5": { "type": "photo" }
+      },
+      "block_order": ["tile-1", "tile-2", "tile-3", "tile-4", "tile-5"]
+    },
+    "home-story": {
+      "type": "home-story",
+      "blocks": {
+        "stat-1": { "type": "stat", "settings": { "value": "44", "label": "brands carried\nin stock now" } },
+        "stat-2": { "type": "stat", "settings": { "value": "100%", "label": "genuine products\nguaranteed" } },
+        "stat-3": { "type": "stat", "settings": { "value": "2–4 days", "label": "delivery\nin Italy" } }
+      },
+      "block_order": ["stat-1", "stat-2", "stat-3"]
+    },
+    "home-coming-soon": {
+      "type": "home-coming-soon",
+      "blocks": {
+        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels" } },
+        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding" } },
+        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion" } },
+        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories" } }
+      },
+      "block_order": ["teaser-1", "teaser-2", "teaser-3", "teaser-4"]
     }
   },
-  "order": ["placeholder"]
+  "order": ["home-hero", "home-start-shopping", "home-brand-wall", "home-just-arrived", "home-special-stock", "home-story", "home-coming-soon"]
 }

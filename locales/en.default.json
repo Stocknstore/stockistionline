@@ -10,7 +10,37 @@
 {
   "general": {
     "skip_to_content": "Skip to content",
-    "close": "Close"
+    "close": "Close",
+    "home": "Home",
+    "shop": "Shop",
+    "soon": "soon"
+  },
+  "footer": {
+    "newsletter_email_label": "Your email",
+    "newsletter_success": "Thanks — you're on the list."
+  },
+  "home_hero": {
+    "placeholder": "Add a hero image"
+  },
+  "home_start_shopping": {
+    "placeholder": "Add an image"
+  },
+  "home_special_stock": {
+    "placeholder": "Add an image"
+  },
+  "home_story": {
+    "placeholder": "Add an image"
+  },
+  "home_coming_soon": {
+    "placeholder": "Add an image"
+  },
+  "home_just_arrived": {
+    "badge_new_today": "New today",
+    "badge_last_pair": "Last pair",
+    "rail_fallback_label": "New arrivals",
+    "swipe_hint": "swipe →",
+    "empty_title": "No products to show yet",
+    "empty_body": "Select a collection for this section in the theme editor to display your latest arrivals here."
   },
   "header": {
     "menu": "Menu",

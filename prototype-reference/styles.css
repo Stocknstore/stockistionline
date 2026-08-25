@@ -1,0 +1,274 @@
+/* ===== Reset & base ===== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#f6f4f0;font-family:Archivo,system-ui,sans-serif;color:#02263f;min-height:100vh;display:flex;flex-direction:column}
+img{max-width:100%}
+input{font-family:inherit}
+a{color:#8a5f22;text-decoration:none}
+
+/* ===== Breakpoint tokens =====
+   desktop: >=1280px | tablet: 768-1279px | mobile: <=767px
+   Values below are the DESKTOP defaults; tablet/mobile blocks near
+   the bottom of this file override the subset that differs, mirroring
+   the pick(desktop, tablet, mobile) helper in the original prototype. */
+:root{
+  --padX:40px;
+  --utilDisplay:flex;
+  --headGap:28px;
+  --headWrap:nowrap;
+  --logoH:56px;
+  --searchFlex:1;
+  --searchMax:480px;
+  --searchOrder:0;
+  --wishDisplay:inline;
+  --navDisplay:grid;
+  --burgerDisplay:none;
+
+  --heroCols:repeat(4,1fr);
+  --heroRows:minmax(230px,auto);
+  --textSpan:2;
+  --brandsSpan:1;
+  --counterPad:24px;
+  --counterNum:66px;
+  --counterNote:block;
+  --heroPhotoH:auto;
+  --heroPad:30px 30px 26px;
+  --heroRowSpan:2;
+  --h1Size:48px;
+  --heroBtnDir:row;
+  --heroBtnAlign:center;
+
+  --startCols:3fr 1fr;
+  --blockPad:24px 26px 18px;
+  --blockH2:34px;
+  --blockWrap:nowrap;
+  --blockAlign:flex-end;
+  --cardImgH:210px;
+  --deptCols:repeat(3,1fr);
+  --deptDisplay:grid;
+  --deptOverflow:visible;
+  --deptSnap:none;
+  --deptCardW:auto;
+
+  --brandCols:repeat(6,1fr);
+  --prodCols:repeat(4,1fr);
+
+  --secHeadDir:row;
+  --secHeadAlign:flex-end;
+  --secHeadGap:20px;
+  --railCardW:30%;
+  --railImgH:118px;
+
+  --specialCols:5fr 7fr;
+  --specialTextDisplay:block;
+  --specialBtnDisplay:inline-block;
+  --specialTiles:repeat(3,1fr);
+  --tileH:auto;
+  --wideTileH:auto;
+  --ordA:0; --ordB:0; --ordC:0; --ordD:0; --ordE:0;
+
+  --storyCols:4fr 8fr;
+  --storyPad:36px;
+  --storyNum:78px;
+  --statPad:36px 28px;
+  --statNum:32px;
+  --statLabel:10px;
+
+  --soonCols:repeat(4,1fr);
+
+  --plpLayout:280px 1fr;
+  --pdpCols:1fr 1fr;
+  --pdpImgH:560px;
+  --pdpInfoPad:0 0 0 30px;
+
+  --accountCols:260px 1fr;
+  --checkoutCols:1fr 380px;
+  --stepGap:30px;
+
+  --newsCols:7fr 5fr;
+  --newsH2:56px;
+  --footCols:3fr 2fr 2fr 2fr;
+
+  --drawerW:440px;
+  --framePadBottom:0;
+}
+
+@media (max-width:1279px){
+  :root{
+    --padX:28px;
+    --headGap:18px;
+    --logoH:48px;
+    --searchMax:340px;
+
+    --heroCols:repeat(2,1fr);
+    --h1Size:40px;
+    --blockPad:22px 22px 16px;
+    --blockH2:30px;
+    --cardImgH:190px;
+    --brandCols:repeat(4,1fr);
+    --prodCols:repeat(3,1fr);
+    --railCardW:19%;
+    --railImgH:132px;
+
+    --startCols:1fr;
+    --specialCols:1fr;
+    --storyCols:1fr;
+    --statPad:28px 20px;
+    --statNum:28px;
+    --storyPad:30px;
+    --storyNum:64px;
+    --soonCols:repeat(2,1fr);
+
+    --plpLayout:240px 1fr;
+    --pdpCols:1fr;
+    --pdpImgH:460px;
+    --pdpInfoPad:24px 0 0;
+
+    --accountCols:220px 1fr;
+    --checkoutCols:1fr 300px;
+    --stepGap:20px;
+
+    --newsCols:1fr;
+    --newsH2:42px;
+    --footCols:2fr 1fr 1fr 1fr;
+
+    --drawerW:400px;
+  }
+}
+
+@media (max-width:767px){
+  :root{
+    --padX:16px;
+    --utilDisplay:none;
+    --headGap:12px;
+    --headWrap:wrap;
+    --logoH:40px;
+    --searchFlex:1 0 100%;
+    --searchMax:none;
+    --searchOrder:3;
+    --wishDisplay:none;
+    --navDisplay:none;
+    --burgerDisplay:flex;
+
+    --heroCols:3fr 1fr;
+    --heroRows:auto;
+    --textSpan:1;
+    --brandsSpan:2;
+    --counterPad:14px 12px;
+    --counterNum:30px;
+    --counterNote:none;
+    --heroPhotoH:320px;
+    --heroPad:24px 16px 22px;
+    --heroRowSpan:1;
+    --h1Size:31px;
+    --heroBtnDir:column;
+    --heroBtnAlign:stretch;
+
+    --startCols:1fr;
+    --blockPad:18px 16px 16px;
+    --blockH2:25px;
+    --blockWrap:wrap;
+    --blockAlign:flex-start;
+    --cardImgH:170px;
+    --deptCols:1fr;
+    --deptDisplay:flex;
+    --deptOverflow:auto;
+    --deptSnap:x proximity;
+    --deptCardW:88%;
+
+    --brandCols:repeat(2,1fr);
+    --prodCols:repeat(2,1fr);
+
+    --secHeadDir:column;
+    --secHeadAlign:stretch;
+    --secHeadGap:14px;
+    --railCardW:30%;
+    --railImgH:118px;
+
+    --specialCols:1fr;
+    --specialTextDisplay:none;
+    --specialBtnDisplay:none;
+    --specialTiles:repeat(2,1fr);
+    --tileH:150px;
+    --wideTileH:190px;
+    --ordA:1; --ordB:2; --ordC:4; --ordD:3; --ordE:5;
+
+    --storyCols:1fr;
+    --storyPad:20px 16px;
+    --storyNum:44px;
+    --statPad:16px 10px;
+    --statNum:19px;
+    --statLabel:8px;
+
+    --soonCols:repeat(2,1fr);
+
+    --plpLayout:1fr;
+    --pdpCols:1fr;
+    --pdpImgH:330px;
+    --pdpInfoPad:20px 0 0;
+
+    --accountCols:1fr;
+    --checkoutCols:1fr;
+    --stepGap:12px;
+
+    --newsCols:1fr;
+    --newsH2:29px;
+    --footCols:1fr 1fr;
+
+    --drawerW:100%;
+    --framePadBottom:68px;
+  }
+}
+
+/* ===== Placeholder photo hatch ===== */
+.ph{background:repeating-linear-gradient(135deg,#d8d2c9 0 9px,#eae6df 9px 18px);display:flex;align-items:flex-end}
+.phl{font:400 10px ui-monospace,Menlo,monospace;color:#6b6257;padding:8px}
+.navlink{cursor:pointer}
+.btn{cursor:pointer;user-select:none;border:none;background:none;font-family:inherit;display:inline-flex;align-items:center;justify-content:center}
+.szbtn{cursor:pointer;user-select:none;border:1px solid rgba(2,38,63,.4);font:700 12px/1 Archivo;padding:11px 0;text-align:center;background:none}
+.szbtn:hover{background:rgba(2,38,63,.06)}
+.szoff{border:1px solid rgba(2,38,63,.15);color:rgba(2,38,63,.3);text-decoration:line-through;cursor:not-allowed}
+.card:hover .cardimg{filter:brightness(.96)}
+@keyframes arriveCycle{0%{opacity:0}6%,44%{opacity:1}52%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important;animation-iteration-count:1 !important}
+}
+
+/* ===== Layout shell ===== */
+#app{display:flex;flex-direction:column;min-height:100vh;padding-bottom:var(--framePadBottom)}
+
+/* ===== Filter rail visibility (mobile toggled by state) ===== */
+.filters-rail{display:block}
+@media (max-width:767px){
+  .filters-rail{display:none}
+  .plp-layout.filters-open .filters-rail{display:block}
+}
+
+/* ===== Mobile-only / desktop-tablet-only helpers ===== */
+.mobile-only{display:none}
+.not-mobile-only{display:block}
+@media (max-width:767px){
+  .mobile-only{display:block}
+  .not-mobile-only{display:none}
+}
+
+/* ===== PLP column grid ===== */
+.plp-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.plp-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.plp-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:1279px){ .plp-grid.cols-4{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:767px){ .plp-grid{grid-template-columns:repeat(2,1fr) !important} }
+
+/* ===== Mobile menu / bottom bar restricted to mobile ===== */
+.mobile-bottom-bar,.mobile-menu-overlay,.mobile-menu-panel{display:none}
+@media (max-width:767px){
+  .mobile-bottom-bar{display:grid}
+  .mobile-menu-overlay.open{display:block}
+  .mobile-menu-panel.open{display:flex}
+}
+
+/* ===== Scrollbars for snap rows (keep default, just tidy) ===== */
+.snap-row::-webkit-scrollbar{height:6px}
+
+/* ===== Focus ===== */
+input:focus,.btn:focus-visible,.navlink:focus-visible{outline:2px solid #8a5f22;outline-offset:1px}

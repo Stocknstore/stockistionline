@@ -1,0 +1,6 @@
+# Exclude the HTML/CSS/JS prototype reference from theme uploads —
+# it's a design reference only, not part of the Shopify theme.
+prototype-reference/*
+
+# Exclude temporary atomic-save files created while theme.css is edited.
+assets/*.tmp.*

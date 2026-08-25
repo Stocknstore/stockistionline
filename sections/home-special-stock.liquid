@@ -1,0 +1,215 @@
+{%- comment -%}
+  Section: Home special stock
+  Phase 2, Step 5. Reconstructs "Special stock" from prototype-reference's
+  renderLanding() (prototype-reference/templates.js ~L138-154): a dark navy
+  copy panel with gold accents and a CTA, beside a 5-tile photo/stat mosaic,
+  matching the prototype's --specialCols/--specialTiles/--tileH/--wideTileH
+  and --ordA..--ordE breakpoint behavior (prototype-reference/styles.css
+  L16-165 and L153-194).
+
+  The mosaic is block-based and reorderable (max 5 blocks). The prototype's
+  fixed --ordA..--ordE mobile reorder (grouping the two stat tiles together
+  ahead of the second photo) and its "5th tile is wide" treatment are both
+  position-based, not tied to a block type, so they're generalized here to
+  "when there are exactly 5 blocks" — the prototype's own configuration —
+  while still degrading safely to plain DOM order with fewer blocks.
+{%- endcomment -%}
+{%- liquid
+  assign blocks = section.blocks
+  assign block_count = blocks.size
+  assign mobile_body = section.settings.mobile_body | default: section.settings.body
+-%}
+<section class="home-special-stock" {{ section.shopify_attributes }}>
+  <div class="home-special-stock__inner">
+    <div class="home-special-stock__copy">
+      <div class="home-special-stock__copy-top">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="home-special-stock__eyebrow">{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="home-special-stock__heading">{{ section.settings.heading | newline_to_br }}</h2>
+        {%- endif -%}
+        {%- if section.settings.body != blank -%}
+          <p class="home-special-stock__body hidden-mobile">{{ section.settings.body }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="home-special-stock__mobile-row hidden-desktop">
+        {%- if mobile_body != blank -%}
+          <p class="home-special-stock__mobile-body">{{ mobile_body }}</p>
+        {%- endif -%}
+        {%- if section.settings.cta_label != blank -%}
+          <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta home-special-stock__cta--compact">{{ section.settings.cta_label }}</a>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.cta_label != blank -%}
+        <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta hidden-mobile">{{ section.settings.cta_label }}</a>
+      {%- endif -%}
+    </div>
+
+    <div class="home-special-stock__mosaic">
+      {%- for block in blocks -%}
+        {%- assign position = forloop.index -%}
+        {%- assign is_wide = false -%}
+        {%- if block_count == 5 and forloop.last -%}
+          {%- assign is_wide = true -%}
+        {%- endif -%}
+        {%- assign mobile_order = position -%}
+        {%- if block_count == 5 -%}
+          {%- case position -%}
+            {%- when 3 -%}{%- assign mobile_order = 4 -%}
+            {%- when 4 -%}{%- assign mobile_order = 3 -%}
+          {%- endcase -%}
+        {%- endif -%}
+
+        {%- if block.type == 'photo' -%}
+          {%- assign img = block.settings.image -%}
+          <div
+            class="home-special-stock__tile home-special-stock__tile--photo{% if is_wide %} home-special-stock__tile--wide{% endif %}"
+            style="--tile-order: {{ mobile_order }}"
+            {{ block.shopify_attributes }}
+          >
+            {%- if img != blank -%}
+              {%- assign widths = "300,450,600,800,1100" | split: ',' -%}
+              <img
+                class="home-special-stock__tile-image"
+                src="{{ img | image_url: width: 800 }}"
+                srcset="
+                  {%- for w in widths -%}
+                    {{ img | image_url: width: w }} {{ w }}w{%- unless forloop.last -%},{%- endunless -%}
+                  {%- endfor -%}
+                "
+                sizes="{% if is_wide %}(min-width: 768px) 50vw, 100vw{% else %}(min-width: 768px) 20vw, 50vw{% endif %}"
+                alt="{{ block.settings.alt_text | default: img.alt | default: block.settings.caption | default: 'Special stock photo' | strip_newlines }}"
+                width="{{ img.width }}"
+                height="{{ img.height }}"
+                loading="lazy"
+              >
+              {%- if block.settings.caption != blank -%}
+                <span class="home-special-stock__tile-caption">{{ block.settings.caption }}</span>
+              {%- endif -%}
+            {%- else -%}
+              <div class="home-special-stock__tile-placeholder">
+                <span class="home-special-stock__tile-placeholder-label">
+                  {%- if block.settings.caption != blank -%}
+                    {{- block.settings.caption -}}
+                  {%- else -%}
+                    {{- 'home_special_stock.placeholder' | t -}}
+                  {%- endif -%}
+                </span>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- elsif block.type == 'stat' -%}
+          <div class="home-special-stock__tile home-special-stock__tile--stat" style="--tile-order: {{ mobile_order }}" {{ block.shopify_attributes }}>
+            {%- if block.settings.number != blank -%}
+              <span class="home-special-stock__stat-number">{{ block.settings.number }}</span>
+            {%- endif -%}
+            {%- if block.settings.label != blank -%}
+              <span class="home-special-stock__stat-label">{{ block.settings.label | newline_to_br }}</span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Home special stock",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Copy"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "Special stock"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "A new line controls where the heading breaks.",
+      "default": "Single pairs,\none-off sizes."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body copy (desktop)",
+      "default": "The best lots arrive in small quantities: one or two pairs per size. Stock prices, the same quality — and once they're gone they don't come back."
+    },
+    {
+      "type": "textarea",
+      "id": "mobile_body",
+      "label": "Body copy (mobile)",
+      "info": "Optional shorter copy for small screens. Falls back to the body copy above if left blank.",
+      "default": "One or two pairs per size. Stock prices, same quality — gone for good."
+    },
+    {
+      "type": "header",
+      "content": "CTA"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "See the special stock"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button link"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "photo",
+      "name": "Photo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption",
+          "info": "Optional. Shown as a small label over the tile."
+        },
+        {
+          "type": "text",
+          "id": "alt_text",
+          "label": "Alt text override",
+          "info": "Optional. Falls back to the image's own alt text, then the caption."
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "name": "Stat",
+      "settings": [
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Number",
+          "default": "0"
+        },
+        {
+          "type": "textarea",
+          "id": "label",
+          "label": "Label",
+          "info": "A new line controls where the label breaks.",
+          "default": "supporting label"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 5
+}
+{% endschema %}

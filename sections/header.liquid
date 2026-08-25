@@ -1,8 +1,16 @@
 {%- comment -%}
   Section: Header
-  Two-row desktop header (utility icon row + logo/nav/search row).
-  A dedicated mobile header renders inside the same section (CSS-toggled),
-  per spec: "Do NOT simply shrink the desktop header. Create a dedicated mobile header."
+  Single desktop row (logo / search / account+wishlist+cart) with a full-width
+  department strip below it, sourced from the section's own configurable menu
+  setting (main_menu) — not hardcoded links. A dedicated mobile header renders
+  inside the same section (CSS-toggled), per spec: "Do NOT simply shrink the
+  desktop header. Create a dedicated mobile header."
+
+  The mobile menu drawer is rendered at the end of this section (rather than
+  globally in layout/theme.liquid) so it can be passed this section's own
+  main_menu setting directly, guaranteeing the drawer always shows the same
+  menu as the desktop strip instead of a separately-resolved linklist handle
+  that could drift out of sync.
 {%- endcomment -%}
 <header
   class="site-header{% if section.settings.sticky %} site-header--sticky{% endif %}"
@@ -10,9 +18,30 @@
   {{ section.shopify_attributes }}
 >
 
-  {%- comment -%} ===== Desktop: utility icon row ===== {%- endcomment -%}
-  <div class="site-header__utility hidden-mobile">
-    <div class="site-header__utility-inner container container--full">
+  {%- comment -%} ===== Desktop: single main row (logo / search / utility icons) ===== {%- endcomment -%}
+  <div class="site-header__main hidden-mobile">
+    <div class="site-header__main-inner container container--full">
+      <div class="site-header__logo">
+        {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width %}
+      </div>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="site-header__search-form">
+        <input type="hidden" name="type" value="product">
+        <label for="HeaderSearch-{{ section.id }}" class="visually-hidden">{{ 'header.search' | t }}</label>
+        <input
+          type="search"
+          name="q"
+          id="HeaderSearch-{{ section.id }}"
+          class="site-header__search-input"
+          placeholder="{{ 'header.search' | t }}"
+          value="{{ search.terms | escape }}"
+          autocomplete="off"
+        >
+        <button type="submit" class="site-header__search-submit" aria-label="{{ 'header.search' | t }}">
+          {% render 'icon', icon: 'search' %}
+        </button>
+      </form>
+
       <div class="site-header__utility-icons">
         {%- if shop.customer_accounts_enabled -%}
           <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{{ 'header.account' | t }}">
@@ -39,36 +68,12 @@
         </button>
       </div>
     </div>
-  </div>
 
-  {%- comment -%} ===== Desktop: main row (logo / nav / search) ===== {%- endcomment -%}
-  <div class="site-header__main hidden-mobile">
-    <div class="site-header__main-inner container container--full">
-      <div class="site-header__logo">
-        {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width %}
+    {%- if section.settings.main_menu != blank -%}
+      <div class="site-header__category-strip">
+        {% render 'navigation-category-strip', menu: section.settings.main_menu %}
       </div>
-
-      <nav class="site-header__nav main-nav" aria-label="{{ 'header.main_navigation' | t }}">
-        {% render 'navigation-desktop', menu: section.settings.main_menu, badge_blocks: section.blocks %}
-      </nav>
-
-      <form action="{{ routes.search_url }}" method="get" role="search" class="site-header__search-form">
-        <input type="hidden" name="type" value="product">
-        <label for="HeaderSearch-{{ section.id }}" class="visually-hidden">{{ 'header.search' | t }}</label>
-        <input
-          type="search"
-          name="q"
-          id="HeaderSearch-{{ section.id }}"
-          class="site-header__search-input"
-          placeholder="{{ 'header.search' | t }}"
-          value="{{ search.terms | escape }}"
-          autocomplete="off"
-        >
-        <button type="submit" class="site-header__search-submit" aria-label="{{ 'header.search' | t }}">
-          {% render 'icon', icon: 'search' %}
-        </button>
-      </form>
-    </div>
+    {%- endif -%}
   </div>
 
   {%- comment -%} ===== Mobile header: dedicated composition, not a shrunk desktop header ===== {%- endcomment -%}
@@ -101,6 +106,8 @@
     </div>
   </div>
 </header>
+
+{% render 'mobile-menu-drawer', menu: section.settings.main_menu %}
 
 {% schema %}
 {
@@ -144,6 +151,7 @@
       "type": "link_list",
       "id": "main_menu",
       "label": "Menu",
+      "info": "Also powers the mobile menu drawer. A menu item titled ending in \" · soon\" (e.g. \"Clothing · soon\") renders as a non-clickable label.",
       "default": "main-menu"
     },
     {
@@ -205,38 +213,6 @@
       "label": "Utility row text",
       "default": "#FFFFFF"
     }
-  ],
-  "blocks": [
-    {
-      "type": "nav_badge",
-      "name": "Navigation badge",
-      "settings": [
-        {
-          "type": "text",
-          "id": "menu_item_title",
-          "label": "Menu item label (must match exactly)",
-          "info": "e.g. \"Product\" — must match the menu item's label exactly."
-        },
-        {
-          "type": "text",
-          "id": "badge_text",
-          "label": "Badge text",
-          "default": "New"
-        },
-        {
-          "type": "select",
-          "id": "badge_style",
-          "label": "Badge style",
-          "options": [
-            { "value": "default", "label": "Default" },
-            { "value": "sale", "label": "Sale" },
-            { "value": "hot", "label": "Hot" }
-          ],
-          "default": "default"
-        }
-      ]
-    }
-  ],
-  "max_blocks": 8
+  ]
 }
 {% endschema %}

@@ -1,0 +1,38 @@
+{%- comment -%}
+  Desktop full-width department strip rendered below the header's main row.
+  Distinct from navigation-desktop.liquid's hover mega-menu: this is a flat,
+  bordered row of top-level links only, matching the reference design's single
+  strip of departments/utility links. Items are entirely merchant-configured
+  via the header section's menu setting — nothing here is hardcoded.
+
+  Convention: a menu item titled with a trailing " · soon" (e.g.
+  "Clothing · soon") renders as an inert, muted label instead of a link — a
+  lightweight way to reproduce the reference's non-clickable "coming soon"
+  categories without a dedicated settings field for it.
+
+  Params:
+    menu - a linklist object (section.settings.main_menu)
+{%- endcomment -%}
+{%- if menu != blank -%}
+  <nav class="category-strip" aria-label="{{ 'header.main_navigation' | t }}">
+    <ul class="category-strip__list" role="list">
+      {%- for link in menu.links -%}
+        {%- liquid
+          assign is_soon = false
+          assign strip_title = link.title
+          if link.title contains ' · soon'
+            assign is_soon = true
+            assign strip_title = link.title | remove: ' · soon'
+          endif
+        -%}
+        <li class="category-strip__item">
+          {%- if is_soon -%}
+            <span class="category-strip__link category-strip__link--soon">{{ strip_title }} · {{ 'general.soon' | t }}</span>
+          {%- else -%}
+            <a href="{{ link.url }}" class="category-strip__link{% if link.active %} is-active{% endif %}">{{ strip_title }}</a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+{%- endif -%}
