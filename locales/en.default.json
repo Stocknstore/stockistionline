@@ -49,6 +49,9 @@
     },
     "empty_title": "No products in this collection yet",
     "empty_body": "Check back soon — new stock is added regularly.",
+    "filtered_zero_title": "No products match your filters",
+    "filtered_zero_body": "Try removing a filter or two to see more results.",
+    "clear_all_filters": "Clear all filters",
     "pagination_label": "Pagination",
     "previous": "Previous",
     "next": "Next",
@@ -93,8 +96,10 @@
     "search_submit": "Search",
     "no_query_title": "Search our products",
     "no_query_body": "Enter a search term above to find products.",
+    "suggested_searches": "Popular searches",
     "no_results_title": "No results found",
-    "no_results_body": "Try a different search term."
+    "no_results_body": "Try a different search term.",
+    "browse_all": "Browse all products"
   },
   "collection_department_nav": {
     "placeholder": "Add an image",

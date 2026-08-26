@@ -40,12 +40,40 @@
   rendered further down — both share identical filter names/values via
   distinct ids, so either can be submitted on its own as a normal GET
   navigation.
+
+  Empty states (Stage 8, snippets/collection-empty-state.liquid) distinguish
+  two cases: a genuinely empty collection (collection.all_products_count ==
+  0 — no products exist at all, regardless of filters) versus active
+  filters narrowing an otherwise non-empty collection down to zero matches
+  (all_products_count > 0 but collection.products_count == 0 — Shopify's
+  authoritative filtered-result count for the current request, not
+  collection.products.size, which is only a same-page array and isn't the
+  right signal to make this distinction on). The toolbar and filter rail/
+  drawer stay visible in the filtered-zero case so the visitor can adjust
+  or clear filters without losing that UI; they're omitted entirely for a
+  truly empty collection, where filtering makes no sense. The visible
+  result count in the header also uses collection.products_count so it
+  reflects active filters — on an unfiltered collection this naturally
+  equals all_products_count.
 {%- endcomment -%}
 {%- liquid
   assign per_page = section.settings.products_per_page | default: 16
   assign has_filters = false
   if collection.filters.size > 0
     assign has_filters = true
+  endif
+
+  assign collection_is_empty = false
+  assign filtered_to_zero = false
+  if collection.all_products_count == 0
+    assign collection_is_empty = true
+  elsif collection.products_count == 0
+    assign filtered_to_zero = true
+  endif
+
+  assign clear_filters_url = collection.url
+  if collection.sort_by != blank
+    assign clear_filters_url = clear_filters_url | append: '?sort_by=' | append: collection.sort_by
   endif
 -%}
 <section class="collection-grid" data-view="grid" data-columns="4" {{ section.shopify_attributes }}>
@@ -59,15 +87,15 @@
     <div>
       <h1 class="collection-grid__title">{{ collection.title }}</h1>
       <div class="collection-grid__count">
-        {{- 'collection_grid.product_count' | t: count: collection.all_products_count -}}
+        {{- 'collection_grid.product_count' | t: count: collection.products_count -}}
       </div>
     </div>
-    {%- if collection.products.size > 0 -%}
+    {%- unless collection_is_empty -%}
       {%- render 'collection-toolbar', collection: collection -%}
-    {%- endif -%}
+    {%- endunless -%}
   </div>
 
-  {%- if collection.products.size > 0 and has_filters -%}
+  {%- if collection_is_empty == false and has_filters -%}
     {%- render 'filter-drawer', collection: collection -%}
   {%- endif -%}
 
@@ -75,14 +103,28 @@
     <div class="collection-grid__description">{{ collection.description }}</div>
   {%- endif -%}
 
-  {%- if collection.products.size == 0 -%}
-    <div class="collection-grid__empty">
-      <p class="collection-grid__empty-title">{{ 'collection_grid.empty_title' | t }}</p>
-      <p class="collection-grid__empty-body">{{ 'collection_grid.empty_body' | t }}</p>
-    </div>
+  {%- if collection_is_empty -%}
+    {%- liquid
+      assign empty_heading = 'collection_grid.empty_title' | t
+      assign empty_body = 'collection_grid.empty_body' | t
+    -%}
+    {%- render 'collection-empty-state', heading: empty_heading, body: empty_body -%}
   {%- else -%}
     {%- paginate collection.products by per_page -%}
       {%- capture products_markup -%}
+        {%- if filtered_to_zero -%}
+          {%- liquid
+            assign filtered_zero_heading = 'collection_grid.filtered_zero_title' | t
+            assign filtered_zero_body = 'collection_grid.filtered_zero_body' | t
+            assign clear_filters_label = 'collection_grid.clear_all_filters' | t
+          -%}
+          {%- render 'collection-empty-state',
+            heading: filtered_zero_heading,
+            body: filtered_zero_body,
+            primary_label: clear_filters_label,
+            primary_url: clear_filters_url
+          -%}
+        {%- else -%}
         <div class="collection-grid__products">
           {%- for product in collection.products -%}
             {%- assign above_fold = false -%}
@@ -92,6 +134,7 @@
             {%- render 'product-card', product: product, above_fold: above_fold -%}
           {%- endfor -%}
         </div>
+        {%- endif -%}
 
         {%- if paginate.pages > 1 -%}
           <nav class="collection-grid__pagination" aria-label="{{ 'collection_grid.pagination_label' | t }}">

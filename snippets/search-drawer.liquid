@@ -34,7 +34,7 @@
       <div class="search-drawer__section">
         <h3 class="search-drawer__section-title">{{ 'header.trending_searches' | t }}</h3>
         <div class="search-drawer__chips">
-          {%- assign trending = 'fashion,dresses,skirts' | split: ',' -%}
+          {%- assign trending = 'sneakers,loafers,heels,boots' | split: ',' -%}
           {%- for term in trending -%}
             <a href="{{ routes.search_url }}?q={{ term | url_encode }}&type=product&options%5Bprefix%5D=last" class="search-chip">
               {% render 'icon', icon: 'search', size: 14 %}

@@ -83,15 +83,35 @@
   {%- endif -%}
 
   {%- if search.performed == false -%}
-    <div class="collection-grid__empty">
-      <p class="collection-grid__empty-title">{{ 'search_results.no_query_title' | t }}</p>
-      <p class="collection-grid__empty-body">{{ 'search_results.no_query_body' | t }}</p>
+    {%- liquid
+      assign no_query_heading = 'search_results.no_query_title' | t
+      assign no_query_body = 'search_results.no_query_body' | t
+    -%}
+    {%- render 'collection-empty-state', heading: no_query_heading, body: no_query_body -%}
+    <div class="search-results__suggestions">
+      <span class="search-results__suggestions-label">{{ 'search_results.suggested_searches' | t }}</span>
+      <div class="search-results__suggestions-list">
+        {%- assign suggested_searches = 'sneakers,loafers,heels,boots' | split: ',' -%}
+        {%- for term in suggested_searches -%}
+          <a href="{{ routes.search_url }}?q={{ term | url_encode }}&type=product&options%5Bprefix%5D=last" class="search-chip">
+            {%- render 'icon', icon: 'search', size: 14 -%}
+            <span>{{ term }}</span>
+          </a>
+        {%- endfor -%}
+      </div>
     </div>
   {%- elsif search.results_count == 0 -%}
-    <div class="collection-grid__empty">
-      <p class="collection-grid__empty-title">{{ 'search_results.no_results_title' | t }}</p>
-      <p class="collection-grid__empty-body">{{ 'search_results.no_results_body' | t }}</p>
-    </div>
+    {%- liquid
+      assign no_results_heading = 'search_results.no_results_title' | t
+      assign no_results_body = 'search_results.no_results_body' | t
+      assign browse_all_label = 'search_results.browse_all' | t
+    -%}
+    {%- render 'collection-empty-state',
+      heading: no_results_heading,
+      body: no_results_body,
+      primary_label: browse_all_label,
+      primary_url: routes.all_products_collection_url
+    -%}
   {%- else -%}
     {%- paginate search.results by per_page -%}
       {%- assign product_results = search.results | where: 'object_type', 'product' -%}

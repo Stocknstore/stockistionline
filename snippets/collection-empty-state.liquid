@@ -1,0 +1,47 @@
+{%- comment -%}
+  Snippet: collection-empty-state
+  Phase 3, Stage 8. One reusable, accessible empty-state block for every
+  "nothing to show" scenario across the collection grid and search results
+  pages: a genuinely empty collection, active filters returning zero
+  matches, a not-yet-submitted search, and a search with zero product
+  results. Callers pass only the copy/actions relevant to their case — the
+  same markup/CSS renders all of them consistently.
+
+  Semantic heading (h2) plus plain paragraphs and real <a> actions — no
+  extra ARIA is needed since this is always server-rendered, static
+  content (never injected after the fact), so normal document flow is
+  already fully accessible.
+
+  Params:
+    eyebrow         - optional small label above the heading
+    icon            - optional icon name (snippets/icon.liquid)
+    heading         - required
+    body            - optional supporting copy
+    primary_label   - optional
+    primary_url     - optional (defaults to '#' if primary_label is set
+                      but no URL is given)
+    secondary_label - optional
+    secondary_url   - optional
+{%- endcomment -%}
+<div class="collection-empty-state">
+  {%- if icon != blank -%}
+    <span class="collection-empty-state__icon">{%- render 'icon', icon: icon, size: 32 -%}</span>
+  {%- endif -%}
+  {%- if eyebrow != blank -%}
+    <span class="collection-empty-state__eyebrow">{{ eyebrow }}</span>
+  {%- endif -%}
+  <h2 class="collection-empty-state__title">{{ heading }}</h2>
+  {%- if body != blank -%}
+    <p class="collection-empty-state__body">{{ body }}</p>
+  {%- endif -%}
+  {%- if primary_label != blank or secondary_label != blank -%}
+    <div class="collection-empty-state__actions">
+      {%- if primary_label != blank -%}
+        <a href="{{ primary_url | default: '#' }}" class="collection-empty-state__action collection-empty-state__action--primary">{{ primary_label }}</a>
+      {%- endif -%}
+      {%- if secondary_label != blank -%}
+        <a href="{{ secondary_url | default: '#' }}" class="collection-empty-state__action collection-empty-state__action--secondary">{{ secondary_label }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
