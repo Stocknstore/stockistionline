@@ -480,7 +480,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer,
 .search-drawer,
 .account-drawer,
-.cart-drawer {
+.cart-drawer,
+.filter-drawer {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -490,14 +491,16 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer[data-open],
 .search-drawer[data-open],
 .account-drawer[data-open],
-.cart-drawer[data-open] {
+.cart-drawer[data-open],
+.filter-drawer[data-open] {
   visibility: visible;
   pointer-events: auto;
 }
 .mobile-menu-drawer__overlay,
 .search-drawer__overlay,
 .account-drawer__overlay,
-.cart-drawer__overlay {
+.cart-drawer__overlay,
+.filter-drawer__overlay {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -507,7 +510,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-menu-drawer[data-open] .mobile-menu-drawer__overlay,
 .search-drawer[data-open] .search-drawer__overlay,
 .account-drawer[data-open] .account-drawer__overlay,
-.cart-drawer[data-open] .cart-drawer__overlay { opacity: 1; }
+.cart-drawer[data-open] .cart-drawer__overlay,
+.filter-drawer[data-open] .filter-drawer__overlay { opacity: 1; }
 
 /* Mobile menu + account: slide from left. Search: slide from top. Cart: slide from right. */
 .mobile-menu-drawer__panel,
@@ -528,6 +532,21 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .account-drawer__panel {
   padding: var(--space-6);
 }
+
+/* Filter drawer: also slides from the left, but unlike the two panels above
+   it's used exclusively below the 768px breakpoint, where width:100% would
+   make the panel exactly cover the overlay and leave no clickable backdrop
+   area at all — a percentage width (capped at the same 400px) guarantees a
+   visible, tappable backdrop strip even at narrow phone widths. */
+.filter-drawer__panel {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  width: 88%; max-width: 400px;
+  background: var(--color-background);
+  transform: translateX(-100%);
+  transition: transform var(--transition-normal) var(--ease);
+  overflow-y: auto;
+}
+.filter-drawer[data-open] .filter-drawer__panel { transform: translateX(0); }
 
 .cart-drawer__panel {
   position: absolute; top: 0; right: 0; bottom: 0;
@@ -556,17 +575,19 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer__header,
 .account-drawer__header,
-.search-drawer__header {
+.search-drawer__header,
+.filter-drawer__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-5);
 }
 .search-drawer__header, .account-drawer__header { padding: 0 0 var(--space-5); }
-.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title {
+.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title, .filter-drawer__title {
   font-size: var(--text-xl);
   font-weight: 700;
 }
+.filter-drawer__body { padding: 0 var(--space-5) var(--space-5); }
 .mobile-menu-drawer__back {
   display: flex;
   align-items: center;
@@ -1902,4 +1923,700 @@ body.scroll-locked { overflow: hidden; }
 
 @media (max-width: 767px) {
   .home-coming-soon { --soon-pad-x: 16px; --teaser-img-h: 140px; }
+}
+
+/* --------------------------------------------------------------------------
+   26. Category landing — Collection hero + department nav
+   Phase 3, Stage 2. Scoped to .collection-hero (sections/collection-hero.
+   liquid) and .collection-department-nav (snippets/collection-department-
+   nav.liquid, always rendered as its descendant). Custom properties mirror
+   prototype-reference/styles.css's --h1Size/--padX/--deptCols/--deptDisplay/
+   --deptOverflow/--deptSnap/--deptCardW tokens (desktop at least 1280px,
+   tablet 768 to 1279px, mobile up to 767px). The hero banner height (320px)
+   and department card image height (220px) are fixed, unresponsive values
+   in the prototype too (prototype-reference/templates.js ~L179-192), so no
+   custom properties are needed for those. Used only by the alternate
+   templates/collection.category.json template.
+   -------------------------------------------------------------------------- */
+.collection-hero {
+  --hero-pad-x: 40px;
+  --hero-title-size: 48px;
+  --dept-cols: repeat(3, 1fr);
+  --dept-display: grid;
+  --dept-overflow: visible;
+  --dept-snap: none;
+  --dept-card-w: auto;
+
+  background: var(--color-background);
+}
+
+.collection-hero__banner {
+  position: relative;
+  height: 320px;
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+.collection-hero__image,
+.collection-hero__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.collection-hero__image { object-fit: cover; }
+.collection-hero__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.collection-hero__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+.collection-hero__title {
+  position: absolute;
+  left: var(--hero-pad-x);
+  right: var(--hero-pad-x);
+  bottom: 28px;
+  color: var(--color-text);
+  font-weight: 900;
+  font-size: var(--hero-title-size);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.collection-hero__description-wrap { padding: 24px var(--hero-pad-x) 0; background: var(--color-background); }
+.collection-hero__description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.collection-hero__departments {
+  background: var(--color-background);
+  padding: 34px var(--hero-pad-x);
+  border-bottom: 2px solid var(--color-primary);
+}
+.collection-hero__departments-heading {
+  font-weight: 900;
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+}
+
+.collection-department-nav__grid {
+  display: var(--dept-display);
+  grid-template-columns: var(--dept-cols);
+  overflow-x: var(--dept-overflow);
+  scroll-snap-type: var(--dept-snap);
+  min-width: 0;
+  gap: 2px;
+  background: var(--color-primary);
+}
+.collection-department-nav__card {
+  background: var(--color-background);
+  flex: 0 0 var(--dept-card-w);
+  scroll-snap-align: start;
+  display: block;
+}
+.collection-department-nav__image {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: var(--color-background-secondary);
+}
+.collection-department-nav__img,
+.collection-department-nav__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.collection-department-nav__img { object-fit: cover; }
+.collection-department-nav__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.collection-department-nav__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+.collection-department-nav__meta {
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.collection-department-nav__title { font-weight: 800; font-size: 20px; line-height: 1; }
+.collection-department-nav__count {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.55);
+  white-space: nowrap;
+}
+
+@media (max-width: 1279px) {
+  .collection-hero { --hero-pad-x: 28px; --hero-title-size: 40px; }
+}
+
+@media (max-width: 767px) {
+  .collection-hero {
+    --hero-pad-x: 16px;
+    --hero-title-size: 31px;
+    --dept-cols: 1fr;
+    --dept-display: flex;
+    --dept-overflow: auto;
+    --dept-snap: x proximity;
+    --dept-card-w: 88%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   27. Collection grid (PLP core) — sections/collection-grid.liquid
+   Phase 3, Stage 3. Custom properties scoped to .collection-grid, mirroring
+   prototype-reference/styles.css's --padX/--prodCols tokens: 4 columns
+   desktop (at least 1280px), 3 columns tablet (768 to 1279px), 2 columns
+   mobile (up to 767px). Filters/sorting/view-toggle styling intentionally
+   not included yet — later stages extend this section.
+   -------------------------------------------------------------------------- */
+.collection-grid {
+  --grid-pad-x: 40px;
+  --grid-cols: repeat(4, 1fr);
+
+  background: var(--color-background);
+}
+.collection-grid__breadcrumb {
+  padding: 20px var(--grid-pad-x) 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+}
+.collection-grid__breadcrumb a:hover { color: var(--color-text); }
+.collection-grid__breadcrumb-current { color: var(--color-text); }
+
+.collection-grid__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px var(--grid-pad-x) 24px;
+}
+.collection-grid__title { font-weight: 900; font-size: 40px; line-height: 1; letter-spacing: -0.03em; margin: 0; }
+.collection-grid__count {
+  font-family: ui-monospace, monospace;
+  font-size: 12.5px;
+  color: rgba(2, 38, 63, 0.55);
+  margin-top: 10px;
+}
+
+.collection-grid__description {
+  padding: 0 var(--grid-pad-x) 24px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.collection-grid__products {
+  padding: 24px var(--grid-pad-x) 30px;
+  display: grid;
+  grid-template-columns: var(--grid-cols);
+  gap: 24px;
+}
+.collection-grid[data-view="list"] .collection-grid__products {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(2, 38, 63, 0.25);
+}
+
+@media (min-width: 768px) {
+  .collection-grid[data-columns="2"] { --grid-cols: repeat(2, 1fr); }
+  .collection-grid[data-columns="3"] { --grid-cols: repeat(3, 1fr); }
+  .collection-grid[data-columns="4"] { --grid-cols: repeat(4, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   32b. Empty states — snippets/collection-empty-state.liquid
+   Phase 3, Stage 8. One reusable block for every "nothing to show" case
+   across the collection grid and search results pages (both share the
+   .collection-grid class/--grid-pad-x custom property, so this is safe to
+   reference here regardless of which page renders it). Sized to read as a
+   real content block (not a collapsed sliver) even when it sits beside a
+   full-height filter rail in the filtered-to-zero case.
+   -------------------------------------------------------------------------- */
+.collection-empty-state {
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 60px var(--grid-pad-x) 70px;
+  text-align: center;
+}
+.collection-empty-state__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+  color: var(--color-text-secondary);
+}
+.collection-empty-state__eyebrow {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-link);
+  margin-bottom: var(--space-2);
+}
+.collection-empty-state__title { font-weight: 800; font-size: 18px; margin: 0 0 8px; }
+.collection-empty-state__body { color: var(--color-text-secondary); margin: 0 auto; max-width: 46ch; }
+.collection-empty-state__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.collection-empty-state__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 20px;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.collection-empty-state__action--primary { background: var(--color-primary); color: var(--color-primary-contrast); }
+.collection-empty-state__action--secondary { border: 1px solid rgba(2, 38, 63, 0.4); color: var(--color-text); }
+
+.search-results__suggestions {
+  padding: 0 var(--grid-pad-x) 60px;
+  text-align: center;
+}
+.search-results__suggestions-label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-link);
+  margin-bottom: 14px;
+}
+.search-results__suggestions-list {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.collection-grid__pagination { padding: 0 var(--grid-pad-x) 30px; }
+.collection-grid__pagination-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 6px;
+}
+.collection-grid__page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  font-weight: 700;
+  font-size: 12px;
+}
+.collection-grid__page-link--current { background: var(--color-primary); color: var(--color-primary-contrast); border-color: var(--color-primary); }
+.collection-grid__page-link--disabled { color: rgba(2, 38, 63, 0.35); cursor: default; }
+.collection-grid__page-link--ellipsis { border-color: transparent; }
+
+@media (max-width: 1279px) {
+  .collection-grid { --grid-pad-x: 28px; --grid-cols: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .collection-grid { --grid-pad-x: 16px; --grid-cols: repeat(2, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   28. Product card — snippets/product-card.liquid
+   Phase 3, Stage 3 (revised Stage 4). Each product is rendered exactly
+   once by sections/collection-grid.liquid; grid is the base/default
+   presentation (matching the PLP grid card from prototype-reference/
+   templates.js ~L222-226: 250px image, 16px price), and list presentation
+   (matching the PLP list card from prototype-reference/templates.js
+   ~L227-232: 96px square thumb, single row, 20px gap) is applied to that
+   same DOM purely via the ancestor .collection-grid[data-view="list"]
+   selector — no duplicate markup, no second render pass.
+   -------------------------------------------------------------------------- */
+.product-card { display: block; }
+.product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); height: 250px; }
+
+.product-card__image,
+.product-card__placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.product-card__image {
+  object-fit: cover;
+  transition: filter var(--transition-fast) var(--ease);
+}
+.product-card:hover .product-card__image { filter: brightness(0.96); }
+.product-card__placeholder {
+  display: flex;
+  align-items: flex-end;
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.product-card__placeholder-label {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: #6B6257;
+  padding: var(--space-2);
+}
+
+.product-card__badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  z-index: 1;
+}
+.product-card__badge--new_today { background: var(--color-primary); color: var(--color-primary-contrast); }
+.product-card__badge--last_pair { background: var(--color-accent); color: var(--color-text); }
+
+.product-card__meta { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
+.product-card__vendor {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+.product-card__title { font-size: 13.5px; line-height: 1.35; }
+.product-card__price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+.product-card__price { font-weight: 800; font-size: 16px; }
+.product-card__compare-at {
+  font-size: 12.5px;
+  color: rgba(2, 38, 63, 0.5);
+  text-decoration: line-through;
+}
+.product-card__sizes {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(2, 38, 63, 0.55);
+  margin-top: 2px;
+}
+
+/* List presentation — same card DOM, restyled via the ancestor's data-view */
+.collection-grid[data-view="list"] .product-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--color-background);
+  padding: 16px 18px;
+}
+.collection-grid[data-view="list"] .product-card__image-wrap { flex: none; width: 96px; height: 96px; }
+.collection-grid[data-view="list"] .product-card__badge { padding: 5px 7px; font-size: 8px; }
+.collection-grid[data-view="list"] .product-card__meta { flex: 1; min-width: 0; margin-top: 0; gap: 4px; }
+.collection-grid[data-view="list"] .product-card__title { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   29. Collection toolbar — snippets/collection-toolbar.liquid
+   Phase 3, Stage 4. Sort form + grid/list/column view controls, matching
+   the prototype's toolbar row from prototype-reference/templates.js
+   ~L254-259 (bordered sort dropdown, 38x38 icon-swap view buttons). Column
+   buttons are hidden on mobile — the grid is always forced to 2 columns
+   there regardless of any stored preference (see section 27's
+   @media (min-width: 768px) guard on the [data-columns] overrides).
+   -------------------------------------------------------------------------- */
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.collection-toolbar__sort-form { display: flex; align-items: stretch; gap: 8px; }
+.collection-toolbar__sort-select {
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 16px;
+}
+.collection-toolbar__sort-submit {
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 16px;
+}
+
+.collection-toolbar__view-controls { display: flex; gap: 6px; }
+.collection-toolbar__columns { display: flex; gap: 6px; }
+.collection-toolbar__view-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid rgba(2, 38, 63, 0.4);
+}
+.collection-toolbar__view-btn[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+@media (max-width: 767px) {
+  .collection-toolbar__columns { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   30. Collection filters rail — snippets/collection-filters.liquid
+   Phase 3, Stage 5. Matches the prototype's "Filter by" rail from
+   prototype-reference/templates.js ~L275-299 (chips, grouped checkbox
+   lists, price range) and the --plpLayout rail width (280px desktop /
+   240px tablet). Hidden on mobile for now via the existing .hidden-mobile
+   utility — deliberately not fighting it with an unconditional `display`
+   on .collection-grid__filters-rail (see the section 20/21 history of that
+   exact bug): the rail's own display:flex is scoped inside the same
+   min-width:768px range .hidden-mobile already uses to show elements, so
+   there's never a competing declaration at the width where it must stay
+   hidden.
+   -------------------------------------------------------------------------- */
+.collection-grid__layout {
+  --plp-layout: 280px 1fr;
+  display: grid;
+  grid-template-columns: var(--plp-layout);
+  gap: 2px;
+  background: var(--color-primary);
+  padding-bottom: 2px;
+}
+.collection-grid__content {
+  min-width: 0;
+  background: var(--color-background);
+}
+
+@media (min-width: 768px) {
+  .collection-grid__filters-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--color-background);
+    padding: 24px 22px 30px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .collection-grid__layout { --plp-layout: 240px 1fr; }
+}
+
+@media (max-width: 767px) {
+  .collection-grid__layout { --plp-layout: 1fr; }
+}
+
+.collection-filters__empty {
+  color: var(--color-text-secondary);
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding: 24px 22px 30px;
+  margin: 0;
+}
+
+.collection-filters__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.collection-filters__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.collection-filters__active-count {
+  font-family: ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: rgba(2, 38, 63, 0.5);
+}
+.collection-filters__clear-all {
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-link);
+}
+
+.collection-filters__chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.collection-filters__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 10.5px;
+  padding: 8px 10px;
+}
+.collection-filters__chip a { color: inherit; opacity: 0.75; }
+.collection-filters__chip a:hover { opacity: 1; }
+
+.collection-filters__form { display: flex; flex-direction: column; gap: 16px; }
+.collection-filters__group { border-top: 1px solid rgba(2, 38, 63, 0.22); padding-top: 16px; }
+.collection-filters__group-title {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.collection-filters__brand-search {
+  display: block;
+  width: 100%;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 9px 11px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.collection-filters__options { display: flex; flex-direction: column; gap: 9px; }
+.collection-filters__option { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.collection-filters__option input[type="checkbox"] { width: 15px; height: 15px; flex: none; accent-color: var(--color-primary); }
+.collection-filters__option label { flex: 1; min-width: 0; }
+.collection-filters__option--disabled label { color: rgba(2, 38, 63, 0.35); }
+.collection-filters__count {
+  margin-left: auto;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.5);
+}
+
+.collection-filters__price { display: flex; align-items: center; gap: 8px; }
+.collection-filters__price-field { flex: 1; min-width: 0; }
+.collection-filters__price-field input {
+  width: 100%;
+  border: 1px solid rgba(2, 38, 63, 0.35);
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 9px 11px;
+  font-size: 12px;
+}
+.collection-filters__price-sep { color: rgba(2, 38, 63, 0.5); flex: none; }
+
+.collection-filters__apply {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 14px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   31. Mobile filter drawer trigger — snippets/collection-toolbar.liquid
+   Phase 3, Stage 6. The trigger only renders in markup when
+   collection.filters isn't empty, and only needs to be visible below the
+   768px breakpoint (the desktop/tablet rail covers everything above it) —
+   .hidden-desktop already provides that toggle, so display is intentionally
+   scoped inside the same @media (max-width: 767px) range rather than set
+   unconditionally on .collection-toolbar__filters-toggle, which would
+   otherwise silently defeat .hidden-desktop's display:none above 768px
+   (the same cascade bug documented in sections 20-21).
+   -------------------------------------------------------------------------- */
+.collection-toolbar__filters-toggle {
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-background);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 16px;
+}
+.collection-toolbar__filters-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+}
+
+@media (max-width: 767px) {
+  .collection-toolbar__filters-toggle { display: inline-flex; }
+}
+
+/* --------------------------------------------------------------------------
+   32. Search results — sections/search-results.liquid
+   Phase 3, Stage 7. Only the search box itself is new CSS — the rest of
+   the page (.collection-grid, .collection-grid__header/__products/__layout/
+   __filters-rail/__pagination*, .collection-toolbar*, .collection-filters*,
+   .filter-drawer*, .product-card*) is reused verbatim from sections/
+   collection-grid.liquid's existing styling (section 27-31 above), since
+   this section's root shares the same .collection-grid class and --grid-
+   pad-x scoped custom property.
+   -------------------------------------------------------------------------- */
+.search-results__form {
+  display: flex;
+  gap: 8px;
+  padding: 20px var(--grid-pad-x) 0;
+}
+.search-results__input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 13px 16px;
+  font-size: 13px;
+}
+.search-results__submit {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 20px;
 }

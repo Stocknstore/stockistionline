@@ -1,0 +1,205 @@
+{%- comment -%}
+  Section: Collection grid
+  Phase 3, Stage 3-4. Standard product-listing template for ordinary
+  collections (Women, Men, Kids, etc — not the Footwear category landing,
+  which uses templates/collection.category.json + sections/collection-hero.
+  liquid instead). Matches the core title/count/grid/toolbar presentation
+  from prototype-reference's renderPlp() (prototype-reference/templates.js
+  ~L249-261, L302-303): breadcrumb, H1, "N styles in stock", a sort +
+  view-controls row, and a --prodCols-equivalent grid (4 desktop / 3 tablet
+  / 2 mobile). Filters and the mobile filter drawer are deliberately not
+  included yet — a later Phase 3 stage layers those onto this same section.
+
+  Sort (snippets/collection-toolbar.liquid) is a plain GET form — a normal
+  Shopify navigation, no AJAX. The grid/list/column view controls are
+  client-side only (assets/theme.js, persisted to localStorage) and just
+  flip the data-view attribute on this section; CSS alone (assets/theme.css
+  section 28) restyles the single rendered set of cards between grid and
+  list presentation — each product is rendered exactly once, never
+  duplicated, so analytics, accessibility and future quick-add wiring all
+  attach to one real DOM node per product.
+
+  Cards are rendered through snippets/product-card.liquid, never the
+  homepage-only product-card-home.liquid. Only the first 4 products (the
+  widest breakpoint's/default column count) are marked above_fold so they
+  load eagerly; the rest lazy-load regardless of which view is active.
+
+  Filters (Stage 5, snippets/collection-filters.liquid) use
+  collection.filters, populated only when Search & Discovery is installed
+  and configured. With none configured, real visitors see no rail at all
+  (the layout collapses to a single full-width column) rather than a
+  broken empty sidebar; the theme editor still shows a setup hint. The
+  desktop/tablet rail (--plp-layout, matching the prototype's --plpLayout:
+  280px desktop / 240px tablet) is hidden on mobile for now — Stage 6 adds
+  the mobile drawer.
+
+  Mobile filter drawer (Stage 6, snippets/filter-drawer.liquid) is rendered
+  once here, alongside the toolbar's trigger button, so it always has
+  collection context. It reuses snippets/collection-filters.liquid with
+  id_prefix: 'Mobile', independent of the desktop rail's 'Desktop' instance
+  rendered further down — both share identical filter names/values via
+  distinct ids, so either can be submitted on its own as a normal GET
+  navigation.
+
+  Empty states (Stage 8, snippets/collection-empty-state.liquid) distinguish
+  two cases: a genuinely empty collection (collection.all_products_count ==
+  0 — no products exist at all, regardless of filters) versus active
+  filters narrowing an otherwise non-empty collection down to zero matches
+  (all_products_count > 0 but collection.products_count == 0 — Shopify's
+  authoritative filtered-result count for the current request, not
+  collection.products.size, which is only a same-page array and isn't the
+  right signal to make this distinction on). The toolbar and filter rail/
+  drawer stay visible in the filtered-zero case so the visitor can adjust
+  or clear filters without losing that UI; they're omitted entirely for a
+  truly empty collection, where filtering makes no sense. The visible
+  result count in the header also uses collection.products_count so it
+  reflects active filters — on an unfiltered collection this naturally
+  equals all_products_count.
+{%- endcomment -%}
+{%- liquid
+  assign per_page = section.settings.products_per_page | default: 16
+  assign has_filters = false
+  if collection.filters.size > 0
+    assign has_filters = true
+  endif
+
+  assign collection_is_empty = false
+  assign filtered_to_zero = false
+  if collection.all_products_count == 0
+    assign collection_is_empty = true
+  elsif collection.products_count == 0
+    assign filtered_to_zero = true
+  endif
+
+  assign clear_filters_url = collection.url
+  if collection.sort_by != blank
+    assign clear_filters_url = clear_filters_url | append: '?sort_by=' | append: collection.sort_by
+  endif
+-%}
+<section class="collection-grid" data-view="grid" data-columns="4" {{ section.shopify_attributes }}>
+  <div class="collection-grid__breadcrumb">
+    <a href="{{ routes.root_url }}">{{ 'collection_grid.breadcrumb_home' | t }}</a>
+    <span aria-hidden="true">/</span>
+    <span class="collection-grid__breadcrumb-current">{{ collection.title }}</span>
+  </div>
+
+  <div class="collection-grid__header">
+    <div>
+      <h1 class="collection-grid__title">{{ collection.title }}</h1>
+      <div class="collection-grid__count">
+        {{- 'collection_grid.product_count' | t: count: collection.products_count -}}
+      </div>
+    </div>
+    {%- unless collection_is_empty -%}
+      {%- render 'collection-toolbar', collection: collection -%}
+    {%- endunless -%}
+  </div>
+
+  {%- if collection_is_empty == false and has_filters -%}
+    {%- render 'filter-drawer', collection: collection -%}
+  {%- endif -%}
+
+  {%- if collection.description != blank -%}
+    <div class="collection-grid__description">{{ collection.description }}</div>
+  {%- endif -%}
+
+  {%- if collection_is_empty -%}
+    {%- liquid
+      assign empty_heading = 'collection_grid.empty_title' | t
+      assign empty_body = 'collection_grid.empty_body' | t
+    -%}
+    {%- render 'collection-empty-state', heading: empty_heading, body: empty_body -%}
+  {%- else -%}
+    {%- paginate collection.products by per_page -%}
+      {%- capture products_markup -%}
+        {%- if filtered_to_zero -%}
+          {%- liquid
+            assign filtered_zero_heading = 'collection_grid.filtered_zero_title' | t
+            assign filtered_zero_body = 'collection_grid.filtered_zero_body' | t
+            assign clear_filters_label = 'collection_grid.clear_all_filters' | t
+          -%}
+          {%- render 'collection-empty-state',
+            heading: filtered_zero_heading,
+            body: filtered_zero_body,
+            primary_label: clear_filters_label,
+            primary_url: clear_filters_url
+          -%}
+        {%- else -%}
+        <div class="collection-grid__products">
+          {%- for product in collection.products -%}
+            {%- assign above_fold = false -%}
+            {%- if forloop.index <= 4 -%}
+              {%- assign above_fold = true -%}
+            {%- endif -%}
+            {%- render 'product-card', product: product, above_fold: above_fold -%}
+          {%- endfor -%}
+        </div>
+        {%- endif -%}
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="collection-grid__pagination" aria-label="{{ 'collection_grid.pagination_label' | t }}">
+            <ul class="collection-grid__pagination-list" role="list">
+              <li>
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="collection-grid__page-link collection-grid__page-link--prev" aria-label="{{ 'collection_grid.previous' | t }}">{{ 'collection_grid.previous' | t }}</a>
+                {%- else -%}
+                  <span class="collection-grid__page-link collection-grid__page-link--prev collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.previous' | t }}</span>
+                {%- endif -%}
+              </li>
+              {%- for part in paginate.parts -%}
+                <li>
+                  {%- if part.is_link -%}
+                    <a href="{{ part.url }}" class="collection-grid__page-link" aria-label="{{ 'collection_grid.go_to_page' | t: number: part.title }}">{{ part.title }}</a>
+                  {%- elsif part.title == paginate.current_page -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--current" aria-current="page" aria-label="{{ 'collection_grid.current_page' | t: number: part.title }}">{{ part.title }}</span>
+                  {%- else -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--ellipsis" aria-hidden="true">{{ part.title }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+              <li>
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="collection-grid__page-link collection-grid__page-link--next" aria-label="{{ 'collection_grid.next' | t }}">{{ 'collection_grid.next' | t }}</a>
+                {%- else -%}
+                  <span class="collection-grid__page-link collection-grid__page-link--next collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.next' | t }}</span>
+                {%- endif -%}
+              </li>
+            </ul>
+          </nav>
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- if has_filters or request.design_mode -%}
+        <div class="collection-grid__layout">
+          <aside class="collection-grid__filters-rail hidden-mobile">
+            {%- render 'collection-filters', collection: collection, id_prefix: 'Desktop' -%}
+          </aside>
+          <div class="collection-grid__content">{{ products_markup }}</div>
+        </div>
+      {%- else -%}
+        {{ products_markup }}
+      {%- endif -%}
+    {%- endpaginate -%}
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Collection grid",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    }
+  ]
+}
+{% endschema %}

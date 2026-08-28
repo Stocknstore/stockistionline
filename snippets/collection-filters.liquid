@@ -1,0 +1,196 @@
+{%- comment -%}
+  Snippet: collection-filters
+  Phase 3, Stage 5 (generalized Stage 7). Native Shopify filter form for the
+  desktop/tablet rail and the mobile drawer, matching the prototype's
+  "Filter by" rail from prototype-reference/templates.js ~L275-299 (chips,
+  grouped checkbox lists, price range). collection.filters/search.filters
+  are only populated when Search & Discovery is installed and filters are
+  configured in Admin — with none configured this snippet renders nothing
+  for real visitors (the caller then skips the rail/drawer entirely) and a
+  discreet setup hint only in the theme editor.
+
+  Works for both a collection page and the search results page without
+  duplicating logic: pass either `collection` (existing collection-page
+  usage — unchanged) or the generic `results_url`/`filters`/`sort_by`
+  params directly (search-results.liquid). Whichever generic param is
+  supplied wins; otherwise it falls back to the matching collection.*
+  property, so collection-page behavior is unchanged. `search_terms`
+  (search.terms) is only ever set on the search page, and additionally
+  preserves q/type/options[prefix] through the filter form and the
+  Clear all link — filter-value removal (chips) already preserves them
+  automatically via Shopify's own url_to_remove, which is computed from
+  the full current request regardless of context.
+
+  A plain HTML GET <form> — no {% form 'facets' %} tag exists in Liquid.
+  Checkbox name/value pairs use each filter value's own param_name/value
+  directly, so submitting is a normal Shopify navigation with no JS
+  required. The one progressive enhancement (a client-side search box over
+  the vendor/brand filter's already-rendered checkboxes) degrades to a
+  plain, fully-functional checkbox list with no JS.
+
+  Params:
+    collection   - a collection object (collection-page usage)
+    results_url  - form action target (search-page usage; defaults to
+                   collection.url)
+    filters      - filter array, collection.filters or search.filters
+                   (defaults to collection.filters)
+    sort_by      - current sort value, for the hidden preservation input
+                   (defaults to collection.sort_by)
+    search_terms - search.terms; preserves q/type/options[prefix] when set
+    id_prefix    - required, e.g. 'Desktop' — combined into every form/input
+                   id so this snippet can be rendered a second time (Stage 6,
+                   with id_prefix 'Mobile') without id collisions between
+                   the two instances.
+{%- endcomment -%}
+{%- liquid
+  assign ctx_url = results_url | default: collection.url
+  assign ctx_filters = filters | default: collection.filters
+  assign ctx_sort_by = sort_by | default: collection.sort_by
+
+  assign active_count = 0
+  for filter in ctx_filters
+    if filter.type == 'price_range'
+      if filter.min_value.value or filter.max_value.value
+        assign active_count = active_count | plus: 1
+      endif
+    else
+      assign active_count = active_count | plus: filter.active_values.size
+    endif
+  endfor
+
+  if ctx_sort_by != blank
+    assign clear_all_url = ctx_url | append: '?sort_by=' | append: ctx_sort_by
+  else
+    assign clear_all_url = ctx_url
+  endif
+  if search_terms != blank
+    assign clear_all_url = clear_all_url | append: '&q=' | append: search_terms | url_encode | append: '&type=product&options%5Bprefix%5D=last'
+  endif
+-%}
+{%- if ctx_filters.size == 0 -%}
+  {%- if request.design_mode -%}
+    <p class="collection-filters__empty">{{ 'collection_filters.setup_hint' | t }}</p>
+  {%- endif -%}
+{%- else -%}
+  <div class="collection-filters">
+    <div class="collection-filters__head">
+      <span class="collection-filters__heading">
+        {{- 'collection_filters.filter_by' | t -}}
+        {%- if active_count > 0 -%}
+          <span class="collection-filters__active-count">{{ 'collection_filters.active_count' | t: count: active_count }}</span>
+        {%- endif -%}
+      </span>
+      {%- if active_count > 0 -%}
+        <a href="{{ clear_all_url }}" class="collection-filters__clear-all">{{ 'collection_filters.clear_all' | t }}</a>
+      {%- endif -%}
+    </div>
+
+    {%- if active_count > 0 -%}
+      <div class="collection-filters__chips">
+        {%- for filter in ctx_filters -%}
+          {%- if filter.type == 'price_range' -%}
+            {%- if filter.min_value.value or filter.max_value.value -%}
+              <span class="collection-filters__chip">
+                {{ filter.label }}: {{ filter.min_value.value | default: 0 | money }}–{{ filter.max_value.value | default: filter.range_max | money }}
+                <a href="{{ filter.url_to_remove }}" aria-label="{{ 'collection_filters.remove_filter' | t: label: filter.label }}">×</a>
+              </span>
+            {%- endif -%}
+          {%- else -%}
+            {%- for active_value in filter.active_values -%}
+              <span class="collection-filters__chip">
+                {{ active_value.label }}
+                <a href="{{ active_value.url_to_remove }}" aria-label="{{ 'collection_filters.remove_filter' | t: label: active_value.label }}">×</a>
+              </span>
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    <form method="get" action="{{ ctx_url }}" id="FacetFilterForm-{{ id_prefix }}" class="collection-filters__form">
+      <input type="hidden" name="sort_by" value="{{ ctx_sort_by }}">
+      {%- if search_terms != blank -%}
+        <input type="hidden" name="q" value="{{ search_terms }}">
+        <input type="hidden" name="type" value="product">
+        <input type="hidden" name="options[prefix]" value="last">
+      {%- endif -%}
+
+      {%- for filter in ctx_filters -%}
+        <div class="collection-filters__group">
+          <div class="collection-filters__group-title">{{ filter.label }}</div>
+
+          {%- if filter.type == 'price_range' -%}
+            <div class="collection-filters__price">
+              <div class="collection-filters__price-field">
+                <label for="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-min" class="visually-hidden">{{ 'collection_filters.price_min' | t }}</label>
+                <input
+                  type="number"
+                  id="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-min"
+                  name="{{ filter.min_value.param_name }}"
+                  value="{{ filter.min_value.value }}"
+                  placeholder="{{ 0 | money }}"
+                  min="0"
+                  max="{{ filter.range_max }}"
+                  inputmode="decimal"
+                >
+              </div>
+              <span class="collection-filters__price-sep" aria-hidden="true">–</span>
+              <div class="collection-filters__price-field">
+                <label for="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-max" class="visually-hidden">{{ 'collection_filters.price_max' | t }}</label>
+                <input
+                  type="number"
+                  id="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-max"
+                  name="{{ filter.max_value.param_name }}"
+                  value="{{ filter.max_value.value }}"
+                  placeholder="{{ filter.range_max | money }}"
+                  min="0"
+                  max="{{ filter.range_max }}"
+                  inputmode="decimal"
+                >
+              </div>
+            </div>
+          {%- else -%}
+            {%- assign is_vendor_filter = false -%}
+            {%- if filter.param_name == 'filter.v.vendor' -%}
+              {%- assign is_vendor_filter = true -%}
+            {%- endif -%}
+            {%- if is_vendor_filter -%}
+              <label for="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-search" class="visually-hidden">{{ 'collection_filters.search_brand' | t }}</label>
+              <input
+                type="text"
+                id="FacetFilterForm-{{ id_prefix }}-{{ forloop.index }}-search"
+                class="collection-filters__brand-search"
+                placeholder="{{ 'collection_filters.search_brand' | t }}"
+                autocomplete="off"
+                data-brand-search-input
+              >
+            {%- endif -%}
+            <div class="collection-filters__options" {% if is_vendor_filter %}data-brand-search-list{% endif %}>
+              {%- for value in filter.values -%}
+                {%- assign option_id = 'FacetFilterForm-' | append: id_prefix | append: '-' | append: forloop.parentloop.index | append: '-' | append: forloop.index -%}
+                {%- assign is_disabled = false -%}
+                {%- if value.count == 0 and value.active == false -%}
+                  {%- assign is_disabled = true -%}
+                {%- endif -%}
+                <div class="collection-filters__option{% if is_disabled %} collection-filters__option--disabled{% endif %}">
+                  <input
+                    type="checkbox"
+                    id="{{ option_id }}"
+                    name="{{ value.param_name }}"
+                    value="{{ value.value }}"
+                    {% if value.active %}checked{% endif %}
+                    {% if is_disabled %}disabled{% endif %}
+                  >
+                  <label for="{{ option_id }}">{{ value.label }}</label>
+                  <span class="collection-filters__count">{{ value.count }}</span>
+                </div>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+
+      <button type="submit" class="collection-filters__apply">{{ 'collection_filters.apply' | t }}</button>
+    </form>
+  </div>
+{%- endif -%}

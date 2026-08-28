@@ -34,6 +34,81 @@
   "home_coming_soon": {
     "placeholder": "Add an image"
   },
+  "product_card": {
+    "badge_new_today": "New today",
+    "badge_last_pair": "Last pair"
+  },
+  "collection_hero": {
+    "placeholder": "Add an image"
+  },
+  "collection_grid": {
+    "breadcrumb_home": "Home",
+    "product_count": {
+      "one": "{{ count }} style in stock",
+      "other": "{{ count }} styles in stock"
+    },
+    "empty_title": "No products in this collection yet",
+    "empty_body": "Check back soon — new stock is added regularly.",
+    "filtered_zero_title": "No products match your filters",
+    "filtered_zero_body": "Try removing a filter or two to see more results.",
+    "clear_all_filters": "Clear all filters",
+    "pagination_label": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "go_to_page": "Go to page {{ number }}",
+    "current_page": "Page {{ number }}, current page"
+  },
+  "collection_toolbar": {
+    "sort_label": "Sort by",
+    "sort_apply": "Sort",
+    "view_grid": "Grid view",
+    "view_list": "List view",
+    "columns_2": "2 columns",
+    "columns_3": "3 columns",
+    "columns_4": "4 columns"
+  },
+  "collection_filters": {
+    "filter_by": "Filter by",
+    "active_count": {
+      "one": "{{ count }} applied",
+      "other": "{{ count }} applied"
+    },
+    "clear_all": "Clear all",
+    "remove_filter": "Remove {{ label }} filter",
+    "apply": "Apply filters",
+    "price_min": "Minimum price",
+    "price_max": "Maximum price",
+    "search_brand": "Search brand…",
+    "setup_hint": "No filters are configured for this collection yet. Install and configure Search & Discovery, then add filters for this collection in the Shopify admin."
+  },
+  "filter_drawer": {
+    "heading": "Filters"
+  },
+  "search_results": {
+    "heading": "Search",
+    "heading_with_query": "Search results for \"{{ query }}\"",
+    "product_count": {
+      "one": "{{ count }} product found",
+      "other": "{{ count }} products found"
+    },
+    "search_label": "Search",
+    "search_placeholder": "Search products…",
+    "search_submit": "Search",
+    "no_query_title": "Search our products",
+    "no_query_body": "Enter a search term above to find products.",
+    "suggested_searches": "Popular searches",
+    "no_results_title": "No results found",
+    "no_results_body": "Try a different search term.",
+    "browse_all": "Browse all products"
+  },
+  "collection_department_nav": {
+    "placeholder": "Add an image",
+    "no_collection": "Select a collection",
+    "style_count": {
+      "one": "{{ count }} style",
+      "other": "{{ count }} styles"
+    }
+  },
   "home_just_arrived": {
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair",

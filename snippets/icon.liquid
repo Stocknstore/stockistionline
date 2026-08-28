@@ -33,6 +33,22 @@
       <rect x="14" y="3" width="7" height="7"></rect>
       <rect x="3" y="14" width="7" height="7"></rect>
       <rect x="14" y="14" width="7" height="7"></rect>
+    {%- when 'list' -%}
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    {%- when 'columns-2' -%}
+      <rect x="3" y="4" width="7" height="16"></rect>
+      <rect x="14" y="4" width="7" height="16"></rect>
+    {%- when 'columns-3' -%}
+      <rect x="2" y="4" width="5.5" height="16"></rect>
+      <rect x="9.2" y="4" width="5.5" height="16"></rect>
+      <rect x="16.5" y="4" width="5.5" height="16"></rect>
+    {%- when 'columns-4' -%}
+      <rect x="2" y="4" width="4" height="16"></rect>
+      <rect x="7.3" y="4" width="4" height="16"></rect>
+      <rect x="12.6" y="4" width="4" height="16"></rect>
+      <rect x="17.9" y="4" width="4" height="16"></rect>
     {%- when 'user' -%}
       <circle cx="12" cy="8" r="4"></circle>
       <path d="M4 21c0-4.4 3.6-7.5 8-7.5s8 3.1 8 7.5"></path>

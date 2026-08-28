@@ -1,0 +1,201 @@
+{%- comment -%}
+  Section: Search results
+  Phase 3, Stage 7. Real Shopify product search, reusing sections/
+  collection-grid.liquid's markup/CSS/JS wholesale rather than duplicating
+  it: the root element shares its `collection-grid` class (and the
+  data-view/data-columns attributes assets/theme.js already targets via
+  that exact class), so the grid/list/column toggle works here with zero
+  JS changes. snippets/collection-toolbar.liquid, snippets/collection-
+  filters.liquid and snippets/filter-drawer.liquid were generalized in this
+  stage to accept results_url/filters/sort_by/sort_options/search_terms
+  directly instead of assuming a `collection` object — collection-grid.
+  liquid's own calls are untouched and keep working exactly as before.
+
+  The search box, sort form and filter form are all separate, standard GET
+  <form>s targeting routes.search_url. Every one of them carries hidden
+  type=product and options[prefix]=last fields alongside q, so submitting
+  any of them (search, sort, or filters) always preserves all three —
+  never a generic request.query_parameters object. Filter *removal*
+  (chips, Clear all) preserves them the same way, via collection-filters.
+  liquid's search_terms param.
+
+  search.results can contain non-product objects (articles, pages) even
+  though the search itself is scoped to type=product; results are filtered
+  to object_type == 'product' before rendering as a defensive guard, per
+  Stage 7's requirements — normally a no-op since the request is already
+  product-scoped.
+{%- endcomment -%}
+{%- liquid
+  assign per_page = section.settings.products_per_page | default: 16
+  assign has_filters = false
+  if search.filters.size > 0
+    assign has_filters = true
+  endif
+-%}
+<section class="collection-grid" data-view="grid" data-columns="4" {{ section.shopify_attributes }}>
+  <form method="get" action="{{ routes.search_url }}" role="search" class="search-results__form">
+    <input type="hidden" name="type" value="product">
+    <input type="hidden" name="options[prefix]" value="last">
+    <label for="SearchResultsInput" class="visually-hidden">{{ 'search_results.search_label' | t }}</label>
+    <input
+      type="search"
+      name="q"
+      id="SearchResultsInput"
+      value="{{ search.terms | escape }}"
+      placeholder="{{ 'search_results.search_placeholder' | t }}"
+      class="search-results__input"
+      autocomplete="off"
+    >
+    <button type="submit" class="search-results__submit">{{ 'search_results.search_submit' | t }}</button>
+  </form>
+
+  <div class="collection-grid__header">
+    <div>
+      <h1 class="collection-grid__title">
+        {%- if search.performed and search.terms != blank -%}
+          {{ 'search_results.heading_with_query' | t: query: search.terms }}
+        {%- else -%}
+          {{ 'search_results.heading' | t }}
+        {%- endif -%}
+      </h1>
+      {%- if search.performed -%}
+        <div class="collection-grid__count">{{ 'search_results.product_count' | t: count: search.results_count }}</div>
+      {%- endif -%}
+    </div>
+    {%- if search.performed and search.results_count > 0 -%}
+      {%- render 'collection-toolbar',
+        results_url: routes.search_url,
+        filters: search.filters,
+        sort_by: search.sort_by,
+        sort_options: search.sort_options,
+        search_terms: search.terms
+      -%}
+    {%- endif -%}
+  </div>
+
+  {%- if search.performed and has_filters and search.results_count > 0 -%}
+    {%- render 'filter-drawer',
+      results_url: routes.search_url,
+      filters: search.filters,
+      sort_by: search.sort_by,
+      search_terms: search.terms
+    -%}
+  {%- endif -%}
+
+  {%- if search.performed == false -%}
+    {%- liquid
+      assign no_query_heading = 'search_results.no_query_title' | t
+      assign no_query_body = 'search_results.no_query_body' | t
+    -%}
+    {%- render 'collection-empty-state', heading: no_query_heading, body: no_query_body -%}
+    <div class="search-results__suggestions">
+      <span class="search-results__suggestions-label">{{ 'search_results.suggested_searches' | t }}</span>
+      <div class="search-results__suggestions-list">
+        {%- assign suggested_searches = 'sneakers,loafers,heels,boots' | split: ',' -%}
+        {%- for term in suggested_searches -%}
+          <a href="{{ routes.search_url }}?q={{ term | url_encode }}&type=product&options%5Bprefix%5D=last" class="search-chip">
+            {%- render 'icon', icon: 'search', size: 14 -%}
+            <span>{{ term }}</span>
+          </a>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- elsif search.results_count == 0 -%}
+    {%- liquid
+      assign no_results_heading = 'search_results.no_results_title' | t
+      assign no_results_body = 'search_results.no_results_body' | t
+      assign browse_all_label = 'search_results.browse_all' | t
+    -%}
+    {%- render 'collection-empty-state',
+      heading: no_results_heading,
+      body: no_results_body,
+      primary_label: browse_all_label,
+      primary_url: routes.all_products_collection_url
+    -%}
+  {%- else -%}
+    {%- paginate search.results by per_page -%}
+      {%- assign product_results = search.results | where: 'object_type', 'product' -%}
+      {%- capture products_markup -%}
+        <div class="collection-grid__products">
+          {%- for product in product_results -%}
+            {%- assign above_fold = false -%}
+            {%- if forloop.index <= 4 -%}
+              {%- assign above_fold = true -%}
+            {%- endif -%}
+            {%- render 'product-card', product: product, above_fold: above_fold -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="collection-grid__pagination" aria-label="{{ 'collection_grid.pagination_label' | t }}">
+            <ul class="collection-grid__pagination-list" role="list">
+              <li>
+                {%- if paginate.previous -%}
+                  <a href="{{ paginate.previous.url }}" class="collection-grid__page-link collection-grid__page-link--prev" aria-label="{{ 'collection_grid.previous' | t }}">{{ 'collection_grid.previous' | t }}</a>
+                {%- else -%}
+                  <span class="collection-grid__page-link collection-grid__page-link--prev collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.previous' | t }}</span>
+                {%- endif -%}
+              </li>
+              {%- for part in paginate.parts -%}
+                <li>
+                  {%- if part.is_link -%}
+                    <a href="{{ part.url }}" class="collection-grid__page-link" aria-label="{{ 'collection_grid.go_to_page' | t: number: part.title }}">{{ part.title }}</a>
+                  {%- elsif part.title == paginate.current_page -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--current" aria-current="page" aria-label="{{ 'collection_grid.current_page' | t: number: part.title }}">{{ part.title }}</span>
+                  {%- else -%}
+                    <span class="collection-grid__page-link collection-grid__page-link--ellipsis" aria-hidden="true">{{ part.title }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+              <li>
+                {%- if paginate.next -%}
+                  <a href="{{ paginate.next.url }}" class="collection-grid__page-link collection-grid__page-link--next" aria-label="{{ 'collection_grid.next' | t }}">{{ 'collection_grid.next' | t }}</a>
+                {%- else -%}
+                  <span class="collection-grid__page-link collection-grid__page-link--next collection-grid__page-link--disabled" aria-disabled="true">{{ 'collection_grid.next' | t }}</span>
+                {%- endif -%}
+              </li>
+            </ul>
+          </nav>
+        {%- endif -%}
+      {%- endcapture -%}
+
+      {%- if has_filters or request.design_mode -%}
+        <div class="collection-grid__layout">
+          <aside class="collection-grid__filters-rail hidden-mobile">
+            {%- render 'collection-filters',
+              results_url: routes.search_url,
+              filters: search.filters,
+              sort_by: search.sort_by,
+              search_terms: search.terms,
+              id_prefix: 'Desktop'
+            -%}
+          </aside>
+          <div class="collection-grid__content">{{ products_markup }}</div>
+        </div>
+      {%- else -%}
+        {{ products_markup }}
+      {%- endif -%}
+    {%- endpaginate -%}
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Search results",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Grid"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    }
+  ]
+}
+{% endschema %}

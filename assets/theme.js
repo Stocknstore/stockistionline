@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-account-drawer]', '[data-cart-drawer]'];
+  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-account-drawer]', '[data-cart-drawer]', '[data-filter-drawer]'];
   var lastFocusedElement = null;
 
   /* ---------------- Scroll lock ---------------- */
@@ -20,6 +20,17 @@
     document.body.classList.toggle('scroll-locked', anyDrawerOpen());
   }
 
+  /* Any trigger that declares aria-controls="<drawer id>" gets its
+     aria-expanded kept in sync automatically — a no-op for existing
+     triggers that don't set aria-controls, functional for the filter
+     drawer's toggle button (Stage 6). */
+  function syncDrawerTriggers(drawerId, expanded) {
+    if (!drawerId) return;
+    document.querySelectorAll('[aria-controls="' + drawerId + '"]').forEach(function (trigger) {
+      trigger.setAttribute('aria-expanded', String(expanded));
+    });
+  }
+
   /* ---------------- Generic drawer open/close ---------------- */
   function openDrawer(selector, focusSelector) {
     var el = document.querySelector(selector);
@@ -27,6 +38,7 @@
     lastFocusedElement = document.activeElement;
     el.setAttribute('data-open', '');
     el.setAttribute('aria-hidden', 'false');
+    syncDrawerTriggers(el.id, true);
     updateScrollLock();
     var focusTarget = focusSelector ? el.querySelector(focusSelector) : el.querySelector('button, [href], input');
     if (focusTarget) {
@@ -41,6 +53,7 @@
     if (!el) return;
     el.removeAttribute('data-open');
     el.setAttribute('aria-hidden', 'true');
+    syncDrawerTriggers(el.id, false);
     updateScrollLock();
     if (lastFocusedElement) {
       lastFocusedElement.focus();
@@ -80,6 +93,61 @@
   function resetDrill() {
     drillStack = ['root'];
     showPanel('root');
+  }
+
+  /* ---------------- Collection toolbar: view + column state ----------------
+     Client-side only, no AJAX product loading — every value is validated
+     before use so a corrupted/foreign localStorage value can never apply an
+     unsupported view or column count. State lives on the ancestor
+     .collection-grid section via data-view/data-columns; both the grid and
+     list product sets are already server-rendered (see sections/
+     collection-grid.liquid), so toggling is a pure attribute flip with no
+     re-fetch. */
+  var COLLECTION_VIEW_KEY = 'collectionView';
+  var COLLECTION_COLUMNS_KEY = 'collectionColumns';
+  var VALID_COLLECTION_VIEWS = ['grid', 'list'];
+  var VALID_COLLECTION_COLUMNS = ['2', '3', '4'];
+
+  function readStoredValue(key, validValues) {
+    try {
+      var value = window.localStorage.getItem(key);
+      return validValues.indexOf(value) !== -1 ? value : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeStoredValue(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      /* storage unavailable (private mode, quota, etc.) — state stays session-only */
+    }
+  }
+
+  function syncCollectionToolbar(grid) {
+    var view = grid.getAttribute('data-view');
+    var columns = grid.getAttribute('data-columns');
+    grid.querySelectorAll('[data-view-btn]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-view-btn') === view));
+    });
+    grid.querySelectorAll('[data-columns-btn]').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn.getAttribute('data-columns-btn') === columns));
+    });
+  }
+
+  function initCollectionToolbar() {
+    var grids = document.querySelectorAll('.collection-grid[data-view]');
+    if (!grids.length) return;
+
+    var storedView = readStoredValue(COLLECTION_VIEW_KEY, VALID_COLLECTION_VIEWS);
+    var storedColumns = readStoredValue(COLLECTION_COLUMNS_KEY, VALID_COLLECTION_COLUMNS);
+
+    grids.forEach(function (grid) {
+      if (storedView) grid.setAttribute('data-view', storedView);
+      if (storedColumns) grid.setAttribute('data-columns', storedColumns);
+      syncCollectionToolbar(grid);
+    });
   }
 
   /* ---------------- Announcement bar rotation ---------------- */
@@ -153,6 +221,16 @@
         return;
       }
 
+      // Mobile filter drawer
+      if (e.target.closest('[data-filter-drawer-toggle]')) {
+        openDrawer('[data-filter-drawer]');
+        return;
+      }
+      if (e.target.closest('[data-filter-drawer-close]')) {
+        closeDrawer('[data-filter-drawer]');
+        return;
+      }
+
       // Language selector button (utility row) opens the mobile menu's region
       // panel on small screens, or a simple inline toggle on desktop.
       if (e.target.closest('[data-language-toggle]')) {
@@ -160,6 +238,59 @@
         var expanded = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', String(!expanded));
       }
+
+      // Collection view (grid/list) toggle
+      var viewBtn = e.target.closest('[data-view-btn]');
+      if (viewBtn) {
+        var viewGrid = viewBtn.closest('.collection-grid');
+        var view = viewBtn.getAttribute('data-view-btn');
+        if (viewGrid && VALID_COLLECTION_VIEWS.indexOf(view) !== -1) {
+          viewGrid.setAttribute('data-view', view);
+          writeStoredValue(COLLECTION_VIEW_KEY, view);
+          syncCollectionToolbar(viewGrid);
+        }
+        return;
+      }
+
+      // Collection column-count toggle (desktop/tablet grid view only)
+      var columnsBtn = e.target.closest('[data-columns-btn]');
+      if (columnsBtn) {
+        var columnsGrid = columnsBtn.closest('.collection-grid');
+        var columns = columnsBtn.getAttribute('data-columns-btn');
+        if (columnsGrid && VALID_COLLECTION_COLUMNS.indexOf(columns) !== -1) {
+          columnsGrid.setAttribute('data-columns', columns);
+          writeStoredValue(COLLECTION_COLUMNS_KEY, columns);
+          syncCollectionToolbar(columnsGrid);
+        }
+        return;
+      }
+    });
+
+    // Sort select: progressive enhancement — the form already works via its
+    // visible submit button with no JS; this just auto-submits on change.
+    document.addEventListener('change', function (e) {
+      var sortSelect = e.target.closest('[data-sort-select]');
+      if (sortSelect) {
+        var form = sortSelect.closest('form');
+        if (form) form.submit();
+      }
+    });
+
+    // Brand/vendor filter search: progressive enhancement over an
+    // already-rendered checkbox list (snippets/collection-filters.liquid).
+    // With no JS the input simply does nothing and every checkbox stays
+    // visible and fully usable.
+    document.addEventListener('input', function (e) {
+      var searchInput = e.target.closest('[data-brand-search-input]');
+      if (!searchInput) return;
+      var list = searchInput.parentElement && searchInput.parentElement.querySelector('[data-brand-search-list]');
+      if (!list) return;
+      var query = searchInput.value.trim().toLowerCase();
+      list.querySelectorAll('.collection-filters__option').forEach(function (option) {
+        var label = option.querySelector('label');
+        var text = label ? label.textContent.trim().toLowerCase() : '';
+        option.hidden = query.length > 0 && text.indexOf(query) === -1;
+      });
     });
 
     document.addEventListener('keydown', function (e) {
@@ -175,5 +306,6 @@
   document.addEventListener('DOMContentLoaded', function () {
     initEvents();
     initAnnouncementBar();
+    initCollectionToolbar();
   });
 })();

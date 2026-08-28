@@ -1,0 +1,141 @@
+{%- comment -%}
+  Section: Collection hero
+  Phase 3, Stage 2. Reconstructs renderCategory() from prototype-reference/
+  templates.js ~L179-192: a full-bleed hero photo with the category title
+  overlaid bottom-left, followed by a "Shop by department" card row —
+  matching the prototype's --h1Size/--padX/--deptCols/--deptDisplay/
+  --deptOverflow/--deptSnap/--deptCardW breakpoint behavior
+  (prototype-reference/styles.css L16-165).
+
+  Used only by templates/collection.category.json, the alternate template
+  assigned to the top-level Footwear collection — not the default
+  templates/collection.json (unchanged, still to be built in a later stage).
+
+  Title/description/image default to the collection's own values and can be
+  overridden per-instance. Department cards are reorderable blocks, each
+  pointing at a real Shopify collection (no hardcoded handles/URLs) with
+  optional title/image/count overrides, rendered through
+  snippets/collection-department-nav.liquid.
+{%- endcomment -%}
+{%- liquid
+  assign hero_title = section.settings.title_override | default: collection.title
+  assign hero_image = section.settings.image_override | default: collection.image
+  assign hero_description = section.settings.description_override
+  if hero_description == blank
+    assign hero_description = collection.description
+  endif
+-%}
+<section class="collection-hero" {{ section.shopify_attributes }}>
+  <div class="collection-hero__banner">
+    {%- if hero_image != blank -%}
+      {%- assign widths = "500,800,1100,1500,1900,2400" | split: ',' -%}
+      <img
+        class="collection-hero__image"
+        src="{{ hero_image | image_url: width: 1900 }}"
+        srcset="
+          {%- for w in widths -%}
+            {{ hero_image | image_url: width: w }} {{ w }}w{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        "
+        sizes="100vw"
+        alt="{{ hero_image.alt | default: hero_title | strip_newlines }}"
+        width="{{ hero_image.width }}"
+        height="{{ hero_image.height }}"
+        loading="eager"
+        fetchpriority="high"
+      >
+    {%- else -%}
+      <div class="collection-hero__placeholder">
+        <span class="collection-hero__placeholder-label">{{ 'collection_hero.placeholder' | t }}</span>
+      </div>
+    {%- endif -%}
+    {%- if hero_title != blank -%}
+      <h1 class="collection-hero__title">{{ hero_title }}</h1>
+    {%- endif -%}
+  </div>
+
+  {%- if hero_description != blank -%}
+    <div class="collection-hero__description-wrap">
+      <div class="collection-hero__description">{{ hero_description }}</div>
+    </div>
+  {%- endif -%}
+
+  <div class="collection-hero__departments">
+    {%- if section.settings.department_heading != blank -%}
+      <h2 class="collection-hero__departments-heading">{{ section.settings.department_heading }}</h2>
+    {%- endif -%}
+    {%- render 'collection-department-nav', blocks: section.blocks -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection hero",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Hero"
+    },
+    {
+      "type": "text",
+      "id": "title_override",
+      "label": "Heading override",
+      "info": "Optional. Falls back to the collection's own title."
+    },
+    {
+      "type": "textarea",
+      "id": "description_override",
+      "label": "Description override",
+      "info": "Optional. Falls back to the collection's own description."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_override",
+      "label": "Image override",
+      "info": "Optional. Falls back to the collection's own image."
+    },
+    {
+      "type": "header",
+      "content": "Shop by department"
+    },
+    {
+      "type": "text",
+      "id": "department_heading",
+      "label": "Heading",
+      "default": "Shop by department"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "department",
+      "name": "Department",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title override",
+          "info": "Optional. Falls back to the collection's own title."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image override",
+          "info": "Optional. Falls back to the collection's own image."
+        },
+        {
+          "type": "text",
+          "id": "style_count",
+          "label": "Style count override",
+          "info": "Optional. Falls back to the collection's product count."
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6
+}
+{% endschema %}

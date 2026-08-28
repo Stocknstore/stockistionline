@@ -1,0 +1,29 @@
+{
+  "sections": {
+    "collection-hero": {
+      "type": "collection-hero",
+      "blocks": {
+        "dept-women": {
+          "type": "department",
+          "settings": {
+            "title": "Women"
+          }
+        },
+        "dept-men": {
+          "type": "department",
+          "settings": {
+            "title": "Men"
+          }
+        },
+        "dept-kids": {
+          "type": "department",
+          "settings": {
+            "title": "Kids"
+          }
+        }
+      },
+      "block_order": ["dept-women", "dept-men", "dept-kids"]
+    }
+  },
+  "order": ["collection-hero"]
+}

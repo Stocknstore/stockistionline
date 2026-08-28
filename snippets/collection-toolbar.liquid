@@ -1,0 +1,132 @@
+{%- comment -%}
+  Snippet: collection-toolbar
+  Phase 3, Stage 4 (generalized Stage 7). Sort selector + grid/list/column
+  view controls + mobile filter trigger, matching the prototype's toolbar
+  row from prototype-reference/templates.js ~L253-261.
+
+  Works for both a collection page and the search results page without
+  duplicating logic: pass either `collection` (sections/collection-grid.
+  liquid's existing call — unchanged, still works exactly as before) or the
+  generic `results_url`/`filters`/`sort_by`/`sort_options` params directly
+  (sections/search-results.liquid). Whichever generic param is supplied
+  wins; otherwise it falls back to the matching collection.* property, so
+  collection-page behavior is byte-for-byte identical to before Stage 7.
+
+  Sort is a real, standard GET <form> — no JS required to use it. It
+  preserves every currently active filter by explicitly re-emitting each
+  filter's active_values (param_name/value) and, for price-range filters,
+  the active min/max values as hidden inputs. On search, `search_terms`
+  (search.terms) additionally preserves q/type/options[prefix] as hidden
+  inputs so changing sort never drops the search query. Because it's a
+  plain GET form with no hidden "page" field, submitting always lands on
+  page 1 with the old sort_by replaced by the new selection.
+
+  View/column state lives on the ancestor .collection-grid section via
+  data-view/data-columns attributes (assets/theme.js reads/writes these
+  and mirrors them to localStorage); the buttons work as plain toggles
+  with no JS (each click still updates aria-pressed via the delegated
+  handler) and degrade to "grid, 4 columns" if JS never runs.
+
+  The mobile "Filters" trigger (Stage 6) only renders when there are
+  filters to show. Its target drawer (id="FilterDrawer") is rendered by
+  the caller (sections/collection-grid.liquid or sections/search-results.
+  liquid) under the same condition. Opening/closing and its aria-expanded
+  state are handled entirely by the theme's existing drawer infrastructure
+  (assets/theme.js) via data-filter-drawer-toggle — no bespoke JS here.
+
+  Params:
+    collection    - a collection object (collection-page usage)
+    results_url   - form action target (search-page usage; defaults to
+                    collection.url)
+    filters       - filter array, collection.filters or search.filters
+                    (defaults to collection.filters)
+    sort_by       - current sort value (defaults to collection.sort_by)
+    sort_options  - available sort options (defaults to
+                    collection.sort_options)
+    search_terms  - search.terms; only ever set on the search page, used
+                    to preserve q/type/options[prefix] through sort/filter
+                    submissions
+{%- endcomment -%}
+{%- liquid
+  assign ctx_url = results_url | default: collection.url
+  assign ctx_filters = filters | default: collection.filters
+  assign ctx_sort_by = sort_by | default: collection.sort_by
+  assign ctx_sort_options = sort_options | default: collection.sort_options
+
+  assign active_filter_count = 0
+  for filter in ctx_filters
+    if filter.type == 'price_range'
+      if filter.min_value.value or filter.max_value.value
+        assign active_filter_count = active_filter_count | plus: 1
+      endif
+    else
+      assign active_filter_count = active_filter_count | plus: filter.active_values.size
+    endif
+  endfor
+-%}
+<div class="collection-toolbar">
+  {%- if ctx_filters.size > 0 -%}
+    <button
+      type="button"
+      class="collection-toolbar__filters-toggle hidden-desktop"
+      data-filter-drawer-toggle
+      aria-controls="FilterDrawer"
+      aria-expanded="false"
+    >
+      {{- 'collection_filters.filter_by' | t -}}
+      {%- if active_filter_count > 0 -%}
+        <span class="collection-toolbar__filters-count">{{ active_filter_count }}</span>
+      {%- endif -%}
+    </button>
+  {%- endif -%}
+
+  <form method="get" action="{{ ctx_url }}" class="collection-toolbar__sort-form">
+    {%- if search_terms != blank -%}
+      <input type="hidden" name="q" value="{{ search_terms }}">
+      <input type="hidden" name="type" value="product">
+      <input type="hidden" name="options[prefix]" value="last">
+    {%- endif -%}
+    {%- for filter in ctx_filters -%}
+      {%- if filter.type == 'price_range' -%}
+        {%- if filter.min_value.value -%}
+          <input type="hidden" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value }}">
+        {%- endif -%}
+        {%- if filter.max_value.value -%}
+          <input type="hidden" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value }}">
+        {%- endif -%}
+      {%- else -%}
+        {%- for active_value in filter.active_values -%}
+          <input type="hidden" name="{{ active_value.param_name }}" value="{{ active_value.value }}">
+        {%- endfor -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    <label for="CollectionSortSelect" class="visually-hidden">{{ 'collection_toolbar.sort_label' | t }}</label>
+    <select name="sort_by" id="CollectionSortSelect" class="collection-toolbar__sort-select" data-sort-select>
+      {%- for option in ctx_sort_options -%}
+        <option value="{{ option.value }}" {% if option.value == ctx_sort_by %}selected{% endif %}>{{ option.name }}</option>
+      {%- endfor -%}
+    </select>
+    <button type="submit" class="collection-toolbar__sort-submit" data-sort-submit>{{ 'collection_toolbar.sort_apply' | t }}</button>
+  </form>
+
+  <div class="collection-toolbar__view-controls">
+    <button type="button" class="collection-toolbar__view-btn" data-view-btn="list" aria-label="{{ 'collection_toolbar.view_list' | t }}" aria-pressed="false">
+      {%- render 'icon', icon: 'list', size: 16 -%}
+    </button>
+    <button type="button" class="collection-toolbar__view-btn" data-view-btn="grid" aria-label="{{ 'collection_toolbar.view_grid' | t }}" aria-pressed="true">
+      {%- render 'icon', icon: 'grid', size: 16 -%}
+    </button>
+    <div class="collection-toolbar__columns" data-columns-controls>
+      <button type="button" class="collection-toolbar__view-btn" data-columns-btn="2" aria-label="{{ 'collection_toolbar.columns_2' | t }}" aria-pressed="false">
+        {%- render 'icon', icon: 'columns-2', size: 16 -%}
+      </button>
+      <button type="button" class="collection-toolbar__view-btn" data-columns-btn="3" aria-label="{{ 'collection_toolbar.columns_3' | t }}" aria-pressed="false">
+        {%- render 'icon', icon: 'columns-3', size: 16 -%}
+      </button>
+      <button type="button" class="collection-toolbar__view-btn" data-columns-btn="4" aria-label="{{ 'collection_toolbar.columns_4' | t }}" aria-pressed="true">
+        {%- render 'icon', icon: 'columns-4', size: 16 -%}
+      </button>
+    </div>
+  </div>
+</div>
