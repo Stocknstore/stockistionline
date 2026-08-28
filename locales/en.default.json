@@ -59,7 +59,11 @@
     "title": "Your cart",
     "quantity_label": "Quantity",
     "remove": "Remove",
-    "update_cart": "Update cart"
+    "update_cart": "Update cart",
+    "item_added": "Added to cart:",
+    "updated": "Cart updated.",
+    "item_removed": "Item removed from cart.",
+    "generic_error": "Something went wrong. Please try again."
   },
   "collection_hero": {
     "placeholder": "Add an image"

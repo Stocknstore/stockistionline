@@ -1,26 +1,39 @@
 {%- comment -%}
-  Cart drawer. Phase 1 shipped the empty state only; Phase 4 Stage 4A adds
-  the real populated state — a native {% form 'cart' %} rendering every
-  cart.items line (image/placeholder, title+link, variant title when not
-  "Default Title", line price, an editable quantity via the standard
-  updates[{{ item.key }}] convention, and a item.url_to_remove link),
-  subtotal, and Update cart / View cart / Checkout actions. No AJAX/JS is
-  used for any of this yet (Stage 4A scope) — every control here is a real
-  submit or a real link, so it works with JavaScript fully disabled; the
-  existing openDrawer/closeDrawer infra (assets/theme.js, untouched this
-  stage) still just toggles this drawer's visibility around whatever the
-  server rendered on the current page load.
+  Cart drawer. Phase 1 shipped the empty state only; Stage 4A added the
+  real populated state (native, no-JS-required {% form 'cart' %} markup);
+  Stage 4B layers AJAX on top in assets/theme.js — every control here still
+  works exactly as it did in Stage 4A with JavaScript off.
 
-  Only one of the populated/empty branches ever renders (no more hidden-
-  attribute toggling of both at once, since nothing here swaps them live
-  without a reload) — data-cart-items/-empty/-footer are kept as hooks for
-  a later AJAX stage's section-refresh, not read by anything yet.
+  This whole snippet is what sections/cart-drawer.liquid renders, which is
+  in turn what Shopify wraps as #shopify-section-cart-drawer — the exact
+  node assets/theme.js replaces wholesale on every add/change/remove
+  response (never [data-cart-drawer] itself, which would nest a second
+  wrapper inside the first on every refresh). data-cart-item-count on the
+  root carries the authoritative cart.item_count for JS to sync the
+  header/mobile badges from — deliberately not named data-cart-count,
+  which is the existing, different attribute on those badge elements
+  themselves. data-label-cart-updated/-item-removed carry pre-translated
+  strings for JS's accessible live-region announcements after a change, so
+  nothing is hardcoded in JS.
 
-  Rendered on every page via sections/cart-drawer.liquid, so ids are
-  prefixed CartDrawer- to stay unique alongside sections/main-cart.liquid's
-  own copies of the same cart.items on the /cart page itself.
+  Only one of the populated/empty branches ever renders — data-cart-items/
+  -empty/-footer are kept as hooks a full page reload (no-JS path) and the
+  Stage 4B refresh (AJAX path) both rely on already being there.
+
+  Rendered on every page via sections/cart-drawer.liquid, so ids/data-cart-
+  line-key are prefixed/scoped to stay unique alongside sections/main-cart.
+  liquid's own copies of the same cart.items on the /cart page itself —
+  data-cart-line-key itself is just the raw item.key on both, since
+  assets/theme.js always looks it up within one section's DOM at a time.
 {%- endcomment -%}
-<div class="cart-drawer" data-cart-drawer aria-hidden="true">
+<div
+  class="cart-drawer"
+  data-cart-drawer
+  data-cart-item-count="{{ cart.item_count }}"
+  data-label-cart-updated="{{ 'cart.updated' | t }}"
+  data-label-item-removed="{{ 'cart.item_removed' | t }}"
+  aria-hidden="true"
+>
   <div class="cart-drawer__overlay" data-cart-close></div>
 
   <div class="cart-drawer__panel" role="dialog" aria-modal="true" aria-label="{{ 'header.cart' | t }}">
@@ -30,6 +43,8 @@
 
     {%- if cart.item_count > 0 -%}
       {%- form 'cart', cart, id: 'CartDrawerForm', class: 'cart-drawer__form' -%}
+        <div class="cart-drawer__error" data-cart-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
+
         <div class="cart-drawer__items" data-cart-items>
           {%- for item in cart.items -%}
             <div class="cart-drawer__item">
@@ -62,8 +77,15 @@
                     value="{{ item.quantity }}"
                     min="0"
                     class="cart-drawer__item-quantity-input"
+                    data-cart-line-key="{{ item.key }}"
+                    data-cart-control="quantity"
                   >
-                  <a href="{{ item.url_to_remove }}" class="cart-drawer__item-remove">{{ 'cart.remove' | t }}</a>
+                  <a
+                    href="{{ item.url_to_remove }}"
+                    class="cart-drawer__item-remove"
+                    data-cart-line-key="{{ item.key }}"
+                    data-cart-control="remove"
+                  >{{ 'cart.remove' | t }}</a>
                 </div>
               </div>
             </div>

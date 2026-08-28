@@ -264,6 +264,365 @@
     return normalized;
   }
 
+  /* ---------------- AJAX cart: shared helpers ----------------
+     Stage 4B. Every helper below is shared by the two AJAX flows further
+     down (product-form add, cart quantity/removal) so section-replacement/
+     focus/error/announcement logic is never duplicated between them. */
+  function shopifyRoot() {
+    return (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
+  }
+
+  /* Swaps the *complete* #shopify-section-<id> wrapper for a freshly
+     rendered one from an Ajax Cart API response — never [data-cart-drawer]
+     itself (which the wrapper contains one level down), so a refresh can
+     never nest a second wrapper inside the first. Returns the new
+     wrapper's inner element (the actual .cart-drawer / cart-page section
+     root) so callers always re-query against fresh, current DOM. */
+  function replaceSection(sectionId, html) {
+    var oldWrapper = document.getElementById('shopify-section-' + sectionId);
+    if (!oldWrapper || !html) return null;
+    var temp = document.createElement('div');
+    temp.innerHTML = html.trim();
+    var newWrapper = temp.firstElementChild;
+    if (!newWrapper) return null;
+    oldWrapper.replaceWith(newWrapper);
+    return newWrapper.firstElementChild;
+  }
+
+  /* The Ajax Cart API's bundled sections= response resolves each section
+     against whichever theme is actually serving the storefront request —
+     on a real published theme that's always the same theme being edited,
+     but a section can legitimately come back null in any transitional
+     state (a section added since the last publish, a cache not yet
+     warm). Rather than silently losing the refresh in that case, fall
+     back to the classic Section Rendering API (?section_id=), which
+     always resolves against whatever theme is actually serving the
+     current page — this is what keeps the drawer/cart-page refresh
+     resilient rather than a single point of failure. */
+  function resolveSectionHtml(sectionsFromResponse, sectionId) {
+    var bundled = sectionsFromResponse && sectionsFromResponse[sectionId];
+    if (bundled) return Promise.resolve(bundled);
+    return fetch(window.location.pathname + '?section_id=' + sectionId, { headers: { Accept: 'text/html' } })
+      .then(function (response) {
+        return response.ok ? response.text() : null;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function updateCartCountBadges(count) {
+    document.querySelectorAll('[data-cart-count]').forEach(function (badge) {
+      badge.textContent = count;
+      badge.hidden = count === 0;
+    });
+  }
+
+  /* Accessible status announcer for cart changes — created once and left
+     in the DOM permanently (outside any section that ever gets replaced).
+     Screen readers reliably announce *mutations* to an existing live
+     region but aren't guaranteed to announce one that arrives already
+     populated as part of a wholesale section swap, so this is
+     deliberately never part of the swapped drawer/cart-page markup. */
+  function getCartAnnouncer() {
+    var el = document.getElementById('CartLiveAnnouncer');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'CartLiveAnnouncer';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      el.className = 'visually-hidden';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function announceCartUpdate(message) {
+    if (!message) return;
+    getCartAnnouncer().textContent = message;
+  }
+
+  function extractErrorMessage(data, fallback) {
+    if (!data) return fallback;
+    if (data.description) return data.description;
+    if (data.message) return data.message;
+    if (data.errors) {
+      if (typeof data.errors === 'string') return data.errors;
+      var firstKey = Object.keys(data.errors)[0];
+      if (firstKey) {
+        var value = data.errors[firstKey];
+        return Array.isArray(value) ? value[0] : String(value);
+      }
+    }
+    return fallback;
+  }
+
+  function showError(el, data) {
+    if (!el) return;
+    var fallback = el.getAttribute('data-label-generic-error') || 'Something went wrong. Please try again.';
+    el.textContent = extractErrorMessage(data, fallback);
+    el.hidden = false;
+  }
+
+  function clearError(el) {
+    if (el) {
+      el.hidden = true;
+      el.textContent = '';
+    }
+  }
+
+  /* ---------------- AJAX cart: add to cart (PDP form) ----------------
+     Stage 4B. Intercepts sections/main-product.liquid's already-working
+     {% form 'product' %} only when JS runs — with JS off the exact same
+     form still submits natively (Stage 2 behavior, untouched). Submits
+     the form's own FormData (so whatever variant radio/quantity value is
+     currently selected is exactly what's sent — nothing rebuilt by hand)
+     plus sections=cart-drawer so the drawer refresh is Liquid's own
+     render of real post-add cart state. Never fetches /cart.js — the
+     bundled section response is the sole source of truth. */
+  function handleProductFormSubmit(form) {
+    if (form.hasAttribute('data-submitting')) return; // prevent duplicate submits
+    form.setAttribute('data-submitting', 'true');
+    form.setAttribute('aria-busy', 'true');
+
+    var submitBtn = form.querySelector('[data-product-submit]');
+    var originalLabel = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+    }
+
+    var errorEl = form.querySelector('[data-product-form-error]');
+    clearError(errorEl);
+
+    var formData = new FormData(form);
+    formData.append('sections', 'cart-drawer');
+    formData.append('sections_url', window.location.pathname);
+
+    function restoreButtonState() {
+      form.removeAttribute('data-submitting');
+      form.removeAttribute('aria-busy');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute('aria-busy');
+        submitBtn.textContent = originalLabel;
+      }
+    }
+
+    fetch(shopifyRoot() + 'cart/add.js', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData
+    }).then(function (response) {
+      return response.json().then(function (data) {
+        return { ok: response.ok, data: data };
+      });
+    }).then(function (result) {
+      restoreButtonState();
+
+      if (!result.ok) {
+        showError(errorEl, result.data);
+        return;
+      }
+
+      resolveSectionHtml(result.data.sections, 'cart-drawer').then(function (drawerHtml) {
+        if (!drawerHtml) return;
+        var newDrawer = replaceSection('cart-drawer', drawerHtml);
+        if (!newDrawer) return;
+
+        var count = parseInt(newDrawer.getAttribute('data-cart-item-count'), 10) || 0;
+        updateCartCountBadges(count);
+
+        /* Preserve Add-to-Cart as the focus-return target: openDrawer()
+           reads document.activeElement at call time to set
+           lastFocusedElement, and disabling the button above may already
+           have moved focus to <body> — so it's explicitly re-focused
+           (now that restoreButtonState() has re-enabled it) immediately
+           before opening. */
+        if (submitBtn) submitBtn.focus();
+        openDrawer('[data-cart-drawer]');
+
+        var addedLabel = form.getAttribute('data-label-added-to-cart') || '';
+        announceCartUpdate((addedLabel + ' ' + (result.data.title || '')).trim());
+      });
+    }).catch(function () {
+      restoreButtonState();
+      showError(errorEl, null);
+    });
+  }
+
+  /* ---------------- AJAX cart: quantity change / removal ----------------
+     Stage 4B. Delegated on document (data-cart-control="quantity"/
+     "remove"), so this covers both the drawer's and /cart's identical
+     controls with one implementation. Every request carries a generation
+     token — if a newer request has already started by the time an older
+     one resolves, the stale response is discarded, so rapid repeated
+     input (fast typing, holding an arrow key, double-clicking Remove)
+     can never let an out-of-order response clobber a more recent edit. */
+  var cartChangeRequestId = 0;
+
+  function getMainCartSectionId() {
+    var el = document.querySelector('[data-section-id]');
+    return el ? el.getAttribute('data-section-id') : null;
+  }
+
+  function normalizeCartQuantity(rawValue, previousValue) {
+    var parsed = parseInt(rawValue, 10);
+    if (isNaN(parsed)) return previousValue; // unparseable — revert rather than guess
+    if (parsed < 0) parsed = 0; // matches this field's own min="0" floor
+    return parsed;
+  }
+
+  function findLineControl(container, lineKey, controlType) {
+    if (!container || !lineKey) return null;
+    return container.querySelector('[data-cart-line-key="' + lineKey + '"][data-cart-control="' + controlType + '"]');
+  }
+
+  function focusFirstAvailable(elements) {
+    for (var i = 0; i < elements.length; i++) {
+      if (elements[i]) {
+        elements[i].focus();
+        return;
+      }
+    }
+  }
+
+  function restoreDrawerFocus(newDrawer, lineKey, controlType) {
+    var equivalent = findLineControl(newDrawer, lineKey, controlType);
+    if (equivalent) {
+      equivalent.focus();
+      return;
+    }
+    /* Line was removed — fall back to the next remaining line control,
+       then the close button, then the empty-state CTA if the cart is now
+       fully empty. */
+    focusFirstAvailable([
+      newDrawer.querySelector('[data-cart-control]'),
+      newDrawer.querySelector('.cart-drawer__close'),
+      newDrawer.querySelector('[data-cart-empty] a, [data-cart-empty] button')
+    ]);
+  }
+
+  function restoreMainCartFocus(newMainCart, lineKey, controlType) {
+    var equivalent = findLineControl(newMainCart, lineKey, controlType);
+    if (equivalent) {
+      equivalent.focus();
+      return;
+    }
+    focusFirstAvailable([
+      newMainCart.querySelector('[data-cart-control]'),
+      newMainCart.querySelector('[data-cart-page-empty] a, [data-cart-page-empty] button'),
+      newMainCart.querySelector('.cart-page__continue')
+    ]);
+  }
+
+  function setLineBusy(triggerEl, busy) {
+    var row = triggerEl.closest('.cart-drawer__item, .cart-page__item');
+    if (!row) return;
+    row.classList.toggle('is-loading', busy);
+    row.setAttribute('aria-busy', busy ? 'true' : 'false');
+  }
+
+  function applyCartSectionsResponse(sections, mainCartSectionId, lineKey, controlType, sourceIsDrawer, wasRemoval) {
+    if (!sections) return;
+
+    var drawerEl = document.querySelector('[data-cart-drawer]');
+    var wasOpen = !!(drawerEl && drawerEl.hasAttribute('data-open'));
+
+    Promise.all([
+      resolveSectionHtml(sections, 'cart-drawer'),
+      mainCartSectionId ? resolveSectionHtml(sections, mainCartSectionId) : Promise.resolve(null)
+    ]).then(function (results) {
+      var drawerHtml = results[0];
+      var mainCartHtml = results[1];
+
+      var newDrawer = drawerHtml ? replaceSection('cart-drawer', drawerHtml) : null;
+      var newMainCart = (mainCartSectionId && mainCartHtml) ? replaceSection(mainCartSectionId, mainCartHtml) : null;
+
+      applyReplacedCartSections(newDrawer, newMainCart, wasOpen, lineKey, controlType, sourceIsDrawer, wasRemoval);
+    });
+  }
+
+  function applyReplacedCartSections(newDrawer, newMainCart, wasOpen, lineKey, controlType, sourceIsDrawer, wasRemoval) {
+    if (newDrawer) {
+      var count = parseInt(newDrawer.getAttribute('data-cart-item-count'), 10) || 0;
+      updateCartCountBadges(count);
+
+      if (wasOpen) {
+        /* Restore open state directly — deliberately not calling
+           openDrawer(), which would overwrite lastFocusedElement with
+           whatever is focused right now (mid-AJAX-refresh, not the
+           original trigger that opened the drawer), breaking Escape/
+           backdrop/close-button focus restoration afterward. */
+        newDrawer.setAttribute('data-open', '');
+        newDrawer.setAttribute('aria-hidden', 'false');
+        syncDrawerTriggers(newDrawer.id, true);
+        updateScrollLock();
+
+        if (sourceIsDrawer) {
+          restoreDrawerFocus(newDrawer, lineKey, controlType);
+          var drawerLabel = wasRemoval
+            ? newDrawer.getAttribute('data-label-item-removed')
+            : newDrawer.getAttribute('data-label-cart-updated');
+          announceCartUpdate(drawerLabel);
+        }
+      }
+    }
+
+    if (newMainCart && !sourceIsDrawer) {
+      restoreMainCartFocus(newMainCart, lineKey, controlType);
+      if (newDrawer) {
+        var pageLabel = wasRemoval
+          ? newDrawer.getAttribute('data-label-item-removed')
+          : newDrawer.getAttribute('data-label-cart-updated');
+        announceCartUpdate(pageLabel);
+      }
+    }
+  }
+
+  function performCartChange(triggerEl, lineKey, quantity, controlType) {
+    var requestId = ++cartChangeRequestId;
+    var sourceIsDrawer = !!triggerEl.closest('[data-cart-drawer]');
+    var mainCartSectionId = getMainCartSectionId();
+
+    var sectionIds = ['cart-drawer'];
+    if (mainCartSectionId) sectionIds.push(mainCartSectionId);
+
+    var sourceContainer = sourceIsDrawer ? triggerEl.closest('[data-cart-drawer]') : triggerEl.closest('[data-section-id]');
+    var errorEl = sourceContainer && sourceContainer.querySelector('[data-cart-error]');
+    clearError(errorEl);
+    setLineBusy(triggerEl, true);
+
+    fetch(shopifyRoot() + 'cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        id: lineKey,
+        quantity: quantity,
+        sections: sectionIds.join(','),
+        sections_url: window.location.pathname
+      })
+    }).then(function (response) {
+      return response.json().then(function (data) {
+        return { ok: response.ok, data: data };
+      });
+    }).then(function (result) {
+      if (requestId !== cartChangeRequestId) return; // superseded by a newer request
+
+      if (!result.ok) {
+        setLineBusy(triggerEl, false);
+        showError(errorEl, result.data);
+        return;
+      }
+
+      applyCartSectionsResponse(result.data.sections, mainCartSectionId, lineKey, controlType, sourceIsDrawer, quantity === 0);
+    }).catch(function () {
+      if (requestId !== cartChangeRequestId) return;
+      setLineBusy(triggerEl, false);
+      showError(errorEl, null);
+    });
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -400,6 +759,16 @@
         }
         return;
       }
+
+      // Cart line item removal (AJAX, quantity 0) — item.url_to_remove
+      // stays the real, working no-JS href; this only runs when JS can
+      // intercept the click, in the drawer and on /cart alike.
+      var cartRemove = e.target.closest('[data-cart-control="remove"]');
+      if (cartRemove) {
+        e.preventDefault();
+        performCartChange(cartRemove, cartRemove.getAttribute('data-cart-line-key'), 0, 'remove');
+        return;
+      }
     });
 
     // Sort select: progressive enhancement — the form already works via its
@@ -435,6 +804,30 @@
       var quantityInput = e.target.closest('[data-quantity-input]');
       if (quantityInput) {
         setQuantity(quantityInput, quantityInput.value);
+      }
+
+      // Cart line item quantity (AJAX) — fires on blur/enter, not per
+      // keystroke (matching the same rationale as the PDP quantity field
+      // above). Reverts to the field's last known-good (server-rendered)
+      // value on anything unparseable rather than guessing at intent.
+      var cartQuantityInput = e.target.closest('[data-cart-control="quantity"]');
+      if (cartQuantityInput) {
+        var previousQuantity = parseInt(cartQuantityInput.defaultValue, 10) || 0;
+        var normalizedQuantity = normalizeCartQuantity(cartQuantityInput.value, previousQuantity);
+        cartQuantityInput.value = normalizedQuantity;
+        performCartChange(cartQuantityInput, cartQuantityInput.getAttribute('data-cart-line-key'), normalizedQuantity, 'quantity');
+      }
+    });
+
+    // AJAX add-to-cart: intercepts only sections/main-product.liquid's
+    // {% form 'product' %} (data-product-form). With JS off, this listener
+    // never runs and the exact same form still submits natively (Stage 2
+    // behavior, unchanged).
+    document.addEventListener('submit', function (e) {
+      var productForm = e.target.closest('[data-product-form]');
+      if (productForm) {
+        e.preventDefault();
+        handleProductFormSubmit(productForm);
       }
     });
 

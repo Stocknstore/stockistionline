@@ -1,9 +1,20 @@
 {%- comment -%}
   Section: Main product
   Phase 4, Stage 1 (media gallery + core info) + Stage 2 (native variant
-  selection + a working product form) + Stage 3 (quantity selector). Still
-  no AJAX cart, cart drawer item rendering, accordions or recommendations —
-  later Phase 4 stages layer those onto this same section.
+  selection + a working product form) + Stage 3 (quantity selector) +
+  Stage 4B (AJAX add-to-cart). Still no accordions/recommendations — later
+  Phase 4 stages layer those onto this same section.
+
+  Stage 4B: assets/theme.js intercepts this form's submit only when JS runs
+  (a real submit event listener via e.preventDefault(), not a rebuilt
+  form) and POSTs its own FormData to cart/add.js with sections=cart-drawer
+  bundled in, so the drawer refresh always comes from Liquid's own render
+  of real cart state — nothing about the form's no-JS behavior changes.
+  data-product-form-error is the dedicated inline error target for a 422/
+  non-2xx response (kept empty/hidden server-side); data-label-added-to-
+  cart carries the pre-translated "added to cart" prefix JS uses for its
+  accessible success announcement, sourced from Liquid so nothing is
+  hardcoded in JS.
 
   The quantity input is a plain name="quantity" number field (min="1",
   required) inside the same already-working form. Without JS, native HTML5
@@ -55,6 +66,7 @@
   endif
 
   assign product_form_id = 'ProductForm-' | append: section.id
+  assign added_to_cart_label = 'cart.item_added' | t
 -%}
 {%- capture variants_json -%}
   [
@@ -101,7 +113,9 @@
       {%- endif -%}
       <h1 class="product__title">{{ product.title }}</h1>
 
-      {%- form 'product', product, return_to: request.path, id: product_form_id, class: 'product__form', data-product-form: '' -%}
+      {%- form 'product', product, return_to: request.path, id: product_form_id, class: 'product__form', data-product-form: '', data-label-added-to-cart: added_to_cart_label -%}
+        <div class="product-form-error" data-product-form-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
+
         <div class="product__price-row">
           <span class="product__price" data-product-price>{{ current_variant.price | money }}</span>
           <span class="product__compare-at" data-product-compare-at {% unless show_compare_at %}hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</span>

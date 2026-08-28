@@ -1,22 +1,28 @@
 {%- comment -%}
   Section: Main cart
-  Phase 4, Stage 4A. Standalone /cart page — a native {% form 'cart' %}
-  with the same real cart.items rendering as snippets/cart-drawer.liquid
-  (image/placeholder, title+link, variant title when not "Default Title",
-  line price, an editable quantity via updates[{{ item.key }}], and an
-  item.url_to_remove link), subtotal, Update cart, Checkout (name=
-  "checkout", Shopify's native convention for a submit button that applies
-  any pending quantity edits and proceeds straight to checkout) and a
-  Continue shopping link. No AJAX/JS — every control is a real submit or a
-  real link. No custom checkout is built; the "checkout" submit hands off
-  to Shopify's own hosted checkout.
+  Phase 4, Stage 4A (native, no-JS-required cart page) + Stage 4B (AJAX
+  quantity/removal on top). Same real cart.items rendering as snippets/
+  cart-drawer.liquid (image/placeholder, title+link, variant title when
+  not "Default Title", line price, an editable quantity via updates[
+  {{ item.key }}], and an item.url_to_remove link), subtotal, Update cart,
+  Checkout (name="checkout") and Continue shopping. Every control still
+  works as a real submit/real link with JS off; no custom checkout is
+  built, "checkout" hands off to Shopify's own hosted checkout.
 
-  This section and the drawer both render cart.items independently (the
-  drawer is global, via layout/theme.liquid, so it's also present on this
-  very page) — ids here are prefixed CartPage- to stay unique alongside
-  the drawer's CartDrawer- prefixed copies of the same item keys.
+  Unlike the static cart-drawer section, this is a dynamic JSON-template
+  section, so its actual section.id at runtime isn't just "main-cart" —
+  it's exposed via data-section-id on the root so assets/theme.js can
+  request/replace #shopify-section-{that id} by its real id rather than a
+  hardcoded guess (the drawer's own #shopify-section-cart-drawer is
+  requested/replaced separately, in parallel, by the same AJAX call).
+
+  This section and the global drawer both render cart.items independently
+  on this same page — ids here are prefixed CartPage- to stay unique
+  alongside the drawer's CartDrawer- prefixed copies of the same item
+  keys; data-cart-line-key itself is just the raw item.key on both, since
+  assets/theme.js always looks it up within one section's DOM at a time.
 {%- endcomment -%}
-<section class="cart-page container container--medium" {{ section.shopify_attributes }}>
+<section class="cart-page container container--medium" data-section-id="{{ section.id }}" {{ section.shopify_attributes }}>
   <h1 class="cart-page__title">{{ 'cart.title' | t }}</h1>
 
   {%- if cart.item_count == 0 -%}
@@ -28,6 +34,8 @@
     </div>
   {%- else -%}
     {%- form 'cart', cart, id: 'CartPageForm', class: 'cart-page__form' -%}
+      <div class="cart-page__error" data-cart-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
+
       <div class="cart-page__items">
         {%- for item in cart.items -%}
           <div class="cart-page__item">
@@ -50,7 +58,12 @@
               {%- if item.variant.title != 'Default Title' -%}
                 <span class="cart-page__item-variant">{{ item.variant.title }}</span>
               {%- endif -%}
-              <a href="{{ item.url_to_remove }}" class="cart-page__item-remove">{{ 'cart.remove' | t }}</a>
+              <a
+                href="{{ item.url_to_remove }}"
+                class="cart-page__item-remove"
+                data-cart-line-key="{{ item.key }}"
+                data-cart-control="remove"
+              >{{ 'cart.remove' | t }}</a>
             </div>
             <div class="cart-page__item-quantity">
               <label class="visually-hidden" for="CartPageQuantity-{{ item.key }}">{{ 'cart.quantity_label' | t }}</label>
@@ -61,6 +74,8 @@
                 value="{{ item.quantity }}"
                 min="0"
                 class="cart-page__item-quantity-input"
+                data-cart-line-key="{{ item.key }}"
+                data-cart-control="quantity"
               >
             </div>
             <span class="cart-page__item-price">{{ item.final_line_price | money }}</span>

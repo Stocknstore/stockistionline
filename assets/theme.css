@@ -3108,3 +3108,31 @@ body.scroll-locked { overflow: hidden; }
   .cart-page__subtotal { justify-content: space-between; }
   .cart-page__actions { flex-direction: column; }
 }
+
+/* --------------------------------------------------------------------------
+   38. AJAX cart states — sections/main-product.liquid, snippets/cart-
+   drawer.liquid, sections/main-cart.liquid
+   Phase 4, Stage 4B. Error targets exist empty/hidden in the server-
+   rendered markup ([hidden]'s native display:none is enough to hide them —
+   nothing here needs to declare display, so it can never fight a hidden-
+   mobile/hidden-desktop-style toggle elsewhere); assets/theme.js only ever
+   sets text and clears [hidden]. Busy states are opacity/cursor only, no
+   layout shift, so a rapid request/response doesn't jump the page around.
+   -------------------------------------------------------------------------- */
+.product-form-error,
+.cart-drawer__error,
+.cart-page__error {
+  background: var(--color-error);
+  color: var(--color-primary-contrast);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.product__submit[aria-busy="true"] { opacity: 0.7; cursor: wait; }
+
+.cart-drawer__item.is-loading,
+.cart-page__item.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
