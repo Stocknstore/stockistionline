@@ -3218,3 +3218,37 @@ body.scroll-locked { overflow: hidden; }
 }
 .product-accordion__content li { margin-bottom: var(--space-2); }
 .product-accordion__content a { color: var(--color-link); text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   40. Product recommendations — sections/product-recommendations.liquid
+   Phase 4, Stage 7. Section-owned grid — deliberately not reusing
+   .collection-grid__products, which only exists/works nested under a
+   .collection-grid ancestor (a class this section never has, since it's
+   never inside a collection page). Same 4/3/2 desktop/tablet/mobile column
+   counts and the same 1279px/767px breakpoints as .collection-grid
+   (section 27) for visual consistency, but fully self-contained.
+   -------------------------------------------------------------------------- */
+.product-recommendations {
+  padding: var(--space-8) 40px var(--space-8);
+}
+.product-recommendations__heading {
+  font-weight: 900;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-6);
+}
+.product-recommendations__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+@media (max-width: 1279px) {
+  .product-recommendations { padding-left: 28px; padding-right: 28px; }
+  .product-recommendations__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .product-recommendations { padding-left: 16px; padding-right: 16px; }
+  .product-recommendations__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+}

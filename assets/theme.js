@@ -623,6 +623,54 @@
     });
   }
 
+  /* ---------------- Product recommendations ----------------
+     Stage 7. sections/product-recommendations.liquid renders collapsed
+     (hidden, no grid) on a normal page load, since Liquid's recommendations
+     object is only populated when the *current* request is Shopify's own
+     recommendations endpoint. This fetches that endpoint — routes.
+     product_recommendations_url, exposed via a data attribute so nothing
+     here hardcodes a path — with the required section_id/product_id/
+     limit/intent=related params, and replaces the #shopify-section-<id>
+     wrapper wholesale with the response using the same replaceSection()
+     helper Stage 4B already established (the response is complete Shopify
+     section markup, so this avoids ever nesting a second wrapper inside
+     the first). A non-2xx/empty/malformed response is swallowed silently
+     — the section simply stays exactly as collapsed as it started, no
+     console-breaking error and nothing left half-rendered. */
+  function initProductRecommendations() {
+    document.querySelectorAll('[data-product-recommendations]').forEach(function (section) {
+      // Already in flight, or already carries real recommendation content
+      // (a previous successful load) — never fetch/inject a second time.
+      if (section.hasAttribute('data-loading')) return;
+      if (section.querySelector('.product-recommendations__grid')) return;
+
+      var baseUrl = section.getAttribute('data-recommendations-url');
+      var sectionId = section.getAttribute('data-section-id');
+      var productId = section.getAttribute('data-product-id');
+      var limit = section.getAttribute('data-limit');
+      if (!baseUrl || !sectionId || !productId) return;
+
+      section.setAttribute('data-loading', 'true');
+
+      var url = baseUrl
+        + '?section_id=' + encodeURIComponent(sectionId)
+        + '&product_id=' + encodeURIComponent(productId)
+        + '&limit=' + encodeURIComponent(limit || '4')
+        + '&intent=related';
+
+      fetch(url)
+        .then(function (response) {
+          return response.ok ? response.text() : null;
+        })
+        .then(function (html) {
+          if (html) replaceSection(sectionId, html);
+        })
+        .catch(function () {
+          /* left collapsed — a non-blocking, silent failure */
+        });
+    });
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -863,5 +911,6 @@
     initAnnouncementBar();
     initCollectionToolbar();
     initProductGallery();
+    initProductRecommendations();
   });
 })();

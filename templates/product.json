@@ -14,7 +14,10 @@
         }
       },
       "block_order": ["details", "delivery", "returns"]
+    },
+    "product-recommendations": {
+      "type": "product-recommendations"
     }
   },
-  "order": ["main-product"]
+  "order": ["main-product", "product-recommendations"]
 }
