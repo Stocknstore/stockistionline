@@ -2420,7 +2420,10 @@ body.scroll-locked { overflow: hidden; }
   background: var(--color-primary);
   padding-bottom: 2px;
 }
-.collection-grid__content { min-width: 0; }
+.collection-grid__content {
+  min-width: 0;
+  background: var(--color-background);
+}
 
 @media (min-width: 768px) {
   .collection-grid__filters-rail {
