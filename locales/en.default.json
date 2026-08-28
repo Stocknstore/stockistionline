@@ -56,7 +56,8 @@
     "quantity_label": "Quantity",
     "quantity_decrease": "Decrease quantity",
     "quantity_increase": "Increase quantity",
-    "quantity_announce": "Quantity updated to "
+    "quantity_announce": "Quantity updated to ",
+    "accordion_details_placeholder": "Add a product description to preview this section."
   },
   "cart": {
     "title": "Your cart",

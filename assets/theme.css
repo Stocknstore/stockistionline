@@ -3148,3 +3148,73 @@ body.scroll-locked { overflow: hidden; }
   opacity: 0.5;
   pointer-events: none;
 }
+
+/* --------------------------------------------------------------------------
+   39. Product accordions — snippets/product-accordion.liquid
+   Phase 4, Stage 6. Built on native <details>/<summary> — every open/closed
+   visual (chevron rotation, panel spacing) keys off the browser-managed
+   details[open] attribute, not a class or JS state, so it's correct with
+   JavaScript fully disabled. The default disclosure marker is hidden in
+   favor of the custom chevron icon; this is purely presentational and
+   doesn't touch <summary>'s native accessible semantics. Transitions here
+   are already covered by the theme-wide prefers-reduced-motion override
+   (section 17) — no separate media query needed in this section.
+   -------------------------------------------------------------------------- */
+.product-accordion {
+  margin-top: var(--space-7);
+  border-top: 1px solid var(--color-border);
+}
+.product-accordion__item {
+  border-bottom: 1px solid var(--color-border);
+}
+.product-accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  cursor: pointer;
+  list-style: none;
+}
+.product-accordion__summary::-webkit-details-marker { display: none; }
+.product-accordion__summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.product-accordion__heading {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--color-text);
+}
+.product-accordion__icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-text);
+  transition: transform var(--transition-normal) var(--ease);
+}
+.product-accordion__item[open] .product-accordion__icon { transform: rotate(180deg); }
+
+.product-accordion__panel { padding: 0 0 var(--space-5); }
+.product-accordion__content {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.product-accordion__content > *:first-child { margin-top: 0; }
+.product-accordion__content > *:last-child { margin-bottom: 0; }
+.product-accordion__content p { margin: 0 0 var(--space-4); }
+.product-accordion__content h1,
+.product-accordion__content h2,
+.product-accordion__content h3,
+.product-accordion__content h4 {
+  font-weight: 700;
+  color: var(--color-text);
+  margin: var(--space-5) 0 var(--space-3);
+}
+.product-accordion__content ul,
+.product-accordion__content ol {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+.product-accordion__content li { margin-bottom: var(--space-2); }
+.product-accordion__content a { color: var(--color-link); text-decoration: underline; }
