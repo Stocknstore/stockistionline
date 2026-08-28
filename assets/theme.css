@@ -2859,6 +2859,18 @@ body.scroll-locked { overflow: hidden; }
 }
 .product-variant-picker__input:disabled:hover + .product-variant-picker__label { background: none; }
 
+/* Phase 4, Stage 5: a directly-selected sold-out variant is both :checked
+   and :disabled at once (kept checked "for context" per spec, even though
+   Add to Cart stays disabled) — without this, the plain :disabled rule's
+   low-contrast text color wins the cascade over :checked's cream text on
+   the same rule's navy background, making the label unreadable. The
+   combined selector below has higher specificity than either single-state
+   rule, so it wins regardless of source order, while still keeping the
+   strikethrough as an additional (non-color) unavailability cue. */
+.product-variant-picker__input:checked:disabled + .product-variant-picker__label {
+  color: var(--color-primary-contrast);
+}
+
 .product__availability {
   margin: 16px 0 0;
   font-size: 12px;

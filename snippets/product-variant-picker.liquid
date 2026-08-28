@@ -22,6 +22,12 @@
   in theme.css (section 34) for state styling — a standard accessible
   custom-radio pattern.
 
+  Phase 4, Stage 5: a disabled option's label also carries a visually-
+  hidden "(Sold out)" suffix — the disabled state alone communicates
+  unavailability through the control's own semantics, but the sibling-
+  selector styling above is color/strikethrough, and this makes the same
+  information available as real text rather than relying on either.
+
   Params:
     product         - required, a Shopify product object
     current_variant - required, product.selected_or_first_available_variant
@@ -45,7 +51,10 @@
             {% unless variant.available %}disabled{% endunless %}
           >
           <label class="product-variant-picker__label" for="ProductVariant-{{ variant.id }}">
-            {{ variant.title }}
+            {{- variant.title -}}
+            {%- unless variant.available -%}
+              <span class="visually-hidden">{{ 'product.variant_sold_out_suffix' | t }}</span>
+            {%- endunless -%}
           </label>
         </span>
       {%- endfor -%}

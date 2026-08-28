@@ -2,8 +2,26 @@
   Section: Main product
   Phase 4, Stage 1 (media gallery + core info) + Stage 2 (native variant
   selection + a working product form) + Stage 3 (quantity selector) +
-  Stage 4B (AJAX add-to-cart). Still no accordions/recommendations — later
-  Phase 4 stages layer those onto this same section.
+  Stage 4B (AJAX add-to-cart) + Stage 5 (sold-out/unavailable states).
+  Still no accordions/recommendations — later Phase 4 stages layer those
+  onto this same section.
+
+  Stage 5: availability is driven entirely by variant.available/product.
+  available (never inventory_quantity, which isn't exposed to the
+  storefront and isn't guaranteed-live even if it were) — this
+  automatically respects Shopify's own inventory policy, including
+  continue-selling-when-out-of-stock variants, with no extra theme logic.
+  has_valid_variant/is_purchasable below distinguish two different
+  "can't buy this" cases with two different labels: current_variant is
+  always some real, existing variant for any real Shopify product (product.
+  selected_or_first_available_variant never actually returns blank, and an
+  invalid ?variant= param is silently ignored by Shopify in favor of a
+  normal fallback) — a real variant that's simply out of stock shows
+  "Sold out". has_valid_variant only goes false in the deliberately
+  defensive, practically unreachable case of a product resolving to no
+  variant object at all, which shows "Unavailable" instead — a distinct
+  label for "there is nothing here to select" versus "this specific
+  option is out of stock."
 
   Stage 4B: assets/theme.js intercepts this form's submit only when JS runs
   (a real submit event listener via e.preventDefault(), not a rebuilt
@@ -53,9 +71,20 @@
 {%- endcomment -%}
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
+
+  assign has_valid_variant = false
+  if current_variant != blank and current_variant.id != blank
+    assign has_valid_variant = true
+  endif
+
+  assign is_purchasable = false
+  if has_valid_variant and current_variant.available
+    assign is_purchasable = true
+  endif
+
   assign show_compare_at = false
   assign discount_percent = 0
-  if current_variant.compare_at_price > current_variant.price
+  if has_valid_variant and current_variant.compare_at_price > current_variant.price
     assign show_compare_at = true
     assign discount_percent = current_variant.compare_at_price | minus: current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | round
   endif
@@ -117,7 +146,7 @@
         <div class="product-form-error" data-product-form-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
 
         <div class="product__price-row">
-          <span class="product__price" data-product-price>{{ current_variant.price | money }}</span>
+          <span class="product__price" data-product-price>{% if has_valid_variant %}{{ current_variant.price | money }}{% else %}{{ 0 | money }}{% endif %}</span>
           <span class="product__compare-at" data-product-compare-at {% unless show_compare_at %}hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</span>
           <span class="product__discount" data-product-discount {% unless show_compare_at %}hidden{% endunless %}>&minus;{{ discount_percent }}%</span>
         </div>
@@ -125,15 +154,17 @@
         {%- render 'product-variant-picker', product: product, current_variant: current_variant -%}
 
         <p
-          class="product__availability{% unless current_variant.available %} product__availability--sold-out{% endunless %}"
+          class="product__availability{% unless is_purchasable %} product__availability--sold-out{% endunless %}"
           data-product-availability
           data-label-in-stock="{{ 'product.availability_in_stock' | t }}"
           data-label-sold-out="{{ 'product.availability_sold_out' | t }}"
         >
-          {%- if current_variant.available -%}
+          {%- if is_purchasable -%}
             {{- 'product.availability_in_stock' | t -}}
-          {%- else -%}
+          {%- elsif has_valid_variant -%}
             {{- 'product.availability_sold_out' | t -}}
+          {%- else -%}
+            {{- 'product.availability_unavailable' | t -}}
           {%- endif -%}
         </p>
 
@@ -186,12 +217,15 @@
           data-product-submit
           data-label-add="{{ 'product.add_to_cart' | t }}"
           data-label-sold-out="{{ 'product.sold_out' | t }}"
-          {% unless current_variant.available %}disabled{% endunless %}
+          data-label-unavailable="{{ 'product.unavailable' | t }}"
+          {% unless is_purchasable %}disabled{% endunless %}
         >
-          {%- if current_variant.available -%}
+          {%- if is_purchasable -%}
             {{- 'product.add_to_cart' | t -}}
-          {%- else -%}
+          {%- elsif has_valid_variant -%}
             {{- 'product.sold_out' | t -}}
+          {%- else -%}
+            {{- 'product.unavailable' | t -}}
           {%- endif -%}
         </button>
 
