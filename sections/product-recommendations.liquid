@@ -1,0 +1,77 @@
+{%- comment -%}
+  Section: Product recommendations
+  Phase 4, Stage 7. Independent section (templates/product.json places it
+  after main-product, not inside it) — merchant configurable/reorderable/
+  removable in the Theme Editor like any other section, with no dependency
+  on main-product's own markup or state.
+
+  Standard Shopify recommendations pattern: on a normal page load,
+  recommendations.performed is false (Liquid only populates it when the
+  *current* request is Shopify's own recommendations endpoint), so this
+  renders collapsed (hidden, no grid, no placeholder) — no layout-breaking
+  loading skeleton, nothing for a screen reader to announce. assets/
+  theme.js then fetches routes.product_recommendations_url (locale-aware,
+  never a hardcoded /recommendations/... path) with this exact section's
+  id, so the response is this same template re-rendered with real
+  recommendations.products populated — and replaces the #shopify-section-
+  {{ section.id }} wrapper wholesale with it (the same safe, no-duplicate-
+  wrapper replaceSection() helper Stage 4B already established), rather
+  than trying to hand-build card markup from a different, JSON-only
+  endpoint. Product URLs come straight from product.url on each recommended
+  product exactly as Shopify returns them in that context, which is what
+  carries Shopify's own recommendation-tracking query params automatically
+  — nothing here rebuilds a URL by hand.
+
+  No "same collection minus current product" fallback and no placeholder/
+  fake products — a genuinely empty recommendations response (products_
+  count == 0) leaves the section collapsed, same as before the fetch ran.
+{%- endcomment -%}
+{%- liquid
+  assign limit = section.settings.products_to_show | default: 4
+  assign has_recommendations = false
+  if recommendations.performed and recommendations.products_count > 0
+    assign has_recommendations = true
+  endif
+-%}
+<section
+  class="product-recommendations"
+  data-product-recommendations
+  data-recommendations-url="{{ routes.product_recommendations_url }}"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-limit="{{ limit }}"
+  {{ section.shopify_attributes }}
+  {% unless has_recommendations %}hidden{% endunless %}
+>
+  {%- if has_recommendations -%}
+    <h2 class="product-recommendations__heading">{{ section.settings.heading }}</h2>
+    <div class="product-recommendations__grid">
+      {%- for recommended_product in recommendations.products -%}
+        {%- render 'product-card', product: recommended_product -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Product recommendations",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "You might also like"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Number of products",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    }
+  ]
+}
+{% endschema %}

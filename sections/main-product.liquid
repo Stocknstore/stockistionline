@@ -1,0 +1,331 @@
+{%- comment -%}
+  Section: Main product
+  Phase 4, Stage 1 (media gallery + core info) + Stage 2 (native variant
+  selection + a working product form) + Stage 3 (quantity selector) +
+  Stage 4B (AJAX add-to-cart) + Stage 5 (sold-out/unavailable states) +
+  Stage 6 (Details/Delivery/Returns accordions). Still no recommendations —
+  a later Phase 4 stage layers that onto this same section.
+
+  Stage 6: three merchant-editable blocks (details/delivery/returns),
+  looped in whatever order the merchant has arranged them via section.
+  blocks — templates/product.json pre-populates the default instance of
+  all three, in that order, but this loop itself doesn't hardcode a count
+  or order beyond what the merchant configures. Details always sources
+  product.description rather than having its own rich-text setting (that's
+  the point of the block — showing the real product's real description);
+  Delivery/Returns are plain merchant-editable richtext. Any block whose
+  resulting content is blank is skipped entirely (no empty accordion
+  panel) — except Details in the Theme Editor specifically, where a
+  placeholder string takes over so the block stays visible/selectable
+  while merchants are looking at a product with no description yet.
+
+  Stage 5: availability is driven entirely by variant.available/product.
+  available (never inventory_quantity, which isn't exposed to the
+  storefront and isn't guaranteed-live even if it were) — this
+  automatically respects Shopify's own inventory policy, including
+  continue-selling-when-out-of-stock variants, with no extra theme logic.
+  has_valid_variant/is_purchasable below distinguish two different
+  "can't buy this" cases with two different labels: current_variant is
+  always some real, existing variant for any real Shopify product (product.
+  selected_or_first_available_variant never actually returns blank, and an
+  invalid ?variant= param is silently ignored by Shopify in favor of a
+  normal fallback) — a real variant that's simply out of stock shows
+  "Sold out". has_valid_variant only goes false in the deliberately
+  defensive, practically unreachable case of a product resolving to no
+  variant object at all, which shows "Unavailable" instead — a distinct
+  label for "there is nothing here to select" versus "this specific
+  option is out of stock."
+
+  Stage 4B: assets/theme.js intercepts this form's submit only when JS runs
+  (a real submit event listener via e.preventDefault(), not a rebuilt
+  form) and POSTs its own FormData to cart/add.js with sections=cart-drawer
+  bundled in, so the drawer refresh always comes from Liquid's own render
+  of real cart state — nothing about the form's no-JS behavior changes.
+  data-product-form-error is the dedicated inline error target for a 422/
+  non-2xx response (kept empty/hidden server-side); data-label-added-to-
+  cart carries the pre-translated "added to cart" prefix JS uses for its
+  accessible success announcement, sourced from Liquid so nothing is
+  hardcoded in JS.
+
+  The quantity input is a plain name="quantity" number field (min="1",
+  required) inside the same already-working form. Without JS, native HTML5
+  constraint validation on those two attributes blocks submitting anything
+  empty or below 1 — the browser stops the form and prompts a fix, rather
+  than silently rewriting the value, since only JS can do that. With JS,
+  assets/theme.js actively normalizes the field to a valid whole number on
+  change (before the browser's own validation would ever run), and the +/-
+  buttons (type="button", never touching submission) call the same
+  normalization. Quantity defaults to 1 on load, matching every other
+  Shopify PDP.
+
+  The breadcrumb trail is real (Home / current collection / product title)
+  rather than the prototype's static "Back to listing" link, using the
+  global collection object when arriving from a collection page and falling
+  back to the product's first collection otherwise.
+
+  The form uses Shopify's native {% form 'product' %} tag's return_to
+  param, which the tag turns into its own hidden <input name="return_to">
+  automatically (adding a second one manually would duplicate that field
+  in the POST body). return_to: 'back' was tried first, since routes.
+  cart_url / templates/cart.json don't exist until Stage 4 and a plain
+  non-JS submit must not land on a 404 there — but verified against the
+  real /cart/add endpoint, the literal value "back" is not resolved
+  against the request's Referer and instead falls through to the shop
+  root, not this page. An explicit return_to value (a real path) is
+  honored correctly, so request.path — the current PDP path including any
+  ?variant= already in the address bar — is used instead to actually
+  satisfy "return to the PDP".
+
+  Variant data for the Stage 2 JS enhancement (assets/theme.js, the
+  data-variant-radio change handler) is embedded once below as JSON, with
+  every price already run through Liquid's money filter server-side — this
+  keeps the client free of any currency-formatting logic of its own, so it
+  never hardcodes EUR and stays correct for any shop currency/format.
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+
+  assign has_valid_variant = false
+  if current_variant != blank and current_variant.id != blank
+    assign has_valid_variant = true
+  endif
+
+  assign is_purchasable = false
+  if has_valid_variant and current_variant.available
+    assign is_purchasable = true
+  endif
+
+  assign show_compare_at = false
+  assign discount_percent = 0
+  if has_valid_variant and current_variant.compare_at_price > current_variant.price
+    assign show_compare_at = true
+    assign discount_percent = current_variant.compare_at_price | minus: current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  assign breadcrumb_collection = collection
+  if breadcrumb_collection == blank and product.collections.first != blank
+    assign breadcrumb_collection = product.collections.first
+  endif
+
+  assign product_form_id = 'ProductForm-' | append: section.id
+  assign added_to_cart_label = 'cart.item_added' | t
+-%}
+{%- capture variants_json -%}
+  [
+    {%- for variant in product.variants -%}
+      {%- liquid
+        assign v_show_compare_at = false
+        assign v_discount_percent = 0
+        if variant.compare_at_price > variant.price
+          assign v_show_compare_at = true
+          assign v_discount_percent = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round
+        endif
+      -%}
+      {
+        "id": {{ variant.id | json }},
+        "available": {{ variant.available | json }},
+        "price": {{ variant.price | money | json }},
+        "compareAtPrice": {% if v_show_compare_at %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+        "discountPercent": {{ v_discount_percent | json }},
+        "sku": {{ variant.sku | json }},
+        "featuredMediaId": {% if variant.featured_media %}{{ variant.featured_media.id | json }}{% else %}null{% endif %}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+{%- endcapture -%}
+<section class="product" {{ section.shopify_attributes }}>
+  <nav class="product__breadcrumb" aria-label="{{ 'product.breadcrumb_label' | t }}">
+    <a href="{{ routes.root_url }}">{{ 'product.breadcrumb_home' | t }}</a>
+    <span aria-hidden="true">/</span>
+    {%- if breadcrumb_collection != blank -%}
+      <a href="{{ breadcrumb_collection.url }}">{{ breadcrumb_collection.title }}</a>
+      <span aria-hidden="true">/</span>
+    {%- endif -%}
+    <span class="product__breadcrumb-current" aria-current="page">{{ product.title }}</span>
+  </nav>
+
+  <div class="product__layout">
+    <div class="product__media">
+      {%- render 'product-gallery', product: product -%}
+    </div>
+
+    <div class="product__info">
+      {%- if product.vendor != blank -%}
+        <span class="product__vendor">{{ product.vendor }}</span>
+      {%- endif -%}
+      <h1 class="product__title">{{ product.title }}</h1>
+
+      {%- form 'product', product, return_to: request.path, id: product_form_id, class: 'product__form', data-product-form: '', data-label-added-to-cart: added_to_cart_label -%}
+        <div class="product-form-error" data-product-form-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
+
+        <div class="product__price-row">
+          <span class="product__price" data-product-price>{% if has_valid_variant %}{{ current_variant.price | money }}{% else %}{{ 0 | money }}{% endif %}</span>
+          <span class="product__compare-at" data-product-compare-at {% unless show_compare_at %}hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</span>
+          <span class="product__discount" data-product-discount {% unless show_compare_at %}hidden{% endunless %}>&minus;{{ discount_percent }}%</span>
+        </div>
+
+        {%- render 'product-variant-picker', product: product, current_variant: current_variant -%}
+
+        <p
+          class="product__availability{% unless is_purchasable %} product__availability--sold-out{% endunless %}"
+          data-product-availability
+          data-label-in-stock="{{ 'product.availability_in_stock' | t }}"
+          data-label-sold-out="{{ 'product.availability_sold_out' | t }}"
+        >
+          {%- if is_purchasable -%}
+            {{- 'product.availability_in_stock' | t -}}
+          {%- elsif has_valid_variant -%}
+            {{- 'product.availability_sold_out' | t -}}
+          {%- else -%}
+            {{- 'product.availability_unavailable' | t -}}
+          {%- endif -%}
+        </p>
+
+        <p
+          class="product__sku"
+          data-product-sku
+          data-label-sku-prefix="{{ 'product.sku_prefix' | t }}"
+          {% if current_variant.sku == blank %}hidden{% endif %}
+        >{{ 'product.sku_prefix' | t }}{{ current_variant.sku }}</p>
+
+        <div class="product__quantity" data-product-quantity>
+          <label class="product__quantity-label" for="Quantity-{{ product_form_id }}">{{ 'product.quantity_label' | t }}</label>
+          <div class="product__quantity-controls">
+            <button
+              type="button"
+              class="product__quantity-btn product__quantity-btn--minus"
+              data-quantity-decrease
+              aria-label="{{ 'product.quantity_decrease' | t }}"
+            >
+              {%- render 'icon', icon: 'minus', size: 14 -%}
+            </button>
+            <input
+              type="number"
+              name="quantity"
+              id="Quantity-{{ product_form_id }}"
+              class="product__quantity-input"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              value="1"
+              required
+              data-quantity-input
+            >
+            <button
+              type="button"
+              class="product__quantity-btn product__quantity-btn--plus"
+              data-quantity-increase
+              aria-label="{{ 'product.quantity_increase' | t }}"
+            >
+              {%- render 'icon', icon: 'plus', size: 14 -%}
+            </button>
+          </div>
+          <span class="visually-hidden" role="status" aria-live="polite" data-quantity-announcer data-label-quantity-prefix="{{ 'product.quantity_announce' | t }}"></span>
+        </div>
+
+        <button
+          type="submit"
+          name="add"
+          class="product__submit"
+          data-product-submit
+          data-label-add="{{ 'product.add_to_cart' | t }}"
+          data-label-sold-out="{{ 'product.sold_out' | t }}"
+          data-label-unavailable="{{ 'product.unavailable' | t }}"
+          {% unless is_purchasable %}disabled{% endunless %}
+        >
+          {%- if is_purchasable -%}
+            {{- 'product.add_to_cart' | t -}}
+          {%- elsif has_valid_variant -%}
+            {{- 'product.sold_out' | t -}}
+          {%- else -%}
+            {{- 'product.unavailable' | t -}}
+          {%- endif -%}
+        </button>
+
+        <script type="application/json" data-product-variants>{{ variants_json }}</script>
+      {%- endform -%}
+
+      <p class="product__reassurance">{{ 'product.reassurance' | t }}</p>
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="product-accordion">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'details' -%}
+                {%- liquid
+                  assign details_content = product.description
+                  if details_content == blank and request.design_mode
+                    assign details_content = 'product.accordion_details_placeholder' | t
+                  endif
+                -%}
+                {%- if details_content != blank -%}
+                  {%- render 'product-accordion', heading: block.settings.heading, content: details_content, id: block.id, block: block -%}
+                {%- endif -%}
+              {%- when 'delivery' or 'returns' -%}
+                {%- if block.settings.content != blank -%}
+                  {%- render 'product-accordion', heading: block.settings.heading, content: block.settings.content, id: block.id, block: block -%}
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main product",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "details",
+      "name": "Details",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Product details"
+        }
+      ]
+    },
+    {
+      "type": "delivery",
+      "name": "Delivery",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Delivery"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Orders are processed within 1–2 business days and ship from our warehouse. Delivery typically takes 2–4 business days once dispatched, and you'll get a shipping confirmation email with tracking as soon as it's on its way.</p>"
+        }
+      ]
+    },
+    {
+      "type": "returns",
+      "name": "Returns",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Returns"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Not the right fit? Items can be returned within 30 days of delivery, unworn and in their original packaging. Get in touch and we'll walk you through the next steps.</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "details": {
+          "type": "details"
+        },
+        "delivery": {
+          "type": "delivery"
+        },
+        "returns": {
+          "type": "returns"
+        }
+      },
+      "block_order": ["details", "delivery", "returns"]
+    },
+    "product-recommendations": {
+      "type": "product-recommendations"
+    }
+  },
+  "order": ["main-product", "product-recommendations"]
+}

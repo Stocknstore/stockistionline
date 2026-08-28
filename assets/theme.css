@@ -2620,3 +2620,635 @@ body.scroll-locked { overflow: hidden; }
   text-transform: uppercase;
   padding: 0 20px;
 }
+
+/* --------------------------------------------------------------------------
+   33. Product detail — media gallery — sections/main-product.liquid,
+   snippets/product-gallery.liquid
+   Phase 4, Stage 1. Custom properties scoped to .product, mirroring
+   prototype-reference/styles.css's --pdpCols/--pdpImgH/--pdpInfoPad tokens
+   at the same 1279px/767px breakpoints already used by --grid-pad-x above.
+   Only vendor/title/price/compare-at/discount/reassurance render here —
+   variants, the product form, quantity, cart, accordions and
+   recommendations are later Phase 4 stages.
+
+   Gallery: .product-gallery__main is always a horizontal scroll-snap row
+   with every slide visible — the permanent, zero-JS mobile presentation.
+   assets/theme.js adds is-enhanced to .product-gallery on desktop/tablet
+   pointer devices and toggles is-active/--inactive on slides when a
+   thumbnail is clicked; the actual display:none for inactive slides is
+   scoped inside the min-width:768px range below (never unconditional),
+   matching the .hidden-mobile/.hidden-desktop cascade pattern used
+   elsewhere in this file so mobile is never affected by JS enhancement.
+   -------------------------------------------------------------------------- */
+.product {
+  --product-pad-x: 40px;
+  --product-cols: 1fr 1fr;
+  --product-gallery-h: 560px;
+  --product-info-pad: 0 0 0 30px;
+
+  background: var(--color-background);
+}
+@media (max-width: 1279px) {
+  .product {
+    --product-pad-x: 28px;
+    --product-cols: 1fr;
+    --product-gallery-h: 460px;
+    --product-info-pad: 24px 0 0;
+  }
+}
+@media (max-width: 767px) {
+  .product {
+    --product-pad-x: 16px;
+    --product-cols: 1fr;
+    --product-gallery-h: 330px;
+    --product-info-pad: 20px 0 0;
+  }
+}
+
+.product__breadcrumb {
+  padding: 20px var(--product-pad-x) 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+}
+.product__breadcrumb a:hover { color: var(--color-text); }
+.product__breadcrumb-current { color: var(--color-text); }
+
+.product__layout {
+  display: grid;
+  grid-template-columns: var(--product-cols);
+  gap: 2px;
+  padding: 18px var(--product-pad-x) 40px;
+}
+
+/* Gallery */
+.product-gallery__main {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.product-gallery__main::-webkit-scrollbar { display: none; }
+.product-gallery__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  height: var(--product-gallery-h);
+}
+.product-gallery__slide--placeholder { flex-basis: auto; width: 100%; }
+.product-gallery__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-gallery__placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: var(--product-gallery-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4);
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.product-gallery__placeholder-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+
+.product-gallery__thumbs {
+  gap: 8px;
+  padding: 10px var(--product-pad-x) 0;
+}
+@media (min-width: 768px) {
+  .product-gallery__thumbs { display: flex; }
+  .product-gallery__thumb {
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .product-gallery__thumb.is-active,
+  .product-gallery__thumb[aria-current="true"] {
+    border-color: var(--color-primary);
+  }
+  .product-gallery__thumb-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .product-gallery__thumb-placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(135deg, #D8D2C9 0 6px, #EAE6DF 6px 12px);
+  }
+
+  /* Enhanced (JS) single-active-slide presentation — desktop/tablet only. */
+  .product-gallery[data-product-gallery].is-enhanced .product-gallery__main {
+    overflow: hidden;
+    scroll-snap-type: none;
+  }
+  .product-gallery__slide--inactive { display: none; }
+}
+
+/* Vendor / title / price */
+.product__info { padding: var(--product-info-pad); }
+.product__vendor {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+.product__title {
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 12px 0 0;
+}
+.product__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 20px;
+}
+.product__price { font-weight: 800; font-size: 24px; }
+.product__compare-at {
+  font-size: 14px;
+  color: rgba(2, 38, 63, 0.5);
+  text-decoration: line-through;
+}
+.product__discount { font-weight: 700; font-size: 12px; color: var(--color-sale); }
+.product__reassurance {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(2, 38, 63, 0.65);
+  margin: 20px 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   34. Product form — variant picker, availability, SKU, submit —
+   sections/main-product.liquid, snippets/product-variant-picker.liquid
+   Phase 4, Stage 2. The form itself has no layout of its own (it wraps the
+   existing .product__price-row plus the elements below, all still inside
+   .product__info). Variant radios are visually hidden (not display:none, so
+   they stay focusable) with the sibling <label> styled as the visible
+   "chip" — :checked/:hover/:focus-visible/:disabled all key off the input's
+   state via the adjacent-sibling selector, the standard accessible
+   custom-radio pattern.
+   -------------------------------------------------------------------------- */
+.product-variant-picker {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+}
+.product-variant-picker__legend {
+  padding: 0;
+  margin: 0 0 10px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.product-variant-picker__options {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.product-variant-picker__label {
+  display: block;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: 11px 0;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+.product-variant-picker__label:hover { background: rgba(2, 38, 63, 0.06); }
+.product-variant-picker__input:checked + .product-variant-picker__label {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-color: var(--color-primary);
+}
+.product-variant-picker__input:focus-visible + .product-variant-picker__label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.product-variant-picker__input:disabled + .product-variant-picker__label {
+  border-color: rgba(2, 38, 63, 0.15);
+  color: rgba(2, 38, 63, 0.3);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.product-variant-picker__input:disabled:hover + .product-variant-picker__label { background: none; }
+
+/* Phase 4, Stage 5: a directly-selected sold-out variant is both :checked
+   and :disabled at once (kept checked "for context" per spec, even though
+   Add to Cart stays disabled) — without this, the plain :disabled rule's
+   low-contrast text color wins the cascade over :checked's cream text on
+   the same rule's navy background, making the label unreadable. The
+   combined selector below has higher specificity than either single-state
+   rule, so it wins regardless of source order, while still keeping the
+   strikethrough as an additional (non-color) unavailability cue. */
+.product-variant-picker__input:checked:disabled + .product-variant-picker__label {
+  color: var(--color-primary-contrast);
+}
+
+.product__availability {
+  margin: 16px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.product__availability--sold-out { color: var(--color-error); }
+
+.product__sku {
+  margin: 6px 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.5);
+}
+
+.product__submit {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 18px 22px;
+  text-align: center;
+  cursor: pointer;
+}
+.product__submit:hover:not(:disabled) { opacity: 0.9; }
+.product__submit:disabled {
+  background: rgba(2, 38, 63, 0.35);
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   35. Product quantity selector — sections/main-product.liquid
+   Phase 4, Stage 3. Compact stepper matching the variant-picker's chip
+   styling (same border color/weight). The native number-input spinner is
+   removed since the +/- buttons replace it — left in place it would show
+   two redundant increment/decrement controls side by side. Keyboard focus
+   styling comes for free from the theme's existing global a/button/input
+   :focus-visible rule (section 1), so nothing extra is defined here.
+   -------------------------------------------------------------------------- */
+.product__quantity { margin: 20px 0 0; }
+.product__quantity-label {
+  display: block;
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.product__quantity-controls {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  width: fit-content;
+}
+.product__quantity-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.product__quantity-btn:hover { background: rgba(2, 38, 63, 0.06); }
+.product__quantity-input {
+  width: 48px;
+  border: none;
+  border-left: 1px solid rgba(2, 38, 63, 0.4);
+  border-right: 1px solid rgba(2, 38, 63, 0.4);
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.product__quantity-input::-webkit-outer-spin-button,
+.product__quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   36. Cart drawer — populated items — snippets/cart-drawer.liquid
+   Phase 4, Stage 4A. .cart-drawer__panel/__close/__empty/__account-prompt/
+   __subtotal/__footer already exist (section 11 above) — this only adds
+   the per-line-item layout. Reuses the diagonal-hatch placeholder pattern
+   already established for missing product images site-wide.
+   -------------------------------------------------------------------------- */
+.cart-drawer__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+.cart-drawer__item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: var(--space-4);
+}
+.cart-drawer__item-image-link { display: block; }
+.cart-drawer__item-image,
+.cart-drawer__item-placeholder {
+  display: block;
+  width: 72px;
+  height: 72px;
+}
+.cart-drawer__item-image { object-fit: cover; }
+.cart-drawer__item-placeholder {
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 8px, #EAE6DF 8px 16px);
+}
+.cart-drawer__item-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.cart-drawer__item-title { font-weight: 700; font-size: var(--text-base); color: var(--color-text); }
+.cart-drawer__item-title:hover { text-decoration: underline; }
+.cart-drawer__item-variant { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.cart-drawer__item-price { font-weight: 700; font-size: var(--text-sm); margin-top: var(--space-1); }
+.cart-drawer__item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.cart-drawer__item-quantity-input {
+  width: 56px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+  font-size: var(--text-sm);
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.cart-drawer__item-quantity-input::-webkit-outer-spin-button,
+.cart-drawer__item-quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-drawer__item-remove {
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.cart-drawer__item-remove:hover { color: var(--color-text); }
+
+/* --------------------------------------------------------------------------
+   37. Standalone cart page — sections/main-cart.liquid, templates/cart.json
+   Phase 4, Stage 4A. Desktop/tablet: item rows in a 4-column grid (image /
+   details / quantity / price). Mobile collapses each row to a single
+   stacked column, matching the same 767px breakpoint used throughout the
+   theme. .container/.container--medium (section 3) center and cap the
+   page's width; only cart-specific layout is defined here.
+   -------------------------------------------------------------------------- */
+.cart-page { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+.cart-page__title { font-weight: 900; font-size: var(--text-5xl); letter-spacing: -0.02em; margin: 0 0 var(--space-6); }
+
+.cart-page__empty { text-align: center; padding: var(--space-8) 0; }
+.cart-page__empty-text { font-size: var(--text-lg); margin: 0 0 var(--space-5); }
+
+.cart-page__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+.cart-page__item {
+  display: grid;
+  grid-template-columns: 96px 1fr 120px 100px;
+  align-items: center;
+  gap: var(--space-5);
+}
+.cart-page__item-image-link { display: block; }
+.cart-page__item-image,
+.cart-page__item-placeholder {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+.cart-page__item-image { object-fit: cover; }
+.cart-page__item-placeholder {
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.cart-page__item-details { display: flex; flex-direction: column; gap: var(--space-1); }
+.cart-page__item-title { font-weight: 700; font-size: var(--text-base); color: var(--color-text); }
+.cart-page__item-title:hover { text-decoration: underline; }
+.cart-page__item-variant { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.cart-page__item-remove {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.cart-page__item-remove:hover { color: var(--color-text); }
+.cart-page__item-quantity-input {
+  width: 64px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--text-base);
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.cart-page__item-quantity-input::-webkit-outer-spin-button,
+.cart-page__item-quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-page__item-price { font-weight: 700; font-size: var(--text-base); text-align: right; }
+
+.cart-page__footer { padding-top: var(--space-6); display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-4); }
+.cart-page__subtotal { display: flex; gap: var(--space-3); font-size: var(--text-xl); font-weight: 700; }
+.cart-page__actions { display: flex; gap: var(--space-3); }
+.cart-page__continue { font-size: var(--text-sm); text-decoration: underline; color: var(--color-text-secondary); }
+.cart-page__continue:hover { color: var(--color-text); }
+
+@media (max-width: 767px) {
+  .cart-page__item {
+    grid-template-columns: 72px 1fr;
+    grid-template-areas:
+      "image details"
+      "image quantity"
+      "image price";
+    row-gap: var(--space-2);
+  }
+  .cart-page__item-image-link { grid-area: image; }
+  .cart-page__item-image,
+  .cart-page__item-placeholder { width: 72px; height: 72px; }
+  .cart-page__item-details { grid-area: details; }
+  .cart-page__item-quantity { grid-area: quantity; }
+  .cart-page__item-price { grid-area: price; text-align: left; }
+
+  .cart-page__footer { align-items: stretch; }
+  .cart-page__subtotal { justify-content: space-between; }
+  .cart-page__actions { flex-direction: column; }
+}
+
+/* --------------------------------------------------------------------------
+   38. AJAX cart states — sections/main-product.liquid, snippets/cart-
+   drawer.liquid, sections/main-cart.liquid
+   Phase 4, Stage 4B. Error targets exist empty/hidden in the server-
+   rendered markup ([hidden]'s native display:none is enough to hide them —
+   nothing here needs to declare display, so it can never fight a hidden-
+   mobile/hidden-desktop-style toggle elsewhere); assets/theme.js only ever
+   sets text and clears [hidden]. Busy states are opacity/cursor only, no
+   layout shift, so a rapid request/response doesn't jump the page around.
+   -------------------------------------------------------------------------- */
+.product-form-error,
+.cart-drawer__error,
+.cart-page__error {
+  background: var(--color-error);
+  color: var(--color-primary-contrast);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.product__submit[aria-busy="true"] { opacity: 0.7; cursor: wait; }
+
+.cart-drawer__item.is-loading,
+.cart-page__item.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   39. Product accordions — snippets/product-accordion.liquid
+   Phase 4, Stage 6. Built on native <details>/<summary> — every open/closed
+   visual (chevron rotation, panel spacing) keys off the browser-managed
+   details[open] attribute, not a class or JS state, so it's correct with
+   JavaScript fully disabled. The default disclosure marker is hidden in
+   favor of the custom chevron icon; this is purely presentational and
+   doesn't touch <summary>'s native accessible semantics. Transitions here
+   are already covered by the theme-wide prefers-reduced-motion override
+   (section 17) — no separate media query needed in this section.
+   -------------------------------------------------------------------------- */
+.product-accordion {
+  margin-top: var(--space-7);
+  border-top: 1px solid var(--color-border);
+}
+.product-accordion__item {
+  border-bottom: 1px solid var(--color-border);
+}
+.product-accordion__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  cursor: pointer;
+  list-style: none;
+}
+.product-accordion__summary::-webkit-details-marker { display: none; }
+.product-accordion__summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.product-accordion__heading {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--color-text);
+}
+.product-accordion__icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-text);
+  transition: transform var(--transition-normal) var(--ease);
+}
+.product-accordion__item[open] .product-accordion__icon { transform: rotate(180deg); }
+
+.product-accordion__panel { padding: 0 0 var(--space-5); }
+.product-accordion__content {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.product-accordion__content > *:first-child { margin-top: 0; }
+.product-accordion__content > *:last-child { margin-bottom: 0; }
+.product-accordion__content p { margin: 0 0 var(--space-4); }
+.product-accordion__content h1,
+.product-accordion__content h2,
+.product-accordion__content h3,
+.product-accordion__content h4 {
+  font-weight: 700;
+  color: var(--color-text);
+  margin: var(--space-5) 0 var(--space-3);
+}
+.product-accordion__content ul,
+.product-accordion__content ol {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+.product-accordion__content li { margin-bottom: var(--space-2); }
+.product-accordion__content a { color: var(--color-link); text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   40. Product recommendations — sections/product-recommendations.liquid
+   Phase 4, Stage 7. Section-owned grid — deliberately not reusing
+   .collection-grid__products, which only exists/works nested under a
+   .collection-grid ancestor (a class this section never has, since it's
+   never inside a collection page). Same 4/3/2 desktop/tablet/mobile column
+   counts and the same 1279px/767px breakpoints as .collection-grid
+   (section 27) for visual consistency, but fully self-contained.
+   -------------------------------------------------------------------------- */
+.product-recommendations {
+  padding: var(--space-8) 40px var(--space-8);
+}
+.product-recommendations__heading {
+  font-weight: 900;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-6);
+}
+.product-recommendations__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+@media (max-width: 1279px) {
+  .product-recommendations { padding-left: 28px; padding-right: 28px; }
+  .product-recommendations__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .product-recommendations { padding-left: 16px; padding-right: 16px; }
+  .product-recommendations__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+}

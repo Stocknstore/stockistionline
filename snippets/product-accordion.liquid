@@ -1,0 +1,36 @@
+{%- comment -%}
+  Snippet: product-accordion
+  Phase 4, Stage 6. One expand/collapse panel built on native <details>/
+  <summary> — the browser provides the disclosure semantics (keyboard
+  operability, and an implicit expanded/collapsed state exposed to
+  assistive tech) with zero JavaScript, so this works identically with JS
+  fully disabled. The chevron's open/closed rotation is pure CSS, keyed off
+  the browser-managed details[open] attribute (theme.css section 39) — no
+  aria-expanded/toggle-event listener is added, since native <summary>
+  already communicates the same state correctly on its own, and a manually
+  synced ARIA attribute would only add a way for the two to drift out of
+  sync for no accessibility benefit.
+
+  Params:
+    heading - required, plain text shown in the summary row
+    content - required, HTML string shown in the expanded panel
+              (product.description or a richtext setting's rendered output)
+    id      - required, unique value for this instance (block.id) used to
+              give the <details> element a stable, unique id
+    block   - optional, a section block object; when given,
+              block.shopify_attributes is applied so the block behaves
+              correctly in the Theme Editor (select/highlight/reorder)
+{%- endcomment -%}
+<details class="product-accordion__item" id="ProductAccordion-{{ id }}" data-product-accordion {% if block %}{{ block.shopify_attributes }}{% endif %}>
+  <summary class="product-accordion__summary">
+    <span class="product-accordion__heading">{{ heading }}</span>
+    <span class="product-accordion__icon" aria-hidden="true">
+      {%- render 'icon', icon: 'chevron-down', size: 18 -%}
+    </span>
+  </summary>
+  <div class="product-accordion__panel">
+    <div class="product-accordion__content rte">
+      {{ content }}
+    </div>
+  </div>
+</details>

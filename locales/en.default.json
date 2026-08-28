@@ -38,6 +38,37 @@
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair"
   },
+  "product": {
+    "breadcrumb_label": "Breadcrumb",
+    "breadcrumb_home": "Home",
+    "reassurance": "Genuine warehouse stock, single-run sizes. What you see is what's left.",
+    "gallery_thumbnails": "Product images",
+    "gallery_view_image": "View image {{ index }} of {{ count }}",
+    "size_label": "Size",
+    "availability_in_stock": "In stock",
+    "availability_sold_out": "Sold out",
+    "availability_unavailable": "Unavailable",
+    "sku_prefix": "SKU: ",
+    "add_to_cart": "Add to cart",
+    "sold_out": "Sold out",
+    "unavailable": "Unavailable",
+    "variant_sold_out_suffix": " (Sold out)",
+    "quantity_label": "Quantity",
+    "quantity_decrease": "Decrease quantity",
+    "quantity_increase": "Increase quantity",
+    "quantity_announce": "Quantity updated to ",
+    "accordion_details_placeholder": "Add a product description to preview this section."
+  },
+  "cart": {
+    "title": "Your cart",
+    "quantity_label": "Quantity",
+    "remove": "Remove",
+    "update_cart": "Update cart",
+    "item_added": "Added to cart:",
+    "updated": "Cart updated.",
+    "item_removed": "Item removed from cart.",
+    "generic_error": "Something went wrong. Please try again."
+  },
   "collection_hero": {
     "placeholder": "Add an image"
   },
