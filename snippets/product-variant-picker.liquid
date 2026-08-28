@@ -1,0 +1,54 @@
+{%- comment -%}
+  Snippet: product-variant-picker
+  Phase 4, Stage 2. Renders the current single "Size" option as real radio
+  inputs that share name="id" with each variant's own id as the value — this
+  is Shopify's native mechanism, so the correct variant submits with zero
+  JavaScript and no separate hidden id input is ever rendered alongside
+  these radios (that would create a duplicate name="id" and break plain
+  submission). For a single-variant product (product.has_only_default_
+  variant, i.e. genuinely nothing to choose), the picker is skipped entirely
+  in favor of one hidden id input, per standard Shopify convention.
+
+  Exactly one radio is checked on load: product.selected_or_first_available_
+  variant, matching the server-rendered price/availability state elsewhere
+  in sections/main-product.liquid. Sold-out variants render disabled (still
+  visible, per spec) — a disabled radio is excluded from form submission by
+  the browser natively, so an out-of-stock size can never be added via a
+  no-JS submit.
+
+  The input itself is visually hidden (not display:none, so it stays
+  focusable/keyboard-operable) and its label is styled as the visible
+  "chip", using :checked/:hover/:focus-visible/:disabled sibling selectors
+  in theme.css (section 34) for state styling — a standard accessible
+  custom-radio pattern.
+
+  Params:
+    product         - required, a Shopify product object
+    current_variant - required, product.selected_or_first_available_variant
+{%- endcomment -%}
+{%- if product.has_only_default_variant -%}
+  <input type="hidden" name="id" value="{{ current_variant.id }}">
+{%- else -%}
+  <fieldset class="product-variant-picker" data-product-variant-picker>
+    <legend class="product-variant-picker__legend">{{ 'product.size_label' | t }}</legend>
+    <div class="product-variant-picker__options">
+      {%- for variant in product.variants -%}
+        <span class="product-variant-picker__option">
+          <input
+            type="radio"
+            name="id"
+            value="{{ variant.id }}"
+            id="ProductVariant-{{ variant.id }}"
+            class="product-variant-picker__input visually-hidden"
+            data-variant-radio
+            {% if variant.id == current_variant.id %}checked{% endif %}
+            {% unless variant.available %}disabled{% endunless %}
+          >
+          <label class="product-variant-picker__label" for="ProductVariant-{{ variant.id }}">
+            {{ variant.title }}
+          </label>
+        </span>
+      {%- endfor -%}
+    </div>
+  </fieldset>
+{%- endif -%}

@@ -175,6 +175,69 @@
     });
   }
 
+  /* ---------------- Product form: variant selection ----------------
+     Progressive enhancement only — snippets/product-variant-picker.liquid
+     already renders working radios (name="id") inside a real
+     {% form 'product' %}, so a plain submit with zero JS already adds the
+     correct variant (see sections/main-product.liquid for the server-
+     rendered initial state). This just updates price/availability/etc. in
+     place on change, without a reload. Every price comes pre-formatted via
+     Liquid's money filter (embedded in the per-form JSON blob), so no
+     currency formatting of any kind happens here. */
+  function applyVariantState(form, variant) {
+    if (!variant) return;
+
+    var priceEl = form.querySelector('[data-product-price]');
+    if (priceEl) priceEl.textContent = variant.price;
+
+    var compareEl = form.querySelector('[data-product-compare-at]');
+    var discountEl = form.querySelector('[data-product-discount]');
+    if (variant.compareAtPrice) {
+      if (compareEl) { compareEl.textContent = variant.compareAtPrice; compareEl.hidden = false; }
+      if (discountEl) { discountEl.textContent = '−' + variant.discountPercent + '%'; discountEl.hidden = false; }
+    } else {
+      if (compareEl) compareEl.hidden = true;
+      if (discountEl) discountEl.hidden = true;
+    }
+
+    var availabilityEl = form.querySelector('[data-product-availability]');
+    if (availabilityEl) {
+      var inStockLabel = availabilityEl.getAttribute('data-label-in-stock');
+      var soldOutLabel = availabilityEl.getAttribute('data-label-sold-out');
+      availabilityEl.textContent = variant.available ? inStockLabel : soldOutLabel;
+      availabilityEl.classList.toggle('product__availability--sold-out', !variant.available);
+    }
+
+    var skuEl = form.querySelector('[data-product-sku]');
+    if (skuEl) {
+      if (variant.sku) {
+        skuEl.textContent = skuEl.getAttribute('data-label-sku-prefix') + variant.sku;
+        skuEl.hidden = false;
+      } else {
+        skuEl.hidden = true;
+      }
+    }
+
+    var submitEl = form.querySelector('[data-product-submit]');
+    if (submitEl) {
+      submitEl.disabled = !variant.available;
+      submitEl.textContent = variant.available
+        ? submitEl.getAttribute('data-label-add')
+        : submitEl.getAttribute('data-label-sold-out');
+    }
+
+    if (window.history && window.history.replaceState) {
+      var url = new URL(window.location.href);
+      url.searchParams.set('variant', variant.id);
+      window.history.replaceState({}, '', url);
+    }
+
+    if (variant.featuredMediaId) {
+      var gallery = document.querySelector('[data-product-gallery]');
+      if (gallery) selectGalleryMedia(gallery, String(variant.featuredMediaId));
+    }
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -306,6 +369,24 @@
       if (sortSelect) {
         var form = sortSelect.closest('form');
         if (form) form.submit();
+      }
+
+      // Product variant radios: the form already submits the correct
+      // variant natively (name="id" on each radio); this only updates
+      // price/availability/etc. in place, without a reload.
+      var variantRadio = e.target.closest('[data-variant-radio]');
+      if (variantRadio) {
+        var productForm = variantRadio.closest('[data-product-form]');
+        var dataEl = productForm && productForm.querySelector('[data-product-variants]');
+        if (dataEl) {
+          try {
+            var variants = JSON.parse(dataEl.textContent);
+            var selected = variants.filter(function (v) { return String(v.id) === variantRadio.value; })[0];
+            applyVariantState(productForm, selected);
+          } catch (err) {
+            /* malformed/missing variant data — form still submits correctly without JS */
+          }
+        }
       }
     });
 

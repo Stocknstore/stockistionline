@@ -43,7 +43,13 @@
     "breadcrumb_home": "Home",
     "reassurance": "Genuine warehouse stock, single-run sizes. What you see is what's left.",
     "gallery_thumbnails": "Product images",
-    "gallery_view_image": "View image {{ index }} of {{ count }}"
+    "gallery_view_image": "View image {{ index }} of {{ count }}",
+    "size_label": "Size",
+    "availability_in_stock": "In stock",
+    "availability_sold_out": "Sold out",
+    "sku_prefix": "SKU: ",
+    "add_to_cart": "Add to cart",
+    "sold_out": "Sold out"
   },
   "collection_hero": {
     "placeholder": "Add an image"

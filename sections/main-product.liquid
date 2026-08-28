@@ -1,19 +1,33 @@
 {%- comment -%}
   Section: Main product
-  Phase 4, Stage 1. Media gallery + core product information only — no
-  variants, product form, quantity, cart behavior, accordions or
-  recommendations yet (later Phase 4 stages layer those onto this same
-  section). Mirrors the vendor/title/price/compare-at/discount/reassurance
-  block from prototype-reference/templates.js renderPdp() (~L345-359), but
-  sourced from real Shopify data instead of the prototype's static VM:
-  product.selected_or_first_available_variant carries price/compare-at so
-  this already resolves an incoming ?variant= query correctly once Stage 2
-  adds the variant picker, with no change needed here.
+  Phase 4, Stage 1 (media gallery + core info) + Stage 2 (native variant
+  selection + a working product form). Still no quantity, AJAX cart, cart
+  drawer item rendering, accordions or recommendations — later Phase 4
+  stages layer those onto this same section.
 
   The breadcrumb trail is real (Home / current collection / product title)
   rather than the prototype's static "Back to listing" link, using the
   global collection object when arriving from a collection page and falling
   back to the product's first collection otherwise.
+
+  The form uses Shopify's native {% form 'product' %} tag's return_to
+  param, which the tag turns into its own hidden <input name="return_to">
+  automatically (adding a second one manually would duplicate that field
+  in the POST body). return_to: 'back' was tried first, since routes.
+  cart_url / templates/cart.json don't exist until Stage 4 and a plain
+  non-JS submit must not land on a 404 there — but verified against the
+  real /cart/add endpoint, the literal value "back" is not resolved
+  against the request's Referer and instead falls through to the shop
+  root, not this page. An explicit return_to value (a real path) is
+  honored correctly, so request.path — the current PDP path including any
+  ?variant= already in the address bar — is used instead to actually
+  satisfy "return to the PDP".
+
+  Variant data for the Stage 2 JS enhancement (assets/theme.js, the
+  data-variant-radio change handler) is embedded once below as JSON, with
+  every price already run through Liquid's money filter server-side — this
+  keeps the client free of any currency-formatting logic of its own, so it
+  never hardcodes EUR and stays correct for any shop currency/format.
 {%- endcomment -%}
 {%- liquid
   assign current_variant = product.selected_or_first_available_variant
@@ -28,7 +42,32 @@
   if breadcrumb_collection == blank and product.collections.first != blank
     assign breadcrumb_collection = product.collections.first
   endif
+
+  assign product_form_id = 'ProductForm-' | append: section.id
 -%}
+{%- capture variants_json -%}
+  [
+    {%- for variant in product.variants -%}
+      {%- liquid
+        assign v_show_compare_at = false
+        assign v_discount_percent = 0
+        if variant.compare_at_price > variant.price
+          assign v_show_compare_at = true
+          assign v_discount_percent = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round
+        endif
+      -%}
+      {
+        "id": {{ variant.id | json }},
+        "available": {{ variant.available | json }},
+        "price": {{ variant.price | money | json }},
+        "compareAtPrice": {% if v_show_compare_at %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+        "discountPercent": {{ v_discount_percent | json }},
+        "sku": {{ variant.sku | json }},
+        "featuredMediaId": {% if variant.featured_media %}{{ variant.featured_media.id | json }}{% else %}null{% endif %}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+{%- endcapture -%}
 <section class="product" {{ section.shopify_attributes }}>
   <nav class="product__breadcrumb" aria-label="{{ 'product.breadcrumb_label' | t }}">
     <a href="{{ routes.root_url }}">{{ 'product.breadcrumb_home' | t }}</a>
@@ -51,13 +90,53 @@
       {%- endif -%}
       <h1 class="product__title">{{ product.title }}</h1>
 
-      <div class="product__price-row">
-        <span class="product__price">{{ current_variant.price | money }}</span>
-        {%- if show_compare_at -%}
-          <span class="product__compare-at">{{ current_variant.compare_at_price | money }}</span>
-          <span class="product__discount">&minus;{{ discount_percent }}%</span>
-        {%- endif -%}
-      </div>
+      {%- form 'product', product, return_to: request.path, id: product_form_id, class: 'product__form', data-product-form: '' -%}
+        <div class="product__price-row">
+          <span class="product__price" data-product-price>{{ current_variant.price | money }}</span>
+          <span class="product__compare-at" data-product-compare-at {% unless show_compare_at %}hidden{% endunless %}>{{ current_variant.compare_at_price | money }}</span>
+          <span class="product__discount" data-product-discount {% unless show_compare_at %}hidden{% endunless %}>&minus;{{ discount_percent }}%</span>
+        </div>
+
+        {%- render 'product-variant-picker', product: product, current_variant: current_variant -%}
+
+        <p
+          class="product__availability{% unless current_variant.available %} product__availability--sold-out{% endunless %}"
+          data-product-availability
+          data-label-in-stock="{{ 'product.availability_in_stock' | t }}"
+          data-label-sold-out="{{ 'product.availability_sold_out' | t }}"
+        >
+          {%- if current_variant.available -%}
+            {{- 'product.availability_in_stock' | t -}}
+          {%- else -%}
+            {{- 'product.availability_sold_out' | t -}}
+          {%- endif -%}
+        </p>
+
+        <p
+          class="product__sku"
+          data-product-sku
+          data-label-sku-prefix="{{ 'product.sku_prefix' | t }}"
+          {% if current_variant.sku == blank %}hidden{% endif %}
+        >{{ 'product.sku_prefix' | t }}{{ current_variant.sku }}</p>
+
+        <button
+          type="submit"
+          name="add"
+          class="product__submit"
+          data-product-submit
+          data-label-add="{{ 'product.add_to_cart' | t }}"
+          data-label-sold-out="{{ 'product.sold_out' | t }}"
+          {% unless current_variant.available %}disabled{% endunless %}
+        >
+          {%- if current_variant.available -%}
+            {{- 'product.add_to_cart' | t -}}
+          {%- else -%}
+            {{- 'product.sold_out' | t -}}
+          {%- endif -%}
+        </button>
+
+        <script type="application/json" data-product-variants>{{ variants_json }}</script>
+      {%- endform -%}
 
       <p class="product__reassurance">{{ 'product.reassurance' | t }}</p>
     </div>

@@ -2799,3 +2799,96 @@ body.scroll-locked { overflow: hidden; }
   color: rgba(2, 38, 63, 0.65);
   margin: 20px 0 0;
 }
+
+/* --------------------------------------------------------------------------
+   34. Product form — variant picker, availability, SKU, submit —
+   sections/main-product.liquid, snippets/product-variant-picker.liquid
+   Phase 4, Stage 2. The form itself has no layout of its own (it wraps the
+   existing .product__price-row plus the elements below, all still inside
+   .product__info). Variant radios are visually hidden (not display:none, so
+   they stay focusable) with the sibling <label> styled as the visible
+   "chip" — :checked/:hover/:focus-visible/:disabled all key off the input's
+   state via the adjacent-sibling selector, the standard accessible
+   custom-radio pattern.
+   -------------------------------------------------------------------------- */
+.product-variant-picker {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+}
+.product-variant-picker__legend {
+  padding: 0;
+  margin: 0 0 10px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.product-variant-picker__options {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.product-variant-picker__label {
+  display: block;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: 11px 0;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+  color: var(--color-text);
+  cursor: pointer;
+  user-select: none;
+}
+.product-variant-picker__label:hover { background: rgba(2, 38, 63, 0.06); }
+.product-variant-picker__input:checked + .product-variant-picker__label {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  border-color: var(--color-primary);
+}
+.product-variant-picker__input:focus-visible + .product-variant-picker__label {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.product-variant-picker__input:disabled + .product-variant-picker__label {
+  border-color: rgba(2, 38, 63, 0.15);
+  color: rgba(2, 38, 63, 0.3);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.product-variant-picker__input:disabled:hover + .product-variant-picker__label { background: none; }
+
+.product__availability {
+  margin: 16px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.product__availability--sold-out { color: var(--color-error); }
+
+.product__sku {
+  margin: 6px 0 0;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(2, 38, 63, 0.5);
+}
+
+.product__submit {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 18px 22px;
+  text-align: center;
+  cursor: pointer;
+}
+.product__submit:hover:not(:disabled) { opacity: 0.9; }
+.product__submit:disabled {
+  background: rgba(2, 38, 63, 0.35);
+  cursor: not-allowed;
+}
