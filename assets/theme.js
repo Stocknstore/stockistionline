@@ -150,6 +150,31 @@
     });
   }
 
+  /* ---------------- Product gallery: thumbnail selection ----------------
+     Progressive enhancement only — snippets/product-gallery.liquid already
+     renders a fully viewable horizontal scroll-snap row with zero JS. This
+     adds the is-enhanced marker that CSS uses (scoped to min-width:768px,
+     theme.css section 33) to switch to a single-active-slide + thumbnail-
+     nav presentation; mobile's scroll-snap row is untouched either way. */
+  function initProductGallery() {
+    document.querySelectorAll('[data-product-gallery]').forEach(function (gallery) {
+      gallery.classList.add('is-enhanced');
+    });
+  }
+
+  function selectGalleryMedia(gallery, mediaId) {
+    gallery.querySelectorAll('[data-gallery-slide]').forEach(function (slide) {
+      var isActive = slide.getAttribute('data-media-id') === mediaId;
+      slide.classList.toggle('is-active', isActive);
+      slide.classList.toggle('product-gallery__slide--inactive', !isActive);
+    });
+    gallery.querySelectorAll('[data-gallery-thumb]').forEach(function (thumb) {
+      var isActive = thumb.getAttribute('data-media-id') === mediaId;
+      thumb.classList.toggle('is-active', isActive);
+      thumb.setAttribute('aria-current', String(isActive));
+    });
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -264,6 +289,14 @@
         }
         return;
       }
+
+      // Product gallery thumbnail selection
+      var galleryThumb = e.target.closest('[data-gallery-thumb]');
+      if (galleryThumb) {
+        var gallery = galleryThumb.closest('[data-product-gallery]');
+        if (gallery) selectGalleryMedia(gallery, galleryThumb.getAttribute('data-media-id'));
+        return;
+      }
     });
 
     // Sort select: progressive enhancement — the form already works via its
@@ -307,5 +340,6 @@
     initEvents();
     initAnnouncementBar();
     initCollectionToolbar();
+    initProductGallery();
   });
 })();

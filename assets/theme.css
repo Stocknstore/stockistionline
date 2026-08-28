@@ -2620,3 +2620,182 @@ body.scroll-locked { overflow: hidden; }
   text-transform: uppercase;
   padding: 0 20px;
 }
+
+/* --------------------------------------------------------------------------
+   33. Product detail — media gallery — sections/main-product.liquid,
+   snippets/product-gallery.liquid
+   Phase 4, Stage 1. Custom properties scoped to .product, mirroring
+   prototype-reference/styles.css's --pdpCols/--pdpImgH/--pdpInfoPad tokens
+   at the same 1279px/767px breakpoints already used by --grid-pad-x above.
+   Only vendor/title/price/compare-at/discount/reassurance render here —
+   variants, the product form, quantity, cart, accordions and
+   recommendations are later Phase 4 stages.
+
+   Gallery: .product-gallery__main is always a horizontal scroll-snap row
+   with every slide visible — the permanent, zero-JS mobile presentation.
+   assets/theme.js adds is-enhanced to .product-gallery on desktop/tablet
+   pointer devices and toggles is-active/--inactive on slides when a
+   thumbnail is clicked; the actual display:none for inactive slides is
+   scoped inside the min-width:768px range below (never unconditional),
+   matching the .hidden-mobile/.hidden-desktop cascade pattern used
+   elsewhere in this file so mobile is never affected by JS enhancement.
+   -------------------------------------------------------------------------- */
+.product {
+  --product-pad-x: 40px;
+  --product-cols: 1fr 1fr;
+  --product-gallery-h: 560px;
+  --product-info-pad: 0 0 0 30px;
+
+  background: var(--color-background);
+}
+@media (max-width: 1279px) {
+  .product {
+    --product-pad-x: 28px;
+    --product-cols: 1fr;
+    --product-gallery-h: 460px;
+    --product-info-pad: 24px 0 0;
+  }
+}
+@media (max-width: 767px) {
+  .product {
+    --product-pad-x: 16px;
+    --product-cols: 1fr;
+    --product-gallery-h: 330px;
+    --product-info-pad: 20px 0 0;
+  }
+}
+
+.product__breadcrumb {
+  padding: 20px var(--product-pad-x) 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+}
+.product__breadcrumb a:hover { color: var(--color-text); }
+.product__breadcrumb-current { color: var(--color-text); }
+
+.product__layout {
+  display: grid;
+  grid-template-columns: var(--product-cols);
+  gap: 2px;
+  padding: 18px var(--product-pad-x) 40px;
+}
+
+/* Gallery */
+.product-gallery__main {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.product-gallery__main::-webkit-scrollbar { display: none; }
+.product-gallery__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  height: var(--product-gallery-h);
+}
+.product-gallery__slide--placeholder { flex-basis: auto; width: 100%; }
+.product-gallery__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-gallery__placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: var(--product-gallery-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4);
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.product-gallery__placeholder-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+
+.product-gallery__thumbs {
+  gap: 8px;
+  padding: 10px var(--product-pad-x) 0;
+}
+@media (min-width: 768px) {
+  .product-gallery__thumbs { display: flex; }
+  .product-gallery__thumb {
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .product-gallery__thumb.is-active,
+  .product-gallery__thumb[aria-current="true"] {
+    border-color: var(--color-primary);
+  }
+  .product-gallery__thumb-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .product-gallery__thumb-placeholder {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(135deg, #D8D2C9 0 6px, #EAE6DF 6px 12px);
+  }
+
+  /* Enhanced (JS) single-active-slide presentation — desktop/tablet only. */
+  .product-gallery[data-product-gallery].is-enhanced .product-gallery__main {
+    overflow: hidden;
+    scroll-snap-type: none;
+  }
+  .product-gallery__slide--inactive { display: none; }
+}
+
+/* Vendor / title / price */
+.product__info { padding: var(--product-info-pad); }
+.product__vendor {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.55);
+}
+.product__title {
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 12px 0 0;
+}
+.product__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 20px;
+}
+.product__price { font-weight: 800; font-size: 24px; }
+.product__compare-at {
+  font-size: 14px;
+  color: rgba(2, 38, 63, 0.5);
+  text-decoration: line-through;
+}
+.product__discount { font-weight: 700; font-size: 12px; color: var(--color-sale); }
+.product__reassurance {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: rgba(2, 38, 63, 0.65);
+  margin: 20px 0 0;
+}

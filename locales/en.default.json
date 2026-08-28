@@ -38,6 +38,13 @@
     "badge_new_today": "New today",
     "badge_last_pair": "Last pair"
   },
+  "product": {
+    "breadcrumb_label": "Breadcrumb",
+    "breadcrumb_home": "Home",
+    "reassurance": "Genuine warehouse stock, single-run sizes. What you see is what's left.",
+    "gallery_thumbnails": "Product images",
+    "gallery_view_image": "View image {{ index }} of {{ count }}"
+  },
   "collection_hero": {
     "placeholder": "Add an image"
   },

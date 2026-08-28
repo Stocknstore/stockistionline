@@ -1,0 +1,72 @@
+{%- comment -%}
+  Section: Main product
+  Phase 4, Stage 1. Media gallery + core product information only — no
+  variants, product form, quantity, cart behavior, accordions or
+  recommendations yet (later Phase 4 stages layer those onto this same
+  section). Mirrors the vendor/title/price/compare-at/discount/reassurance
+  block from prototype-reference/templates.js renderPdp() (~L345-359), but
+  sourced from real Shopify data instead of the prototype's static VM:
+  product.selected_or_first_available_variant carries price/compare-at so
+  this already resolves an incoming ?variant= query correctly once Stage 2
+  adds the variant picker, with no change needed here.
+
+  The breadcrumb trail is real (Home / current collection / product title)
+  rather than the prototype's static "Back to listing" link, using the
+  global collection object when arriving from a collection page and falling
+  back to the product's first collection otherwise.
+{%- endcomment -%}
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign show_compare_at = false
+  assign discount_percent = 0
+  if current_variant.compare_at_price > current_variant.price
+    assign show_compare_at = true
+    assign discount_percent = current_variant.compare_at_price | minus: current_variant.price | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  assign breadcrumb_collection = collection
+  if breadcrumb_collection == blank and product.collections.first != blank
+    assign breadcrumb_collection = product.collections.first
+  endif
+-%}
+<section class="product" {{ section.shopify_attributes }}>
+  <nav class="product__breadcrumb" aria-label="{{ 'product.breadcrumb_label' | t }}">
+    <a href="{{ routes.root_url }}">{{ 'product.breadcrumb_home' | t }}</a>
+    <span aria-hidden="true">/</span>
+    {%- if breadcrumb_collection != blank -%}
+      <a href="{{ breadcrumb_collection.url }}">{{ breadcrumb_collection.title }}</a>
+      <span aria-hidden="true">/</span>
+    {%- endif -%}
+    <span class="product__breadcrumb-current" aria-current="page">{{ product.title }}</span>
+  </nav>
+
+  <div class="product__layout">
+    <div class="product__media">
+      {%- render 'product-gallery', product: product -%}
+    </div>
+
+    <div class="product__info">
+      {%- if product.vendor != blank -%}
+        <span class="product__vendor">{{ product.vendor }}</span>
+      {%- endif -%}
+      <h1 class="product__title">{{ product.title }}</h1>
+
+      <div class="product__price-row">
+        <span class="product__price">{{ current_variant.price | money }}</span>
+        {%- if show_compare_at -%}
+          <span class="product__compare-at">{{ current_variant.compare_at_price | money }}</span>
+          <span class="product__discount">&minus;{{ discount_percent }}%</span>
+        {%- endif -%}
+      </div>
+
+      <p class="product__reassurance">{{ 'product.reassurance' | t }}</p>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main product",
+  "settings": []
+}
+{% endschema %}
