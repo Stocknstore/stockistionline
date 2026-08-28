@@ -1,9 +1,20 @@
 {%- comment -%}
   Section: Main product
   Phase 4, Stage 1 (media gallery + core info) + Stage 2 (native variant
-  selection + a working product form). Still no quantity, AJAX cart, cart
-  drawer item rendering, accordions or recommendations — later Phase 4
-  stages layer those onto this same section.
+  selection + a working product form) + Stage 3 (quantity selector). Still
+  no AJAX cart, cart drawer item rendering, accordions or recommendations —
+  later Phase 4 stages layer those onto this same section.
+
+  The quantity input is a plain name="quantity" number field (min="1",
+  required) inside the same already-working form. Without JS, native HTML5
+  constraint validation on those two attributes blocks submitting anything
+  empty or below 1 — the browser stops the form and prompts a fix, rather
+  than silently rewriting the value, since only JS can do that. With JS,
+  assets/theme.js actively normalizes the field to a valid whole number on
+  change (before the browser's own validation would ever run), and the +/-
+  buttons (type="button", never touching submission) call the same
+  normalization. Quantity defaults to 1 on load, matching every other
+  Shopify PDP.
 
   The breadcrumb trail is real (Home / current collection / product title)
   rather than the prototype's static "Back to listing" link, using the
@@ -118,6 +129,41 @@
           data-label-sku-prefix="{{ 'product.sku_prefix' | t }}"
           {% if current_variant.sku == blank %}hidden{% endif %}
         >{{ 'product.sku_prefix' | t }}{{ current_variant.sku }}</p>
+
+        <div class="product__quantity" data-product-quantity>
+          <label class="product__quantity-label" for="Quantity-{{ product_form_id }}">{{ 'product.quantity_label' | t }}</label>
+          <div class="product__quantity-controls">
+            <button
+              type="button"
+              class="product__quantity-btn product__quantity-btn--minus"
+              data-quantity-decrease
+              aria-label="{{ 'product.quantity_decrease' | t }}"
+            >
+              {%- render 'icon', icon: 'minus', size: 14 -%}
+            </button>
+            <input
+              type="number"
+              name="quantity"
+              id="Quantity-{{ product_form_id }}"
+              class="product__quantity-input"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              value="1"
+              required
+              data-quantity-input
+            >
+            <button
+              type="button"
+              class="product__quantity-btn product__quantity-btn--plus"
+              data-quantity-increase
+              aria-label="{{ 'product.quantity_increase' | t }}"
+            >
+              {%- render 'icon', icon: 'plus', size: 14 -%}
+            </button>
+          </div>
+          <span class="visually-hidden" role="status" aria-live="polite" data-quantity-announcer data-label-quantity-prefix="{{ 'product.quantity_announce' | t }}"></span>
+        </div>
 
         <button
           type="submit"

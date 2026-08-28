@@ -238,6 +238,32 @@
     }
   }
 
+  /* ---------------- Product form: quantity selector ----------------
+     Progressive enhancement only — the number input already works with
+     zero JS (min="1" + required trigger native constraint validation on
+     submit, blocking anything empty or below 1). This normalizes the field
+     to a valid whole number on every change (typing then blur/enter, or a
+     +/- click) and announces the result once per change through a single
+     shared function, so the two entry paths never double-announce the same
+     update. */
+  function normalizeQuantity(rawValue) {
+    var parsed = parseInt(rawValue, 10);
+    if (isNaN(parsed) || parsed < 1) parsed = 1;
+    return parsed;
+  }
+
+  function setQuantity(input, rawValue) {
+    var normalized = normalizeQuantity(rawValue);
+    input.value = normalized;
+
+    var wrapper = input.closest('[data-product-quantity]');
+    var announcer = wrapper && wrapper.querySelector('[data-quantity-announcer]');
+    if (announcer) {
+      announcer.textContent = announcer.getAttribute('data-label-quantity-prefix') + normalized;
+    }
+    return normalized;
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -360,6 +386,20 @@
         if (gallery) selectGalleryMedia(gallery, galleryThumb.getAttribute('data-media-id'));
         return;
       }
+
+      // Product quantity +/- (type="button", never submits the form)
+      var quantityDecrease = e.target.closest('[data-quantity-decrease]');
+      var quantityIncrease = e.target.closest('[data-quantity-increase]');
+      if (quantityDecrease || quantityIncrease) {
+        var quantityWrapper = (quantityDecrease || quantityIncrease).closest('[data-product-quantity]');
+        var quantityInput = quantityWrapper && quantityWrapper.querySelector('[data-quantity-input]');
+        if (quantityInput) {
+          var current = normalizeQuantity(quantityInput.value);
+          var next = quantityDecrease ? Math.max(1, current - 1) : current + 1;
+          setQuantity(quantityInput, next);
+        }
+        return;
+      }
     });
 
     // Sort select: progressive enhancement — the form already works via its
@@ -387,6 +427,14 @@
             /* malformed/missing variant data — form still submits correctly without JS */
           }
         }
+      }
+
+      // Product quantity: normalize on change (fires on blur/enter, not per
+      // keystroke) so typing isn't interrupted and the field never
+      // announces more than once per completed edit.
+      var quantityInput = e.target.closest('[data-quantity-input]');
+      if (quantityInput) {
+        setQuantity(quantityInput, quantityInput.value);
       }
     });
 

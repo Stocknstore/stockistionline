@@ -2892,3 +2892,57 @@ body.scroll-locked { overflow: hidden; }
   background: rgba(2, 38, 63, 0.35);
   cursor: not-allowed;
 }
+
+/* --------------------------------------------------------------------------
+   35. Product quantity selector — sections/main-product.liquid
+   Phase 4, Stage 3. Compact stepper matching the variant-picker's chip
+   styling (same border color/weight). The native number-input spinner is
+   removed since the +/- buttons replace it — left in place it would show
+   two redundant increment/decrement controls side by side. Keyboard focus
+   styling comes for free from the theme's existing global a/button/input
+   :focus-visible rule (section 1), so nothing extra is defined here.
+   -------------------------------------------------------------------------- */
+.product__quantity { margin: 20px 0 0; }
+.product__quantity-label {
+  display: block;
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.product__quantity-controls {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  width: fit-content;
+}
+.product__quantity-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.product__quantity-btn:hover { background: rgba(2, 38, 63, 0.06); }
+.product__quantity-input {
+  width: 48px;
+  border: none;
+  border-left: 1px solid rgba(2, 38, 63, 0.4);
+  border-right: 1px solid rgba(2, 38, 63, 0.4);
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.product__quantity-input::-webkit-outer-spin-button,
+.product__quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

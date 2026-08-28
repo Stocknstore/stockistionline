@@ -49,7 +49,11 @@
     "availability_sold_out": "Sold out",
     "sku_prefix": "SKU: ",
     "add_to_cart": "Add to cart",
-    "sold_out": "Sold out"
+    "sold_out": "Sold out",
+    "quantity_label": "Quantity",
+    "quantity_decrease": "Decrease quantity",
+    "quantity_increase": "Increase quantity",
+    "quantity_announce": "Quantity updated to "
   },
   "collection_hero": {
     "placeholder": "Add an image"
