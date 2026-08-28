@@ -55,6 +55,12 @@
     "quantity_increase": "Increase quantity",
     "quantity_announce": "Quantity updated to "
   },
+  "cart": {
+    "title": "Your cart",
+    "quantity_label": "Quantity",
+    "remove": "Remove",
+    "update_cart": "Update cart"
+  },
   "collection_hero": {
     "placeholder": "Add an image"
   },

@@ -1,8 +1,24 @@
 {%- comment -%}
-  Cart drawer. Phase 1 ships the empty state only (per spec section 23), but the
-  markup is structured so CartItems / QuantityControls / RemoveItem /
-  RecommendedProducts / Subtotal / Terms / ViewCart / Checkout can be added in a
-  later phase without restructuring this shell.
+  Cart drawer. Phase 1 shipped the empty state only; Phase 4 Stage 4A adds
+  the real populated state — a native {% form 'cart' %} rendering every
+  cart.items line (image/placeholder, title+link, variant title when not
+  "Default Title", line price, an editable quantity via the standard
+  updates[{{ item.key }}] convention, and a item.url_to_remove link),
+  subtotal, and Update cart / View cart / Checkout actions. No AJAX/JS is
+  used for any of this yet (Stage 4A scope) — every control here is a real
+  submit or a real link, so it works with JavaScript fully disabled; the
+  existing openDrawer/closeDrawer infra (assets/theme.js, untouched this
+  stage) still just toggles this drawer's visibility around whatever the
+  server rendered on the current page load.
+
+  Only one of the populated/empty branches ever renders (no more hidden-
+  attribute toggling of both at once, since nothing here swaps them live
+  without a reload) — data-cart-items/-empty/-footer are kept as hooks for
+  a later AJAX stage's section-refresh, not read by anything yet.
+
+  Rendered on every page via sections/cart-drawer.liquid, so ids are
+  prefixed CartDrawer- to stay unique alongside sections/main-cart.liquid's
+  own copies of the same cart.items on the /cart page itself.
 {%- endcomment -%}
 <div class="cart-drawer" data-cart-drawer aria-hidden="true">
   <div class="cart-drawer__overlay" data-cart-close></div>
@@ -12,38 +28,76 @@
       {% render 'icon', icon: 'close' %}
     </button>
 
-    {%- comment -%} ----- Populated state (hidden while cart.item_count == 0) ----- {%- endcomment -%}
-    <div class="cart-drawer__items" data-cart-items {% if cart.item_count == 0 %}hidden{% endif %}>
-      {%- comment -%} CartItems / QuantityControls / RemoveItem render here in a later phase {%- endcomment -%}
-    </div>
+    {%- if cart.item_count > 0 -%}
+      {%- form 'cart', cart, id: 'CartDrawerForm', class: 'cart-drawer__form' -%}
+        <div class="cart-drawer__items" data-cart-items>
+          {%- for item in cart.items -%}
+            <div class="cart-drawer__item">
+              <a href="{{ item.url }}" class="cart-drawer__item-image-link" aria-hidden="true" tabindex="-1">
+                {%- if item.image -%}
+                  <img
+                    class="cart-drawer__item-image"
+                    src="{{ item.image | image_url: width: 160 }}"
+                    alt=""
+                    width="{{ item.image.width }}"
+                    height="{{ item.image.height }}"
+                    loading="lazy"
+                  >
+                {%- else -%}
+                  <span class="cart-drawer__item-placeholder"></span>
+                {%- endif -%}
+              </a>
+              <div class="cart-drawer__item-details">
+                <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item.product.title }}</a>
+                {%- if item.variant.title != 'Default Title' -%}
+                  <span class="cart-drawer__item-variant">{{ item.variant.title }}</span>
+                {%- endif -%}
+                <span class="cart-drawer__item-price">{{ item.final_line_price | money }}</span>
+                <div class="cart-drawer__item-row">
+                  <label class="visually-hidden" for="CartDrawerQuantity-{{ item.key }}">{{ 'cart.quantity_label' | t }}</label>
+                  <input
+                    type="number"
+                    id="CartDrawerQuantity-{{ item.key }}"
+                    name="updates[{{ item.key }}]"
+                    value="{{ item.quantity }}"
+                    min="0"
+                    class="cart-drawer__item-quantity-input"
+                  >
+                  <a href="{{ item.url_to_remove }}" class="cart-drawer__item-remove">{{ 'cart.remove' | t }}</a>
+                </div>
+              </div>
+            </div>
+          {%- endfor -%}
+        </div>
 
-    {%- comment -%} ----- Empty state (matches reference) ----- {%- endcomment -%}
-    <div class="cart-drawer__empty" data-cart-empty {% if cart.item_count > 0 %}hidden{% endif %}>
-      <h2 class="cart-drawer__empty-title">{{ 'header.cart_empty' | t }}</h2>
+        <div class="cart-drawer__footer" data-cart-footer>
+          <div class="cart-drawer__subtotal">
+            <span>{{ 'header.subtotal' | t }}</span>
+            <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+          </div>
+          <button type="submit" name="update" class="button button--outline button--full">{{ 'cart.update_cart' | t }}</button>
+          <a href="{{ routes.cart_url }}" class="button button--outline button--full">{{ 'header.view_cart' | t }}</a>
+          <button type="submit" name="checkout" class="button button--primary button--full">{{ 'header.checkout' | t }}</button>
+        </div>
+      {%- endform -%}
+    {%- else -%}
+      <div class="cart-drawer__empty" data-cart-empty>
+        <h2 class="cart-drawer__empty-title">{{ 'header.cart_empty' | t }}</h2>
 
-      <a href="{{ routes.all_products_collection_url }}" class="button button--primary">
-        {{ 'header.continue_shopping' | t }}
-      </a>
+        <a href="{{ routes.all_products_collection_url }}" class="button button--primary">
+          {{ 'header.continue_shopping' | t }}
+        </a>
 
-      {%- unless shop.customer_accounts_enabled == false -%}
-        <p class="cart-drawer__account-prompt">
-          {{ 'header.have_account' | t }}
-          <button type="button" class="cart-drawer__login-link" data-open-account>
-            {{ 'header.login_link' | t }}
-          </button>
-          {{ 'header.login_faster_checkout' | t }}
-        </p>
-      {%- endunless -%}
-    </div>
-
-    {%- comment -%} ----- Footer: Subtotal / Terms / ViewCart / Checkout (later phase) ----- {%- endcomment -%}
-    <div class="cart-drawer__footer" data-cart-footer hidden>
-      <div class="cart-drawer__subtotal">
-        <span>{{ 'header.subtotal' | t }}</span>
-        <span data-cart-subtotal>{{ cart.total_price | money }}</span>
+        {%- unless shop.customer_accounts_enabled == false -%}
+          <p class="cart-drawer__account-prompt">
+            {{ 'header.have_account' | t }}
+            <button type="button" class="cart-drawer__login-link" data-open-account>
+              {{ 'header.login_link' | t }}
+            </button>
+            {{ 'header.login_faster_checkout' | t }}
+          </p>
+        {%- endunless -%}
       </div>
-      <a href="{{ routes.cart_url }}" class="button button--outline button--full">{{ 'header.view_cart' | t }}</a>
-      <a href="{{ routes.cart_url }}/checkout" class="button button--primary button--full">{{ 'header.checkout' | t }}</a>
-    </div>
+    {%- endif -%}
   </div>
 </div>

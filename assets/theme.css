@@ -2946,3 +2946,165 @@ body.scroll-locked { overflow: hidden; }
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* --------------------------------------------------------------------------
+   36. Cart drawer — populated items — snippets/cart-drawer.liquid
+   Phase 4, Stage 4A. .cart-drawer__panel/__close/__empty/__account-prompt/
+   __subtotal/__footer already exist (section 11 above) — this only adds
+   the per-line-item layout. Reuses the diagonal-hatch placeholder pattern
+   already established for missing product images site-wide.
+   -------------------------------------------------------------------------- */
+.cart-drawer__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+.cart-drawer__item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: var(--space-4);
+}
+.cart-drawer__item-image-link { display: block; }
+.cart-drawer__item-image,
+.cart-drawer__item-placeholder {
+  display: block;
+  width: 72px;
+  height: 72px;
+}
+.cart-drawer__item-image { object-fit: cover; }
+.cart-drawer__item-placeholder {
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 8px, #EAE6DF 8px 16px);
+}
+.cart-drawer__item-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.cart-drawer__item-title { font-weight: 700; font-size: var(--text-base); color: var(--color-text); }
+.cart-drawer__item-title:hover { text-decoration: underline; }
+.cart-drawer__item-variant { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.cart-drawer__item-price { font-weight: 700; font-size: var(--text-sm); margin-top: var(--space-1); }
+.cart-drawer__item-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.cart-drawer__item-quantity-input {
+  width: 56px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+  font-size: var(--text-sm);
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.cart-drawer__item-quantity-input::-webkit-outer-spin-button,
+.cart-drawer__item-quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-drawer__item-remove {
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.cart-drawer__item-remove:hover { color: var(--color-text); }
+
+/* --------------------------------------------------------------------------
+   37. Standalone cart page — sections/main-cart.liquid, templates/cart.json
+   Phase 4, Stage 4A. Desktop/tablet: item rows in a 4-column grid (image /
+   details / quantity / price). Mobile collapses each row to a single
+   stacked column, matching the same 767px breakpoint used throughout the
+   theme. .container/.container--medium (section 3) center and cap the
+   page's width; only cart-specific layout is defined here.
+   -------------------------------------------------------------------------- */
+.cart-page { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+.cart-page__title { font-weight: 900; font-size: var(--text-5xl); letter-spacing: -0.02em; margin: 0 0 var(--space-6); }
+
+.cart-page__empty { text-align: center; padding: var(--space-8) 0; }
+.cart-page__empty-text { font-size: var(--text-lg); margin: 0 0 var(--space-5); }
+
+.cart-page__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+.cart-page__item {
+  display: grid;
+  grid-template-columns: 96px 1fr 120px 100px;
+  align-items: center;
+  gap: var(--space-5);
+}
+.cart-page__item-image-link { display: block; }
+.cart-page__item-image,
+.cart-page__item-placeholder {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+.cart-page__item-image { object-fit: cover; }
+.cart-page__item-placeholder {
+  background: repeating-linear-gradient(135deg, #D8D2C9 0 9px, #EAE6DF 9px 18px);
+}
+.cart-page__item-details { display: flex; flex-direction: column; gap: var(--space-1); }
+.cart-page__item-title { font-weight: 700; font-size: var(--text-base); color: var(--color-text); }
+.cart-page__item-title:hover { text-decoration: underline; }
+.cart-page__item-variant { font-size: var(--text-sm); color: var(--color-text-secondary); }
+.cart-page__item-remove {
+  align-self: flex-start;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  text-decoration: underline;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.cart-page__item-remove:hover { color: var(--color-text); }
+.cart-page__item-quantity-input {
+  width: 64px;
+  border: 1px solid rgba(2, 38, 63, 0.4);
+  padding: var(--space-2);
+  text-align: center;
+  font-size: var(--text-base);
+  background: var(--color-background);
+  color: var(--color-text);
+  -moz-appearance: textfield;
+}
+.cart-page__item-quantity-input::-webkit-outer-spin-button,
+.cart-page__item-quantity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-page__item-price { font-weight: 700; font-size: var(--text-base); text-align: right; }
+
+.cart-page__footer { padding-top: var(--space-6); display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-4); }
+.cart-page__subtotal { display: flex; gap: var(--space-3); font-size: var(--text-xl); font-weight: 700; }
+.cart-page__actions { display: flex; gap: var(--space-3); }
+.cart-page__continue { font-size: var(--text-sm); text-decoration: underline; color: var(--color-text-secondary); }
+.cart-page__continue:hover { color: var(--color-text); }
+
+@media (max-width: 767px) {
+  .cart-page__item {
+    grid-template-columns: 72px 1fr;
+    grid-template-areas:
+      "image details"
+      "image quantity"
+      "image price";
+    row-gap: var(--space-2);
+  }
+  .cart-page__item-image-link { grid-area: image; }
+  .cart-page__item-image,
+  .cart-page__item-placeholder { width: 72px; height: 72px; }
+  .cart-page__item-details { grid-area: details; }
+  .cart-page__item-quantity { grid-area: quantity; }
+  .cart-page__item-price { grid-area: price; text-align: left; }
+
+  .cart-page__footer { align-items: stretch; }
+  .cart-page__subtotal { justify-content: space-between; }
+  .cart-page__actions { flex-direction: column; }
+}

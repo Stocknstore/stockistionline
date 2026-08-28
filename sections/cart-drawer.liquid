@@ -1,0 +1,20 @@
+{%- comment -%}
+  Section: Cart drawer
+  Phase 4, Stage 4A. Thin wrapper around snippets/cart-drawer.liquid so the
+  drawer has its own section.id and is reachable through the Section
+  Rendering API (?section_id=cart-drawer, and the sections= bundling
+  parameter on the Ajax Cart endpoints) — groundwork a later AJAX stage
+  needs, not used yet in Stage 4A. layout/theme.liquid renders this via the
+  static {% section 'cart-drawer' %} tag in place of a direct {% render %}
+  call, the same pattern already used there for {% section 'footer' %}. The
+  snippet itself still holds all the actual markup, so it stays
+  independently reusable/testable.
+{%- endcomment -%}
+{% render 'cart-drawer' %}
+
+{% schema %}
+{
+  "name": "Cart drawer",
+  "settings": []
+}
+{% endschema %}
