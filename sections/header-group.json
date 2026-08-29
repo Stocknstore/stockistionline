@@ -40,6 +40,7 @@
     "header": {
       "type": "header",
       "settings": {
+        "logo": "shopify://shop_images/Stockisti__Online_Logo_v1_POLISHED_final_WOC-01.png",
         "logo_width": 130,
         "logo_width_mobile": 110,
         "sticky": true,
