@@ -179,5 +179,9 @@
   "wishlist": {
     "add": "Add to wishlist",
     "remove": "Remove from wishlist"
+  },
+  "wishlist_page": {
+    "loading": "Loading your wishlist…",
+    "error_partial": "Some saved items couldn't be loaded right now. They're still in your wishlist — try refreshing the page later."
   }
 }

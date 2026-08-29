@@ -3280,3 +3280,78 @@ body.scroll-locked { overflow: hidden; }
   .product-recommendations { padding-left: 16px; padding-right: 16px; }
   .product-recommendations__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
 }
+
+/* --------------------------------------------------------------------------
+   41. Wishlist utility card — sections/wishlist-product-card.liquid
+   Phase 5, Stage 3. This section must sit in templates/product.json's
+   `order` to be section_id-fetchable at all, so it renders on every real
+   PDP. display:none removes it (and the real product-card/wishlist-button
+   markup inside it) from layout, paint AND the accessibility tree/tab
+   order in one rule — not just a visual hide, so it creates no gap and no
+   focusable-but-invisible control on the PDP.
+   -------------------------------------------------------------------------- */
+[data-wishlist-product-card-source] { display: none; }
+
+/* --------------------------------------------------------------------------
+   42. Wishlist page — sections/main-wishlist.liquid
+   Phase 5, Stage 3. Deliberately independent of .collection-grid (this
+   page's grid has no filters/sort/pagination and its cards arrive
+   asynchronously one at a time) but reuses the same 4/3/2 desktop/tablet/
+   mobile column counts and 1279px/767px breakpoints as sections 27/40 for
+   visual consistency. .wishlist-page__slot is the per-item mount point
+   assets/wishlist.js creates up front, in saved order, before any fetch
+   resolves — so cards always land in the right position regardless of
+   which network request finishes first.
+   -------------------------------------------------------------------------- */
+.wishlist-page { padding: var(--space-8) 40px var(--space-8); }
+.wishlist-page__header { max-width: 60ch; margin-bottom: var(--space-6); }
+.wishlist-page__heading { font-weight: 900; font-size: var(--text-4xl); letter-spacing: -0.02em; }
+.wishlist-page__heading:focus-visible { outline: none; }
+.wishlist-page__body { margin-top: var(--space-3); color: var(--color-text-secondary); line-height: 1.6; }
+
+.wishlist-page__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  padding: var(--space-6) 0;
+}
+.wishlist-page__status[hidden] { display: none; }
+.wishlist-page__spinner {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: wishlist-spin 700ms linear infinite;
+}
+@keyframes wishlist-spin { to { transform: rotate(360deg); } }
+
+.wishlist-page__error {
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.wishlist-page__empty { text-align: center; padding: var(--space-8) 0; }
+.wishlist-page__empty-heading { font-weight: 800; font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+.wishlist-page__empty-body { color: var(--color-text-secondary); margin-bottom: var(--space-5); }
+
+.wishlist-page__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+.wishlist-page__slot:empty { display: none; }
+
+@media (max-width: 1279px) {
+  .wishlist-page { padding-left: 28px; padding-right: 28px; }
+  .wishlist-page__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .wishlist-page { padding-left: 16px; padding-right: 16px; }
+  .wishlist-page__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+}
