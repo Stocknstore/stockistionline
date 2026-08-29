@@ -25,10 +25,24 @@
     <span>{{ 'wishlist_page.loading' | t }}</span>
   </div>
 
+  {%- comment -%}
+    Without JavaScript, assets/wishlist.js never runs, so the loading state
+    above would otherwise stay visible forever — a misleading "stuck
+    loading" page for a no-JS visitor rather than an honest explanation.
+    The <style> below only takes effect when scripting is disabled (that's
+    what makes <noscript> content render at all), so it can't ever hide
+    the real loading state for a JS-enabled visitor mid-fetch.
+  {%- endcomment -%}
+  <noscript>
+    <style>[data-wishlist-loading] { display: none; }</style>
+    <p class="wishlist-page__noscript">{{ 'wishlist_page.noscript' | t }}</p>
+  </noscript>
+
   <div
     class="wishlist-page__error"
     data-wishlist-error
     data-label-partial-error="{{ 'wishlist_page.error_partial' | t }}"
+    data-label-full-error="{{ 'wishlist_page.error_full' | t }}"
     role="alert"
     hidden
   ></div>

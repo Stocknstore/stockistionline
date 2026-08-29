@@ -182,6 +182,8 @@
   },
   "wishlist_page": {
     "loading": "Loading your wishlist…",
-    "error_partial": "Some saved items couldn't be loaded right now. They're still in your wishlist — try refreshing the page later."
+    "error_partial": "Some saved items couldn't be loaded right now. They're still in your wishlist — try refreshing the page later.",
+    "error_full": "We couldn't load your saved products right now. They're still in your wishlist — try refreshing the page.",
+    "noscript": "Your wishlist requires JavaScript to load your saved products. Please enable JavaScript, or continue browsing and come back later."
   }
 }

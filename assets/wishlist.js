@@ -236,6 +236,22 @@
       }
     }
 
+    // Distinct from showEmpty(): every saved entry failed to load for a
+    // TEMPORARY reason (e.g. offline). The wishlist is not actually empty
+    // -- saying so would be actively misleading and would hide the one
+    // message that explains what happened, so this shows the error state
+    // instead and leaves the (empty) grid exactly as collapsed as the
+    // empty state would, without claiming there's nothing saved.
+    function showFullError() {
+      if (loadingEl) loadingEl.hidden = true;
+      if (emptyEl) emptyEl.hidden = true;
+      if (errorEl) {
+        errorEl.textContent = errorEl.getAttribute('data-label-full-error') || errorEl.getAttribute('data-label-partial-error') || '';
+        errorEl.hidden = false;
+      }
+      grid.setAttribute('aria-busy', 'false');
+    }
+
     function finishLoading() {
       if (loadingEl) loadingEl.hidden = true;
       grid.setAttribute('aria-busy', 'false');
@@ -288,7 +304,11 @@
       if (pending === 0) {
         finishLoading();
         if (visibleCount === 0) {
-          showEmpty();
+          if (hadTemporaryFailure) {
+            showFullError();
+          } else {
+            showEmpty();
+          }
         } else if (hadTemporaryFailure) {
           showPartialError();
         }

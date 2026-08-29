@@ -3306,7 +3306,10 @@ body.scroll-locked { overflow: hidden; }
 .wishlist-page { padding: var(--space-8) 40px var(--space-8); }
 .wishlist-page__header { max-width: 60ch; margin-bottom: var(--space-6); }
 .wishlist-page__heading { font-weight: 900; font-size: var(--text-4xl); letter-spacing: -0.02em; }
-.wishlist-page__heading:focus-visible { outline: none; }
+/* tabindex="-1" only for the programmatic focus() fallback (removing the
+   final card with no empty-state CTA configured) -- must stay visible,
+   not suppressed, or that fallback silently loses the focus indicator. */
+.wishlist-page__heading:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
 .wishlist-page__body { margin-top: var(--space-3); color: var(--color-text-secondary); line-height: 1.6; }
 
 .wishlist-page__status {
@@ -3330,6 +3333,14 @@ body.scroll-locked { overflow: hidden; }
   background: rgba(179, 38, 30, 0.08);
   border: 1px solid var(--color-error);
   color: var(--color-error);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.wishlist-page__noscript {
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-6);
   font-size: var(--text-sm);
