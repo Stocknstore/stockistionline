@@ -1,0 +1,30 @@
+{%- comment -%}
+  Snippet: wishlist-button
+  Phase 5, Stage 2. Single reusable client-only wishlist toggle, rendered
+  identically everywhere it's used (product cards, PDP) — positioning is
+  handled purely by the surrounding CSS context, never by a second markup
+  variant. Rendered `hidden` by default; assets/wishlist.js reveals it only
+  after confirming localStorage actually works, so a page with storage
+  blocked/unavailable never shows an inert or broken control.
+
+  data-label-add/-remove carry pre-translated accessible labels so
+  assets/wishlist.js never hardcodes English strings — it just swaps
+  aria-label using these two data attributes as aria-pressed changes.
+
+  Params:
+    product - required, a Shopify product object
+{%- endcomment -%}
+<button
+  type="button"
+  class="wishlist-button"
+  data-wishlist-toggle
+  data-wishlist-id="{{ product.id }}"
+  data-wishlist-handle="{{ product.handle }}"
+  data-label-add="{{ 'wishlist.add' | t }}"
+  data-label-remove="{{ 'wishlist.remove' | t }}"
+  aria-pressed="false"
+  aria-label="{{ 'wishlist.add' | t }}"
+  hidden
+>
+  {%- render 'icon', icon: 'heart', size: 18 -%}
+</button>

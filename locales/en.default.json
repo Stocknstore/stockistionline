@@ -175,5 +175,9 @@
     "popular_category_2": "Season's Must-Have Styles",
     "popular_category_3": "Exclusive New Arrivals",
     "products": "Products"
+  },
+  "wishlist": {
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist"
   }
 }

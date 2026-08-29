@@ -74,9 +74,10 @@
   endif
   assign available_sizes = available_size_values | split: '||' | uniq
 -%}
+<div class="product-card">
 <a
   href="{{ product.url }}"
-  class="product-card"
+  class="product-card__link"
   aria-label="{{ product.title | strip_newlines }}{% if badge_label != blank %}, {{ badge_label }}{% endif %}"
 >
   <div class="product-card__image-wrap">
@@ -122,3 +123,5 @@
     {%- endif -%}
   </div>
 </a>
+{%- render 'wishlist-button', product: product -%}
+</div>

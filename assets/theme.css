@@ -1433,8 +1433,9 @@ body.scroll-locked { overflow: hidden; }
    properties are needed here beyond the .product-card-home--grid /
    .product-card-home--rail variant split.
    -------------------------------------------------------------------------- */
-.product-card-home { display: block; }
+.product-card-home { display: block; position: relative; }
 .product-card-home--rail { flex: 0 0 30%; scroll-snap-align: start; }
+.product-card-home__link { display: block; }
 
 .product-card-home__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); }
 .product-card-home--grid .product-card-home__image-wrap { height: 240px; }
@@ -2242,7 +2243,8 @@ body.scroll-locked { overflow: hidden; }
    same DOM purely via the ancestor .collection-grid[data-view="list"]
    selector — no duplicate markup, no second render pass.
    -------------------------------------------------------------------------- */
-.product-card { display: block; }
+.product-card { display: block; position: relative; }
+.product-card__link { display: block; }
 .product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); height: 250px; }
 
 .product-card__image,
@@ -2318,6 +2320,54 @@ body.scroll-locked { overflow: hidden; }
 .collection-grid[data-view="list"] .product-card__badge { padding: 5px 7px; font-size: 8px; }
 .collection-grid[data-view="list"] .product-card__meta { flex: 1; min-width: 0; margin-top: 0; gap: 4px; }
 .collection-grid[data-view="list"] .product-card__title { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   28b. Wishlist button — snippets/wishlist-button.liquid
+   Phase 5, Stage 2. One reusable component, hidden until assets/wishlist.js
+   confirms localStorage works. On product cards it overlays the image's
+   top-right corner (mirrors the badge's top-left treatment); on the PDP
+   (.product__title-row) that overlay positioning is turned off in favor of
+   sitting inline next to the title. The heart fills solid once aria-pressed
+   is true — no second icon asset needed, snippets/icon.liquid's stroke-only
+   heart already responds to `fill` via CSS. :focus-visible is inherited
+   for free from the global button rule (section 1).
+   -------------------------------------------------------------------------- */
+.wishlist-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  transition: transform var(--transition-fast) var(--ease);
+}
+/* [hidden] and this class carry equal specificity, so `display` must live in
+   a :not([hidden]) rule — an unconditional `display` here would override the
+   browser's own [hidden] { display: none } and defeat the JS-gated reveal. */
+.wishlist-button:not([hidden]) { display: inline-flex; }
+.wishlist-button:hover { transform: scale(1.06); }
+.wishlist-button[aria-pressed="true"] { color: var(--color-primary); }
+.wishlist-button[aria-pressed="true"] .icon--heart { fill: currentColor; }
+
+.product__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.product__title-row .wishlist-button {
+  position: static;
+  flex: none;
+  background: none;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+}
 
 /* --------------------------------------------------------------------------
    29. Collection toolbar — snippets/collection-toolbar.liquid
