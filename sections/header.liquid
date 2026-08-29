@@ -44,7 +44,7 @@
 
       <div class="site-header__utility-icons">
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{{ 'header.account' | t }}">
+          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}">
             {% render 'icon', icon: 'user' %}
           </a>
         {%- endif -%}
@@ -58,7 +58,7 @@
         {%- if section.settings.show_wishlist -%}
           <a href="{{ section.settings.wishlist_url | default: '#' }}" class="header-icon-btn" aria-label="{{ 'header.wishlist' | t }}">
             {% render 'icon', icon: 'heart' %}
-            <span class="header-icon-btn__count" data-wishlist-count>0</span>
+            <span class="header-icon-btn__count" data-wishlist-count hidden>0</span>
           </a>
         {%- endif -%}
 
@@ -94,9 +94,9 @@
 
       <div class="site-header__mobile-right">
         {%- if shop.customer_accounts_enabled -%}
-          <button type="button" class="header-icon-btn" data-account-toggle aria-label="{{ 'header.account' | t }}">
+          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}">
             {% render 'icon', icon: 'user' %}
-          </button>
+          </a>
         {%- endif -%}
         <button type="button" class="header-icon-btn" data-cart-toggle aria-label="{{ 'header.cart' | t }}">
           {% render 'icon', icon: 'bag' %}
@@ -107,7 +107,7 @@
   </div>
 </header>
 
-{% render 'mobile-menu-drawer', menu: section.settings.main_menu %}
+{% render 'mobile-menu-drawer', menu: section.settings.main_menu, wishlist_url: section.settings.wishlist_url %}
 
 {% schema %}
 {

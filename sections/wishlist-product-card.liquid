@@ -1,0 +1,31 @@
+{%- comment -%}
+  Section: Wishlist product card (utility)
+  Phase 5, Stage 3. Not a page-visible section — exists solely so
+  assets/wishlist.js can fetch one real, Liquid-rendered product card for
+  an arbitrary saved handle via Shopify's classic Section Rendering API:
+    /products/<handle>?section_id=wishlist-product-card
+
+  A section must be listed in the requesting template's `order` array to
+  be section_id-fetchable at all (verified empirically before this stage
+  was implemented — a section present only in `sections` and absent from
+  `order` 404s). That means this renders on every real PDP load too; it's
+  kept fully invisible there via the scoped [data-wishlist-product-card-
+  source] rule in assets/theme.css (display:none on the wrapper, which
+  removes it and everything inside from both layout and the accessibility
+  tree/tab order — not just visually hidden).
+
+  Renders the exact same snippets/product-card.liquid used on every
+  collection grid, the homepage, and recommendations — image, price,
+  badges, sizes, and the Stage 2 wishlist button — so nothing about a
+  wishlist-page card is ever hand-built in JavaScript.
+{%- endcomment -%}
+<div data-wishlist-product-card-source>
+  {%- render 'product-card', product: product -%}
+</div>
+
+{% schema %}
+{
+  "name": "Wishlist card",
+  "settings": []
+}
+{% endschema %}

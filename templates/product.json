@@ -17,7 +17,10 @@
     },
     "product-recommendations": {
       "type": "product-recommendations"
+    },
+    "wishlist-product-card": {
+      "type": "wishlist-product-card"
     }
   },
-  "order": ["main-product", "product-recommendations"]
+  "order": ["main-product", "product-recommendations", "wishlist-product-card"]
 }

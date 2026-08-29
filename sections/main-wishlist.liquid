@@ -1,0 +1,111 @@
+{%- comment -%}
+  Section: Main wishlist
+  Phase 5, Stage 3. Server-rendered shell only — assets/wishlist.js reads
+  the saved { id, handle } entries from localStorage (Stage 2) and
+  hydrates the grid below with real, Shopify-rendered product cards
+  fetched from sections/wishlist-product-card.liquid via the Section
+  Rendering API. Nothing about product data (price/image/availability)
+  is known or guessable at server-render time, since the wishlist is
+  entirely client-/browser-specific — hence the loading state below is
+  the true default, not a flash-of-empty-content placeholder.
+
+  data-wishlist-loading/-empty/-error/-grid are the exact hooks assets/
+  wishlist.js targets; nothing here is wired to any other feature.
+{%- endcomment -%}
+<section class="wishlist-page" data-wishlist-page {{ section.shopify_attributes }}>
+  <div class="wishlist-page__header">
+    <h1 class="wishlist-page__heading" tabindex="-1">{{ section.settings.heading }}</h1>
+    {%- if section.settings.body != blank -%}
+      <div class="wishlist-page__body rte">{{ section.settings.body }}</div>
+    {%- endif -%}
+  </div>
+
+  <div class="wishlist-page__status" data-wishlist-loading role="status" aria-live="polite">
+    <span class="wishlist-page__spinner" aria-hidden="true"></span>
+    <span>{{ 'wishlist_page.loading' | t }}</span>
+  </div>
+
+  {%- comment -%}
+    Without JavaScript, assets/wishlist.js never runs, so the loading state
+    above would otherwise stay visible forever — a misleading "stuck
+    loading" page for a no-JS visitor rather than an honest explanation.
+    The <style> below only takes effect when scripting is disabled (that's
+    what makes <noscript> content render at all), so it can't ever hide
+    the real loading state for a JS-enabled visitor mid-fetch.
+  {%- endcomment -%}
+  <noscript>
+    <style>[data-wishlist-loading] { display: none; }</style>
+    <p class="wishlist-page__noscript">{{ 'wishlist_page.noscript' | t }}</p>
+  </noscript>
+
+  <div
+    class="wishlist-page__error"
+    data-wishlist-error
+    data-label-partial-error="{{ 'wishlist_page.error_partial' | t }}"
+    data-label-full-error="{{ 'wishlist_page.error_full' | t }}"
+    role="alert"
+    hidden
+  ></div>
+
+  <div class="wishlist-page__empty" data-wishlist-empty hidden>
+    <p class="wishlist-page__empty-heading">{{ section.settings.empty_heading }}</p>
+    {%- if section.settings.empty_body != blank -%}
+      <p class="wishlist-page__empty-body">{{ section.settings.empty_body }}</p>
+    {%- endif -%}
+    {%- if section.settings.empty_cta_label != blank -%}
+      <a href="{{ section.settings.empty_cta_url | default: routes.all_products_collection_url }}" class="button button--primary">
+        {{ section.settings.empty_cta_label }}
+      </a>
+    {%- endif -%}
+  </div>
+
+  <div class="wishlist-page__grid" data-wishlist-grid aria-busy="true"></div>
+</section>
+
+{% schema %}
+{
+  "name": "Main wishlist",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your wishlist"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text",
+      "default": "<p>Products you save are stored only in this browser. They won't sync to other devices and will be lost if you clear your browsing data.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Empty state"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty heading",
+      "default": "Your wishlist is empty"
+    },
+    {
+      "type": "text",
+      "id": "empty_body",
+      "label": "Empty body",
+      "default": "Save products you love by tapping the heart icon on any product."
+    },
+    {
+      "type": "text",
+      "id": "empty_cta_label",
+      "label": "Button label",
+      "default": "Continue shopping"
+    },
+    {
+      "type": "url",
+      "id": "empty_cta_url",
+      "label": "Button link",
+      "info": "Defaults to all products if left blank."
+    }
+  ]
+}
+{% endschema %}

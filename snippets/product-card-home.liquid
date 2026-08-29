@@ -44,7 +44,8 @@
   endif
   assign available_sizes = available_size_values | split: '||' | uniq
 -%}
-<a href="{{ product.url }}" class="product-card-home product-card-home--{{ card_variant }}">
+<div class="product-card-home product-card-home--{{ card_variant }}">
+<a href="{{ product.url }}" class="product-card-home__link">
   <div class="product-card-home__image-wrap">
     {%- if show_badge and badge_key != blank -%}
       <span class="product-card-home__badge product-card-home__badge--{{ badge_key }}">
@@ -93,3 +94,5 @@
     {%- endif -%}
   </div>
 </a>
+{%- render 'wishlist-button', product: product -%}
+</div>

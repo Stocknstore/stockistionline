@@ -475,11 +475,10 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 
 /* --------------------------------------------------------------------------
-   11. Overlay drawers — shared base (mobile menu, search, account, cart)
+   11. Overlay drawers — shared base (mobile menu, search, cart)
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer,
 .search-drawer,
-.account-drawer,
 .cart-drawer,
 .filter-drawer {
   position: fixed;
@@ -490,7 +489,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer[data-open],
 .search-drawer[data-open],
-.account-drawer[data-open],
 .cart-drawer[data-open],
 .filter-drawer[data-open] {
   visibility: visible;
@@ -498,7 +496,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer__overlay,
 .search-drawer__overlay,
-.account-drawer__overlay,
 .cart-drawer__overlay,
 .filter-drawer__overlay {
   position: absolute;
@@ -509,13 +506,11 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer[data-open] .mobile-menu-drawer__overlay,
 .search-drawer[data-open] .search-drawer__overlay,
-.account-drawer[data-open] .account-drawer__overlay,
 .cart-drawer[data-open] .cart-drawer__overlay,
 .filter-drawer[data-open] .filter-drawer__overlay { opacity: 1; }
 
-/* Mobile menu + account: slide from left. Search: slide from top. Cart: slide from right. */
-.mobile-menu-drawer__panel,
-.account-drawer__panel {
+/* Mobile menu: slide from left. Search: slide from top. Cart: slide from right. */
+.mobile-menu-drawer__panel {
   position: absolute; top: 0; left: 0; bottom: 0;
   width: 100%; max-width: 400px;
   background: var(--color-background);
@@ -523,15 +518,7 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   transition: transform var(--transition-normal) var(--ease);
   overflow-y: auto;
 }
-.mobile-menu-drawer[data-open] .mobile-menu-drawer__panel,
-.account-drawer[data-open] .account-drawer__panel { transform: translateX(0); }
-
-/* Account drawer manages a single flat form (not drill-down rows like the mobile
-   menu), so unlike .mobile-menu-drawer__panel it needs its own horizontal padding —
-   without this, labels/inputs render flush against the panel edge and get clipped. */
-.account-drawer__panel {
-  padding: var(--space-6);
-}
+.mobile-menu-drawer[data-open] .mobile-menu-drawer__panel { transform: translateX(0); }
 
 /* Filter drawer: also slides from the left, but unlike the two panels above
    it's used exclusively below the 768px breakpoint, where width:100% would
@@ -574,7 +561,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
    12. Mobile menu drawer — drill-down panels
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer__header,
-.account-drawer__header,
 .search-drawer__header,
 .filter-drawer__header {
   display: flex;
@@ -582,8 +568,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   justify-content: space-between;
   padding: var(--space-5);
 }
-.search-drawer__header, .account-drawer__header { padding: 0 0 var(--space-5); }
-.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title, .filter-drawer__title {
+.search-drawer__header { padding: 0 0 var(--space-5); }
+.mobile-menu-drawer__title, .search-drawer__title, .filter-drawer__title {
   font-size: var(--text-xl);
   font-weight: 700;
 }
@@ -675,14 +661,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   font-size: var(--text-sm);
 }
 .search-drawer__category-list li { padding: var(--space-2) 0 var(--space-2) var(--space-4); font-size: var(--text-lg); }
-
-/* --------------------------------------------------------------------------
-   14. Account drawer content
-   -------------------------------------------------------------------------- */
-.account-drawer__body { display: flex; flex-direction: column; }
-.account-drawer__body form,
-#AccountDrawerLoginForm { display: flex; flex-direction: column; gap: var(--space-4); }
-.account-drawer__forgot { text-align: center; font-size: var(--text-base); text-decoration: underline; margin: var(--space-1) 0; }
 
 /* --------------------------------------------------------------------------
    15. Cart drawer content
@@ -1455,8 +1433,9 @@ body.scroll-locked { overflow: hidden; }
    properties are needed here beyond the .product-card-home--grid /
    .product-card-home--rail variant split.
    -------------------------------------------------------------------------- */
-.product-card-home { display: block; }
+.product-card-home { display: block; position: relative; }
 .product-card-home--rail { flex: 0 0 30%; scroll-snap-align: start; }
+.product-card-home__link { display: block; }
 
 .product-card-home__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); }
 .product-card-home--grid .product-card-home__image-wrap { height: 240px; }
@@ -2264,7 +2243,8 @@ body.scroll-locked { overflow: hidden; }
    same DOM purely via the ancestor .collection-grid[data-view="list"]
    selector — no duplicate markup, no second render pass.
    -------------------------------------------------------------------------- */
-.product-card { display: block; }
+.product-card { display: block; position: relative; }
+.product-card__link { display: block; }
 .product-card__image-wrap { position: relative; overflow: hidden; background: var(--color-background-secondary); height: 250px; }
 
 .product-card__image,
@@ -2340,6 +2320,54 @@ body.scroll-locked { overflow: hidden; }
 .collection-grid[data-view="list"] .product-card__badge { padding: 5px 7px; font-size: 8px; }
 .collection-grid[data-view="list"] .product-card__meta { flex: 1; min-width: 0; margin-top: 0; gap: 4px; }
 .collection-grid[data-view="list"] .product-card__title { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   28b. Wishlist button — snippets/wishlist-button.liquid
+   Phase 5, Stage 2. One reusable component, hidden until assets/wishlist.js
+   confirms localStorage works. On product cards it overlays the image's
+   top-right corner (mirrors the badge's top-left treatment); on the PDP
+   (.product__title-row) that overlay positioning is turned off in favor of
+   sitting inline next to the title. The heart fills solid once aria-pressed
+   is true — no second icon asset needed, snippets/icon.liquid's stroke-only
+   heart already responds to `fill` via CSS. :focus-visible is inherited
+   for free from the global button rule (section 1).
+   -------------------------------------------------------------------------- */
+.wishlist-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  transition: transform var(--transition-fast) var(--ease);
+}
+/* [hidden] and this class carry equal specificity, so `display` must live in
+   a :not([hidden]) rule — an unconditional `display` here would override the
+   browser's own [hidden] { display: none } and defeat the JS-gated reveal. */
+.wishlist-button:not([hidden]) { display: inline-flex; }
+.wishlist-button:hover { transform: scale(1.06); }
+.wishlist-button[aria-pressed="true"] { color: var(--color-primary); }
+.wishlist-button[aria-pressed="true"] .icon--heart { fill: currentColor; }
+
+.product__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.product__title-row .wishlist-button {
+  position: static;
+  flex: none;
+  background: none;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+}
 
 /* --------------------------------------------------------------------------
    29. Collection toolbar — snippets/collection-toolbar.liquid
@@ -3251,4 +3279,90 @@ body.scroll-locked { overflow: hidden; }
 @media (max-width: 767px) {
   .product-recommendations { padding-left: 16px; padding-right: 16px; }
   .product-recommendations__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+}
+
+/* --------------------------------------------------------------------------
+   41. Wishlist utility card — sections/wishlist-product-card.liquid
+   Phase 5, Stage 3. This section must sit in templates/product.json's
+   `order` to be section_id-fetchable at all, so it renders on every real
+   PDP. display:none removes it (and the real product-card/wishlist-button
+   markup inside it) from layout, paint AND the accessibility tree/tab
+   order in one rule — not just a visual hide, so it creates no gap and no
+   focusable-but-invisible control on the PDP.
+   -------------------------------------------------------------------------- */
+[data-wishlist-product-card-source] { display: none; }
+
+/* --------------------------------------------------------------------------
+   42. Wishlist page — sections/main-wishlist.liquid
+   Phase 5, Stage 3. Deliberately independent of .collection-grid (this
+   page's grid has no filters/sort/pagination and its cards arrive
+   asynchronously one at a time) but reuses the same 4/3/2 desktop/tablet/
+   mobile column counts and 1279px/767px breakpoints as sections 27/40 for
+   visual consistency. .wishlist-page__slot is the per-item mount point
+   assets/wishlist.js creates up front, in saved order, before any fetch
+   resolves — so cards always land in the right position regardless of
+   which network request finishes first.
+   -------------------------------------------------------------------------- */
+.wishlist-page { padding: var(--space-8) 40px var(--space-8); }
+.wishlist-page__header { max-width: 60ch; margin-bottom: var(--space-6); }
+.wishlist-page__heading { font-weight: 900; font-size: var(--text-4xl); letter-spacing: -0.02em; }
+/* tabindex="-1" only for the programmatic focus() fallback (removing the
+   final card with no empty-state CTA configured) -- must stay visible,
+   not suppressed, or that fallback silently loses the focus indicator. */
+.wishlist-page__heading:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+.wishlist-page__body { margin-top: var(--space-3); color: var(--color-text-secondary); line-height: 1.6; }
+
+.wishlist-page__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  padding: var(--space-6) 0;
+}
+.wishlist-page__status[hidden] { display: none; }
+.wishlist-page__spinner {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: wishlist-spin 700ms linear infinite;
+}
+@keyframes wishlist-spin { to { transform: rotate(360deg); } }
+
+.wishlist-page__error {
+  background: rgba(179, 38, 30, 0.08);
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.wishlist-page__noscript {
+  background: var(--color-background-secondary);
+  color: var(--color-text-secondary);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.wishlist-page__empty { text-align: center; padding: var(--space-8) 0; }
+.wishlist-page__empty-heading { font-weight: 800; font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+.wishlist-page__empty-body { color: var(--color-text-secondary); margin-bottom: var(--space-5); }
+
+.wishlist-page__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+.wishlist-page__slot:empty { display: none; }
+
+@media (max-width: 1279px) {
+  .wishlist-page { padding-left: 28px; padding-right: 28px; }
+  .wishlist-page__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .wishlist-page { padding-left: 16px; padding-right: 16px; }
+  .wishlist-page__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
 }

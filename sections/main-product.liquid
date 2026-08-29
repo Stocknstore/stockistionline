@@ -150,10 +150,15 @@
     </div>
 
     <div class="product__info">
-      {%- if product.vendor != blank -%}
-        <span class="product__vendor">{{ product.vendor }}</span>
-      {%- endif -%}
-      <h1 class="product__title">{{ product.title }}</h1>
+      <div class="product__title-row">
+        <div>
+          {%- if product.vendor != blank -%}
+            <span class="product__vendor">{{ product.vendor }}</span>
+          {%- endif -%}
+          <h1 class="product__title">{{ product.title }}</h1>
+        </div>
+        {%- render 'wishlist-button', product: product -%}
+      </div>
 
       {%- form 'product', product, return_to: request.path, id: product_form_id, class: 'product__form', data-product-form: '', data-label-added-to-cart: added_to_cart_label -%}
         <div class="product-form-error" data-product-form-error data-label-generic-error="{{ 'cart.generic_error' | t }}" role="alert" aria-live="assertive" hidden></div>
