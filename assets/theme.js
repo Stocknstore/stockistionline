@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-account-drawer]', '[data-cart-drawer]', '[data-filter-drawer]'];
+  var OPEN_DRAWER_SELECTORS = ['[data-mobile-menu-drawer]', '[data-search-drawer]', '[data-cart-drawer]', '[data-filter-drawer]'];
   var lastFocusedElement = null;
 
   /* ---------------- Scroll lock ---------------- */
@@ -717,17 +717,6 @@
       }
       if (e.target.closest('[data-search-close]')) {
         closeDrawer('[data-search-drawer]');
-        return;
-      }
-
-      // Account
-      if (e.target.closest('[data-account-toggle]') || e.target.closest('[data-open-account]')) {
-        closeDrawer('[data-cart-drawer]');
-        openDrawer('[data-account-drawer]');
-        return;
-      }
-      if (e.target.closest('[data-account-close]')) {
-        closeDrawer('[data-account-drawer]');
         return;
       }
 

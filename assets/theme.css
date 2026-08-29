@@ -475,11 +475,10 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 
 /* --------------------------------------------------------------------------
-   11. Overlay drawers — shared base (mobile menu, search, account, cart)
+   11. Overlay drawers — shared base (mobile menu, search, cart)
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer,
 .search-drawer,
-.account-drawer,
 .cart-drawer,
 .filter-drawer {
   position: fixed;
@@ -490,7 +489,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer[data-open],
 .search-drawer[data-open],
-.account-drawer[data-open],
 .cart-drawer[data-open],
 .filter-drawer[data-open] {
   visibility: visible;
@@ -498,7 +496,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer__overlay,
 .search-drawer__overlay,
-.account-drawer__overlay,
 .cart-drawer__overlay,
 .filter-drawer__overlay {
   position: absolute;
@@ -509,13 +506,11 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 }
 .mobile-menu-drawer[data-open] .mobile-menu-drawer__overlay,
 .search-drawer[data-open] .search-drawer__overlay,
-.account-drawer[data-open] .account-drawer__overlay,
 .cart-drawer[data-open] .cart-drawer__overlay,
 .filter-drawer[data-open] .filter-drawer__overlay { opacity: 1; }
 
-/* Mobile menu + account: slide from left. Search: slide from top. Cart: slide from right. */
-.mobile-menu-drawer__panel,
-.account-drawer__panel {
+/* Mobile menu: slide from left. Search: slide from top. Cart: slide from right. */
+.mobile-menu-drawer__panel {
   position: absolute; top: 0; left: 0; bottom: 0;
   width: 100%; max-width: 400px;
   background: var(--color-background);
@@ -523,15 +518,7 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   transition: transform var(--transition-normal) var(--ease);
   overflow-y: auto;
 }
-.mobile-menu-drawer[data-open] .mobile-menu-drawer__panel,
-.account-drawer[data-open] .account-drawer__panel { transform: translateX(0); }
-
-/* Account drawer manages a single flat form (not drill-down rows like the mobile
-   menu), so unlike .mobile-menu-drawer__panel it needs its own horizontal padding —
-   without this, labels/inputs render flush against the panel edge and get clipped. */
-.account-drawer__panel {
-  padding: var(--space-6);
-}
+.mobile-menu-drawer[data-open] .mobile-menu-drawer__panel { transform: translateX(0); }
 
 /* Filter drawer: also slides from the left, but unlike the two panels above
    it's used exclusively below the 768px breakpoint, where width:100% would
@@ -574,7 +561,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
    12. Mobile menu drawer — drill-down panels
    -------------------------------------------------------------------------- */
 .mobile-menu-drawer__header,
-.account-drawer__header,
 .search-drawer__header,
 .filter-drawer__header {
   display: flex;
@@ -582,8 +568,8 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   justify-content: space-between;
   padding: var(--space-5);
 }
-.search-drawer__header, .account-drawer__header { padding: 0 0 var(--space-5); }
-.mobile-menu-drawer__title, .search-drawer__title, .account-drawer__title, .filter-drawer__title {
+.search-drawer__header { padding: 0 0 var(--space-5); }
+.mobile-menu-drawer__title, .search-drawer__title, .filter-drawer__title {
   font-size: var(--text-xl);
   font-weight: 700;
 }
@@ -675,14 +661,6 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   font-size: var(--text-sm);
 }
 .search-drawer__category-list li { padding: var(--space-2) 0 var(--space-2) var(--space-4); font-size: var(--text-lg); }
-
-/* --------------------------------------------------------------------------
-   14. Account drawer content
-   -------------------------------------------------------------------------- */
-.account-drawer__body { display: flex; flex-direction: column; }
-.account-drawer__body form,
-#AccountDrawerLoginForm { display: flex; flex-direction: column; gap: var(--space-4); }
-.account-drawer__forgot { text-align: center; font-size: var(--text-base); text-decoration: underline; margin: var(--space-1) 0; }
 
 /* --------------------------------------------------------------------------
    15. Cart drawer content

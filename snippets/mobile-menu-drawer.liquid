@@ -58,6 +58,12 @@
       {%- endif -%}
 
       <div class="mobile-menu-drawer__extra">
+        {%- if shop.customer_accounts_enabled -%}
+          <a href="{{ routes.account_url }}" class="mobile-nav-row mobile-nav-row--icon">
+            {% render 'icon', icon: 'user', size: 18 %}
+            <span>{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}</span>
+          </a>
+        {%- endif -%}
         <a href="{{ wishlist_url | default: '#' }}" class="mobile-nav-row mobile-nav-row--icon">
           {% render 'icon', icon: 'heart', size: 18 %}
           <span>{{ 'header.wishlist_label' | t }}</span>

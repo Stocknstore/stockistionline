@@ -44,7 +44,7 @@
 
       <div class="site-header__utility-icons">
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{{ 'header.account' | t }}">
+          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}">
             {% render 'icon', icon: 'user' %}
           </a>
         {%- endif -%}
@@ -94,9 +94,9 @@
 
       <div class="site-header__mobile-right">
         {%- if shop.customer_accounts_enabled -%}
-          <button type="button" class="header-icon-btn" data-account-toggle aria-label="{{ 'header.account' | t }}">
+          <a href="{{ routes.account_url }}" class="header-icon-btn" aria-label="{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}">
             {% render 'icon', icon: 'user' %}
-          </button>
+          </a>
         {%- endif -%}
         <button type="button" class="header-icon-btn" data-cart-toggle aria-label="{{ 'header.cart' | t }}">
           {% render 'icon', icon: 'bag' %}

@@ -113,9 +113,9 @@
         {%- unless shop.customer_accounts_enabled == false -%}
           <p class="cart-drawer__account-prompt">
             {{ 'header.have_account' | t }}
-            <button type="button" class="cart-drawer__login-link" data-open-account>
+            <a href="{{ routes.account_login_url }}" class="cart-drawer__login-link">
               {{ 'header.login_link' | t }}
-            </button>
+            </a>
             {{ 'header.login_faster_checkout' | t }}
           </p>
         {%- endunless -%}
