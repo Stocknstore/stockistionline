@@ -21,6 +21,12 @@
   and a verified manual override always wins when set above 0. If there's
   no valid compare-at pricing in the collection, the discount figure is
   suppressed rather than showing a fabricated percentage.
+
+  Phase 6, Stage 4B: the CTA only renders when BOTH cta_label and cta_link
+  are set — no `| default: '#'` fallback. No real "Special Stock" collection
+  exists yet, so the link intentionally stays unset; rendering no CTA at
+  all is safer than a dead `#` link or (worse) pointing it at New Stock,
+  which is a different, real collection.
 {%- endcomment -%}
 {%- liquid
   assign blocks = section.blocks
@@ -89,13 +95,13 @@
         {%- if mobile_body != blank -%}
           <p class="home-special-stock__mobile-body">{{ mobile_body }}</p>
         {%- endif -%}
-        {%- if section.settings.cta_label != blank -%}
-          <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta home-special-stock__cta--compact">{{ section.settings.cta_label }}</a>
+        {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="home-special-stock__cta home-special-stock__cta--compact">{{ section.settings.cta_label }}</a>
         {%- endif -%}
       </div>
 
-      {%- if section.settings.cta_label != blank -%}
-        <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta hidden-mobile">{{ section.settings.cta_label }}</a>
+      {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+        <a href="{{ section.settings.cta_link }}" class="home-special-stock__cta hidden-mobile">{{ section.settings.cta_label }}</a>
       {%- endif -%}
     </div>
 
@@ -205,14 +211,14 @@
       "type": "textarea",
       "id": "body",
       "label": "Body copy (desktop)",
-      "default": "The best lots arrive in small quantities: one or two pairs per size. Stock prices, the same quality — and once they're gone they don't come back."
+      "default": "Discover low-stock pairs and limited sizes available from our current inventory."
     },
     {
       "type": "textarea",
       "id": "mobile_body",
       "label": "Body copy (mobile)",
       "info": "Optional shorter copy for small screens. Falls back to the body copy above if left blank.",
-      "default": "One or two pairs per size. Stock prices, same quality — gone for good."
+      "default": "Discover low-stock pairs and limited sizes available from our current inventory."
     },
     {
       "type": "header",

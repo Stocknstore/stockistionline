@@ -3,6 +3,7 @@
     "home-hero": {
       "type": "home-hero",
       "settings": {
+        "heading": "New stock.\nTrusted brands.",
         "primary_button_link": "/collections/footwear",
         "secondary_button_link": "/collections/new-stock",
         "brands_more_link": "/collections/brands-a-z",
@@ -45,7 +46,7 @@
           "type": "arriving_soon_item",
           "settings": {
             "title": "Home & Living",
-            "arrival_text": "arriving September"
+            "arrival_text": "arriving September 2026"
           }
         },
         "arriving-clothing": {
@@ -68,6 +69,7 @@
     "home-just-arrived": {
       "type": "home-just-arrived",
       "settings": {
+        "eyebrow": "New arrivals",
         "collection": "new-stock",
         "women_link": "/collections/women",
         "men_link": "/collections/men",
@@ -78,6 +80,9 @@
     "home-special-stock": {
       "type": "home-special-stock",
       "settings": {
+        "heading": "Single pairs,\none-off sizes.",
+        "body": "Discover low-stock pairs and limited sizes available from our current inventory.",
+        "mobile_body": "Discover low-stock pairs and limited sizes available from our current inventory.",
         "source_collection": "brands-a-z",
         "last_pair_threshold": 1
       },
@@ -92,6 +97,9 @@
     },
     "home-story": {
       "type": "home-story",
+      "settings": {
+        "body": "Since 2000, we have worked across wholesale and retail in Italy, sourcing genuine stock and serving every customer with care."
+      },
       "blocks": {
         "stat-1": { "type": "stat", "settings": { "value": "44+", "label": "brands across our\nrotating stock" } },
         "stat-2": { "type": "stat", "settings": { "value": "100%", "label": "genuine products\nguaranteed" } },
