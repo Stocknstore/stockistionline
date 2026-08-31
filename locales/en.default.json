@@ -20,13 +20,25 @@
     "newsletter_success": "Thanks — you're on the list."
   },
   "home_hero": {
-    "placeholder": "Add a hero image"
+    "placeholder": "Add a hero image",
+    "counter_note_collection": {
+      "one": "styles online, {{ count }} brand.",
+      "other": "styles online, {{ count }} brands."
+    },
+    "counter_note_empty": "No styles online right now."
+  },
+  "home_brand_wall": {
+    "eyebrow_auto": {
+      "one": "{{ count }} brand currently online",
+      "other": "{{ count }} brands currently online"
+    }
   },
   "home_start_shopping": {
     "placeholder": "Add an image"
   },
   "home_special_stock": {
-    "placeholder": "Add an image"
+    "placeholder": "Add an image",
+    "discount_unavailable": "—"
   },
   "home_story": {
     "placeholder": "Add an image"

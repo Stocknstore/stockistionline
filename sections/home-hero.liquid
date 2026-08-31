@@ -6,8 +6,68 @@
   2 columns on tablet and a compact 2-column mobile layout, matching the
   prototype's --heroCols/--heroRowSpan/--textSpan/--brandsSpan breakpoint
   behavior exactly (prototype-reference/styles.css L16-165).
+
+  Phase 6, Stage 3B: optional collection-backed mode for the stock counter
+  and featured-brands panel. When settings.data_source is "collection" and
+  a real collection is selected, the counter number/note and the brand
+  names are computed from that collection's real products/vendors instead
+  of merchant-typed text — never a fabricated number. Manual mode (typed
+  counter_number/counter_note + featured_brand blocks) remains available
+  as a fallback and is what a fresh section instance defaults to.
 {%- endcomment -%}
-{%- assign hero_image = section.settings.hero_image -%}
+{%- liquid
+  assign hero_image = section.settings.hero_image
+  assign data_source = section.settings.data_source | default: 'manual'
+  assign source_collection = section.settings.source_collection
+  assign auto_vendor_list = section.settings.auto_vendor_list
+
+  assign use_collection_data = false
+  if data_source == 'collection' and source_collection != blank
+    assign use_collection_data = true
+  endif
+
+  assign display_counter_number = section.settings.counter_number
+  assign display_counter_note = section.settings.counter_note
+  assign vendor_names = blank
+
+  if use_collection_data
+    assign product_count = source_collection.products_count
+    assign display_counter_number = product_count
+
+    # Exact delimiter-based dedup, not substring `contains` — a plain
+    # substring check would wrongly treat "Grand Polo" as already-seen
+    # once "Polo" (or vice versa) was added, since one name can be a
+    # literal substring of the other. Wrapping every accumulated name in
+    # "||" and checking for the full "||Name||" token guarantees only an
+    # exact match short-circuits the append.
+    assign vendor_scan = '||'
+    for product in source_collection.products
+      assign vendor_name = product.vendor | strip
+      if vendor_name != blank
+        assign vendor_token = '||' | append: vendor_name | append: '||'
+        unless vendor_scan contains vendor_token
+          assign vendor_scan = vendor_scan | append: vendor_name | append: '||'
+        endunless
+      endif
+    endfor
+
+    assign vendor_names_raw = vendor_scan | split: '||'
+    assign vendor_scan_clean = ''
+    for v in vendor_names_raw
+      if v != blank
+        assign vendor_scan_clean = vendor_scan_clean | append: v | append: '||'
+      endif
+    endfor
+    assign vendor_names = vendor_scan_clean | split: '||' | uniq
+    assign vendor_count = vendor_names.size
+
+    if product_count > 0
+      assign display_counter_note = 'home_hero.counter_note_collection' | t: count: vendor_count
+    else
+      assign display_counter_note = 'home_hero.counter_note_empty' | t
+    endif
+  endif
+-%}
 <section class="home-hero" {{ section.shopify_attributes }}>
   <div class="home-hero__photo">
     {%- if hero_image != blank -%}
@@ -65,11 +125,11 @@
       <span class="home-hero__counter-label">{{ section.settings.counter_label }}</span>
     {%- endif -%}
     <div class="home-hero__counter-body">
-      {%- if section.settings.counter_number != blank -%}
-        <div class="home-hero__counter-number">{{ section.settings.counter_number }}</div>
+      {%- if display_counter_number != blank -%}
+        <div class="home-hero__counter-number">{{ display_counter_number }}</div>
       {%- endif -%}
       <div class="home-hero__counter-note">
-        {{ section.settings.counter_note }}<span class="home-hero__counter-updated"><br>{{ section.settings.counter_updated_text }}</span>
+        {{ display_counter_note }}{%- if section.settings.counter_updated_text != blank -%}<span class="home-hero__counter-updated"><br>{{ section.settings.counter_updated_text }}</span>{%- endif -%}
       </div>
     </div>
   </div>
@@ -79,11 +139,17 @@
       <span class="home-hero__brands-eyebrow">{{ section.settings.brands_heading }}</span>
     {%- endif -%}
     <div class="home-hero__brands-list">
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'featured_brand' -%}
-          <span class="home-hero__brand-name" {{ block.shopify_attributes }}>{{ block.settings.name }}</span>
-        {%- endif -%}
-      {%- endfor -%}
+      {%- if use_collection_data and auto_vendor_list -%}
+        {%- for vendor_name in vendor_names limit: 4 -%}
+          <span class="home-hero__brand-name">{{ vendor_name }}</span>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'featured_brand' -%}
+            <span class="home-hero__brand-name" {{ block.shopify_attributes }}>{{ block.settings.name }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
       {%- if section.settings.brands_more_text != blank -%}
         <a href="{{ section.settings.brands_more_link | default: '#' }}" class="home-hero__brands-more">{{ section.settings.brands_more_text }}</a>
       {%- endif -%}
@@ -147,7 +213,7 @@
       "type": "text",
       "id": "secondary_button_label",
       "label": "Secondary button label",
-      "default": "Arrived today (214)"
+      "default": "View new stock"
     },
     {
       "type": "url",
@@ -156,7 +222,38 @@
     },
     {
       "type": "header",
-      "content": "Stock counter"
+      "content": "Stock counter data source"
+    },
+    {
+      "type": "paragraph",
+      "content": "Manual mode uses the typed values below. Collection mode computes the number, note and \"This week's brands\" panel from a real collection's actual products/vendors — never a typed-in figure."
+    },
+    {
+      "type": "select",
+      "id": "data_source",
+      "label": "Data source",
+      "options": [
+        { "value": "manual", "label": "Manual (typed values below)" },
+        { "value": "collection", "label": "Selected collection (real, automatic)" }
+      ],
+      "default": "manual"
+    },
+    {
+      "type": "collection",
+      "id": "source_collection",
+      "label": "Source collection",
+      "info": "Used only when Data source above is \"Selected collection\"."
+    },
+    {
+      "type": "checkbox",
+      "id": "auto_vendor_list",
+      "label": "Automatically list the collection's real vendors",
+      "info": "Replaces the featured-brand blocks below with the source collection's actual product vendors (up to 4 shown). Only applies in collection mode.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Stock counter (manual mode)"
     },
     {
       "type": "text",
@@ -167,21 +264,18 @@
     {
       "type": "text",
       "id": "counter_number",
-      "label": "Number",
-      "default": "214"
+      "label": "Number"
     },
     {
       "type": "text",
       "id": "counter_note",
-      "label": "Note",
-      "default": "pairs arrived today, 9 brands."
+      "label": "Note"
     },
     {
       "type": "text",
       "id": "counter_updated_text",
       "label": "Updated-at text",
-      "info": "Hidden on mobile.",
-      "default": "Updated at 14:20."
+      "info": "Optional. Hidden on mobile."
     },
     {
       "type": "header",
@@ -197,7 +291,7 @@
       "type": "text",
       "id": "brands_more_text",
       "label": "\"More brands\" link label",
-      "default": "+ 41 brands"
+      "default": "Browse all brands"
     },
     {
       "type": "url",

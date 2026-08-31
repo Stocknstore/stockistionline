@@ -5,23 +5,11 @@
       "settings": {
         "primary_button_link": "/collections/footwear",
         "secondary_button_link": "/collections/new-stock",
-        "brands_more_link": "/collections/brands-a-z"
-      },
-      "blocks": {
-        "brand-a": {
-          "type": "featured_brand",
-          "settings": {
-            "name": "Brand A"
-          }
-        },
-        "brand-d": {
-          "type": "featured_brand",
-          "settings": {
-            "name": "Brand D"
-          }
-        }
-      },
-      "block_order": ["brand-a", "brand-d"]
+        "brands_more_link": "/collections/brands-a-z",
+        "data_source": "collection",
+        "source_collection": "new-stock",
+        "auto_vendor_list": true
+      }
     },
     "home-start-shopping": {
       "type": "home-start-shopping",
@@ -73,33 +61,9 @@
     "home-brand-wall": {
       "type": "home-brand-wall",
       "settings": {
-        "az_link": "/collections/brands-a-z"
-      },
-      "blocks": {
-        "brand-01": { "type": "brand", "settings": { "name": "Solo Suprani", "note": "new today" } },
-        "brand-02": { "type": "brand", "settings": { "name": "US GRAND Polo", "note": "32 styles" } },
-        "brand-03": { "type": "brand", "settings": { "name": "Carrera", "note": "11 styles" } },
-        "brand-04": { "type": "brand", "settings": { "name": "MARS", "note": "new today" } },
-        "brand-05": { "type": "brand", "settings": { "name": "Zaenobi", "note": "7 styles" } },
-        "brand-06": { "type": "brand", "settings": { "name": "NASA", "note": "58 styles" } },
-        "brand-07": { "type": "brand", "settings": { "name": "Brand 07", "note": "24 styles" } },
-        "brand-08": { "type": "brand", "settings": { "name": "Brand 08", "note": "new today" } },
-        "brand-09": { "type": "brand", "settings": { "name": "Brand 09", "note": "16 styles" } },
-        "brand-10": { "type": "brand", "settings": { "name": "Brand 10", "note": "9 styles" } },
-        "brand-11": { "type": "brand", "settings": { "name": "Brand 11", "note": "41 styles" } },
-        "brand-12": { "type": "brand", "settings": { "name": "Brand 12", "note": "13 styles" } },
-        "brand-13": { "type": "brand", "settings": { "name": "Brand 13", "note": "22 styles" } },
-        "brand-14": { "type": "brand", "settings": { "name": "Brand 14", "note": "new today" } },
-        "brand-15": { "type": "brand", "settings": { "name": "Brand 15", "note": "6 styles" } },
-        "brand-16": { "type": "brand", "settings": { "name": "Brand 16", "note": "35 styles" } },
-        "brand-17": { "type": "brand", "settings": { "name": "Brand 17", "note": "19 styles" } },
-        "brand-18": { "type": "brand", "settings": { "name": "Brand 18", "note": "new today" } }
-      },
-      "block_order": [
-        "brand-01", "brand-02", "brand-03", "brand-04", "brand-05", "brand-06",
-        "brand-07", "brand-08", "brand-09", "brand-10", "brand-11", "brand-12",
-        "brand-13", "brand-14", "brand-15", "brand-16", "brand-17", "brand-18"
-      ]
+        "az_link": "/collections/brands-a-z",
+        "source_mode": "automatic"
+      }
     },
     "home-just-arrived": {
       "type": "home-just-arrived",
@@ -113,11 +77,15 @@
     },
     "home-special-stock": {
       "type": "home-special-stock",
+      "settings": {
+        "source_collection": "brands-a-z",
+        "last_pair_threshold": 1
+      },
       "blocks": {
         "tile-1": { "type": "photo" },
-        "tile-2": { "type": "stat", "settings": { "number": "96", "label": "last pairs\nin single sizes" } },
+        "tile-2": { "type": "stat", "settings": { "stat_source": "last_pair_auto", "label": "last pairs\nin single sizes" } },
         "tile-3": { "type": "photo" },
-        "tile-4": { "type": "stat", "settings": { "number": "−62%", "label": "average discount\noff list price" } },
+        "tile-4": { "type": "stat", "settings": { "stat_source": "discount_auto", "label": "average discount\noff list price" } },
         "tile-5": { "type": "photo" }
       },
       "block_order": ["tile-1", "tile-2", "tile-3", "tile-4", "tile-5"]
@@ -125,7 +93,7 @@
     "home-story": {
       "type": "home-story",
       "blocks": {
-        "stat-1": { "type": "stat", "settings": { "value": "44", "label": "brands carried\nin stock now" } },
+        "stat-1": { "type": "stat", "settings": { "value": "44+", "label": "brands across our\nrotating stock" } },
         "stat-2": { "type": "stat", "settings": { "value": "100%", "label": "genuine products\nguaranteed" } },
         "stat-3": { "type": "stat", "settings": { "value": "2–4 days", "label": "delivery\nin Italy" } }
       },
