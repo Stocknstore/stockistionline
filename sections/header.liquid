@@ -18,8 +18,17 @@
   {{ section.shopify_attributes }}
 >
 
-  {%- comment -%} ===== Desktop: single main row (logo / search / utility icons) ===== {%- endcomment -%}
-  <div class="site-header__main hidden-mobile">
+  {%- comment -%}
+    ===== Desktop: single main row (logo / search / utility icons) =====
+    Phase 6, Stage 2: intentionally NOT using the shared .hidden-mobile
+    utility here (that stays at 768px for every other component on the
+    site — product grids, cards, recommendations, etc.). The header alone
+    switches at 1024px so tablet widths (e.g. 834px) get the compact
+    header + drawer, matching the approved navigation reference. See
+    section 8b in theme.css for the scoped .site-header__main/__mobile
+    rule this depends on.
+  {%- endcomment -%}
+  <div class="site-header__main">
     <div class="site-header__main-inner container container--full">
       <div class="site-header__logo">
         {% render 'logo', logo_image: section.settings.logo, logo_width: section.settings.logo_width %}
@@ -71,13 +80,13 @@
 
     {%- if section.settings.main_menu != blank -%}
       <div class="site-header__category-strip">
-        {% render 'navigation-category-strip', menu: section.settings.main_menu %}
+        {% render 'navigation-category-strip', menu: section.settings.main_menu, blocks: section.blocks %}
       </div>
     {%- endif -%}
   </div>
 
   {%- comment -%} ===== Mobile header: dedicated composition, not a shrunk desktop header ===== {%- endcomment -%}
-  <div class="site-header__mobile hidden-desktop">
+  <div class="site-header__mobile">
     <div class="site-header__mobile-inner">
       <div class="site-header__mobile-left">
         <button type="button" class="header-icon-btn" data-mobile-menu-toggle aria-label="{{ 'header.menu' | t }}" aria-expanded="false">
@@ -107,7 +116,16 @@
   </div>
 </header>
 
-{% render 'mobile-menu-drawer', menu: section.settings.main_menu, wishlist_url: section.settings.wishlist_url %}
+{% render 'mobile-menu-drawer',
+  menu: section.settings.main_menu,
+  wishlist_url: section.settings.wishlist_url,
+  shipping_returns_url: section.settings.shipping_returns_url,
+  blocks: section.blocks,
+  logo_image: section.settings.logo,
+  logo_width: section.settings.logo_width_mobile
+%}
+
+{% render 'mobile-bottom-bar', menu: section.settings.main_menu %}
 
 {% schema %}
 {
@@ -186,6 +204,12 @@
       "label": "Wishlist page link"
     },
     {
+      "type": "url",
+      "id": "shipping_returns_url",
+      "label": "Shipping & Returns link",
+      "info": "Point this at a real page or policy. If left blank, the Shipping & Returns row in the mobile menu renders disabled rather than as a broken link."
+    },
+    {
       "type": "header",
       "content": "Color scheme"
     },
@@ -212,6 +236,43 @@
       "id": "color_utility_text",
       "label": "Utility row text",
       "default": "#FFFFFF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "nav_metadata",
+      "name": "Navigation metadata",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item_title",
+          "label": "Menu item title",
+          "info": "Matched against a menu item's title — case-insensitive, and a \" · soon\" suffix is ignored automatically."
+        },
+        {
+          "type": "select",
+          "id": "metadata_source",
+          "label": "Metadata source",
+          "options": [
+            { "value": "static", "label": "Static text" },
+            { "value": "vendor_count", "label": "Real vendor count" },
+            { "value": "collection_count", "label": "Linked collection product count" }
+          ],
+          "default": "static"
+        },
+        {
+          "type": "text",
+          "id": "metadata_text",
+          "label": "Static text / label suffix",
+          "info": "For \"Static text\": shown exactly as typed (e.g. \"current\", \"Winter 2026\"). For the two real-data sources: appended after the real number (e.g. typing \"brands\" shows \"44 brands\")."
+        },
+        {
+          "type": "collection",
+          "id": "metadata_collection",
+          "label": "Linked collection",
+          "info": "Only used when Metadata source is \"Linked collection product count\"."
+        }
+      ]
     }
   ]
 }

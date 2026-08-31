@@ -1,26 +1,55 @@
 {%- comment -%}
-  Sticky mobile-only bottom bar (Home / Shop / Search / Cart). Rendered once,
-  globally, in layout/theme.liquid — like the mobile menu/search/account/cart
-  drawers, it isn't tied to a particular section's settings. Its four
-  destinations are fixed utility actions rather than merchant content, so
-  unlike the header's department strip it takes no menu param: Search and
-  Cart reuse the same existing drawer triggers as the header
-  (data-search-toggle / data-cart-toggle), and Home/Shop are stable Shopify
-  routes rather than section-configured links.
+  Sticky mobile-only bottom bar. Phase 6, Stage 2: reworked from the original
+  Home/Shop/Search/Cart set to match the approved navigation reference —
+  Home / New stock / Brands / Cart. Search remains fully available via the
+  header's own search trigger and the mobile drawer; only this bottom-bar
+  shortcut was removed, not the feature itself.
+
+  "New stock" and "Brands" are resolved from the real header menu (the same
+  linklist the drawer/desktop strip use) by matching each link's title
+  against the same case-insensitive, "· soon"-tolerant logic used
+  everywhere else in navigation — never a hardcoded collection handle. If a
+  matching link can't be found (menu not configured, item renamed), that
+  shortcut is simply omitted rather than pointing at a guessed/broken URL.
+
+  Rendered once from sections/header.liquid (not layout/theme.liquid) so it
+  can receive the header's own configured menu directly, the same reasoning
+  already applied to the mobile menu drawer.
+
+  Params:
+    menu - a linklist object (section.settings.main_menu)
 {%- endcomment -%}
+{%- liquid
+  assign new_stock_link = blank
+  assign brands_link = blank
+
+  for link in menu.links
+    assign title_down = link.title | downcase | strip
+    assign title_down = title_down | remove: ' · soon' | remove: ' - soon' | remove: ' . soon'
+    if title_down == 'new stock'
+      assign new_stock_link = link
+    elsif title_down == 'brands a–z' or title_down == 'brands a-z' or title_down == 'brands'
+      assign brands_link = link
+    endif
+  endfor
+-%}
 <nav class="mobile-bottom-bar" aria-label="{{ 'header.main_navigation' | t }}">
   <a href="{{ routes.root_url }}" class="mobile-bottom-bar__item">
     {% render 'icon', icon: 'home', size: 18 %}
     <span>{{ 'general.home' | t }}</span>
   </a>
-  <a href="{{ routes.all_products_collection_url }}" class="mobile-bottom-bar__item">
-    {% render 'icon', icon: 'grid', size: 18 %}
-    <span>{{ 'general.shop' | t }}</span>
-  </a>
-  <button type="button" class="mobile-bottom-bar__item" data-search-toggle>
-    {% render 'icon', icon: 'search', size: 18 %}
-    <span>{{ 'header.search' | t }}</span>
-  </button>
+  {%- if new_stock_link != blank -%}
+    <a href="{{ new_stock_link.url }}" class="mobile-bottom-bar__item">
+      {% render 'icon', icon: 'grid', size: 18 %}
+      <span>{{ 'header.new_stock' | t }}</span>
+    </a>
+  {%- endif -%}
+  {%- if brands_link != blank -%}
+    <a href="{{ brands_link.url }}" class="mobile-bottom-bar__item">
+      {% render 'icon', icon: 'list', size: 18 %}
+      <span>{{ 'header.brands' | t }}</span>
+    </a>
+  {%- endif -%}
   <button type="button" class="mobile-bottom-bar__item mobile-bottom-bar__item--active" data-cart-toggle>
     {% render 'icon', icon: 'bag', size: 18 %}
     <span>{{ 'header.cart' | t }} {{ cart.item_count }}</span>

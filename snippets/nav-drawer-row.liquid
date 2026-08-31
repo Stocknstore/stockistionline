@@ -1,0 +1,88 @@
+{%- comment -%}
+  Renders one primary mobile-menu-drawer row: a plain link, a drill-in
+  button (for a menu item with children), or an inert "soon" label — with
+  optional right-side metadata sourced from the header section's
+  nav_metadata blocks. Phase 6, Stage 2.
+
+  "· soon" detection is case-insensitive and tolerates " - soon" / " . soon"
+  as well, matching snippets/navigation-category-strip.liquid's desktop
+  logic exactly (duplicated rather than shared across files, since a
+  {% render %} snippet is Liquid-scope-isolated and can't hand computed
+  values back to its caller — only its own markup output).
+
+  A "soon" row is a plain <span>, never an <a>/<button>, so it can never
+  receive keyboard focus.
+
+  Visual correction pass: the "New Stock" row (matched the same way as
+  metadata, by clean title) gets the gold accent color on both its label
+  and metadata, matching the approved reference. Matched by title rather
+  than a merchant setting since it's a fixed part of this theme's approved
+  5-item navigation design, not a general-purpose per-item style picker.
+
+  Params:
+    link            - a menu link object
+    metadata_blocks - section.blocks already filtered to type == 'nav_metadata'
+    drill_target    - panel id to drill into; only used when link.links != blank
+{%- endcomment -%}
+{%- liquid
+  assign title_down = link.title | downcase | strip
+  assign clean_title = link.title | strip
+  assign is_soon = false
+
+  if title_down contains ' · soon'
+    assign soon_prefix = title_down | split: ' · soon' | first
+    assign is_soon = true
+  elsif title_down contains ' - soon'
+    assign soon_prefix = title_down | split: ' - soon' | first
+    assign is_soon = true
+  elsif title_down contains ' . soon'
+    assign soon_prefix = title_down | split: ' . soon' | first
+    assign is_soon = true
+  endif
+
+  if is_soon
+    assign soon_prefix_len = soon_prefix | size
+    assign clean_title = clean_title | slice: 0, soon_prefix_len
+  endif
+
+  assign clean_title_down = clean_title | downcase | strip
+
+  assign row_metadata = blank
+  for mblock in metadata_blocks
+    assign mtitle_down = mblock.settings.menu_item_title | strip | downcase
+    assign mtitle_down = mtitle_down | remove: ' · soon' | remove: ' - soon' | remove: ' . soon'
+    if mtitle_down == clean_title_down and clean_title_down != blank
+      case mblock.settings.metadata_source
+        when 'vendor_count'
+          assign row_metadata = shop.vendors.size | append: ' ' | append: mblock.settings.metadata_text
+        when 'collection_count'
+          assign row_metadata = mblock.settings.metadata_collection.products_count | append: ' ' | append: mblock.settings.metadata_text
+        else
+          assign row_metadata = mblock.settings.metadata_text
+      endcase
+    endif
+  endfor
+
+  assign is_accent = false
+  if clean_title_down == 'new stock'
+    assign is_accent = true
+  endif
+-%}
+<li class="mobile-nav-item">
+  {%- if is_soon -%}
+    <span class="mobile-nav-row mobile-nav-row--soon">
+      <span>{{ clean_title }}</span>
+      {%- if row_metadata != blank -%}<span class="mobile-nav-row__metadata">{{ row_metadata }}</span>{%- endif -%}
+    </span>
+  {%- elsif link.links != blank -%}
+    <button type="button" class="mobile-nav-row" data-drill-in data-target="{{ drill_target }}">
+      <span>{{ clean_title }}</span>
+      {% render 'icon', icon: 'arrow-right', size: 16 %}
+    </button>
+  {%- else -%}
+    <a href="{{ link.url }}" class="mobile-nav-row{% if is_accent %} mobile-nav-row--accent{% endif %}">
+      <span>{{ clean_title }}</span>
+      {%- if row_metadata != blank -%}<span class="mobile-nav-row__metadata">{{ row_metadata }}</span>{%- endif -%}
+    </a>
+  {%- endif -%}
+</li>
