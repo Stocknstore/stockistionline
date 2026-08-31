@@ -25,7 +25,16 @@
       "one": "styles online, {{ count }} brand.",
       "other": "styles online, {{ count }} brands."
     },
-    "counter_note_empty": "No styles online right now."
+    "counter_note_empty": "No styles online right now.",
+    "slideshow_label": "Featured images",
+    "slide_role": "slide",
+    "slide_position": "Slide {{ index }} of {{ total }}",
+    "previous_slide": "Previous slide",
+    "next_slide": "Next slide",
+    "slide_picker_label": "Choose a slide to display",
+    "go_to_slide": "Go to slide {{ index }}",
+    "pause_slideshow": "Pause slideshow",
+    "play_slideshow": "Play slideshow"
   },
   "home_brand_wall": {
     "eyebrow_auto": {

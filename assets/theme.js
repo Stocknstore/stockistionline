@@ -671,6 +671,363 @@
     });
   }
 
+  /* ---------------- Hero slideshow ----------------
+     Phase 6, Stage 4C. Progressive enhancement over sections/home-hero.liquid's
+     server-rendered slides — with JS off (or before this runs), the first
+     [data-hero-slide] already carries .is-active and every other slide is
+     already aria-hidden, so the hero always shows one complete, correct
+     image with zero script. This only adds crossfade/autoplay/controls on
+     top of that already-correct static state. No external library.
+
+     Listeners are attached to each instance's own root/slides element
+     rather than delegated on document like the rest of this file — this
+     component is independently instantiable and must be safely torn down
+     when the Shopify Theme Editor replaces a section's markup in place, and
+     a document-level delegated handler has no natural teardown point for
+     that. heroSlideshowStates is a plain array (not a WeakMap) specifically
+     so pruneDetachedHeroSlideshows() below can enumerate and stop every
+     timer whose root has left the document — the Theme Editor does not
+     reliably fire shopify:section:unload on every in-place section reload,
+     so relying on that event alone would leak intervals running against
+     detached nodes. */
+  var heroSlideshowStates = [];
+
+  function findHeroSlideshowState(root) {
+    for (var i = 0; i < heroSlideshowStates.length; i++) {
+      if (heroSlideshowStates[i].root === root) return heroSlideshowStates[i];
+    }
+    return null;
+  }
+
+  function stopHeroAutoplayTimer(state) {
+    if (state.timer) {
+      window.clearInterval(state.timer);
+      state.timer = null;
+    }
+  }
+
+  function teardownHeroSlideshow(state) {
+    stopHeroAutoplayTimer(state);
+    if (state.observer) state.observer.disconnect();
+    if (state.onVisibilityChange) document.removeEventListener('visibilitychange', state.onVisibilityChange);
+    if (state.reducedMotionQuery && state.onReducedMotionChange) {
+      if (typeof state.reducedMotionQuery.removeEventListener === 'function') {
+        state.reducedMotionQuery.removeEventListener('change', state.onReducedMotionChange);
+      } else if (typeof state.reducedMotionQuery.removeListener === 'function') {
+        state.reducedMotionQuery.removeListener(state.onReducedMotionChange);
+      }
+    }
+    var index = heroSlideshowStates.indexOf(state);
+    if (index !== -1) heroSlideshowStates.splice(index, 1);
+  }
+
+  function pruneDetachedHeroSlideshows() {
+    heroSlideshowStates.slice().forEach(function (state) {
+      if (!document.body.contains(state.root)) teardownHeroSlideshow(state);
+    });
+  }
+
+  function updateHeroPlayPauseUI(state) {
+    if (!state.playPauseBtn) return;
+    var playing = !!state.timer;
+    if (state.playPauseIcon) state.playPauseIcon.classList.toggle('is-playing', playing);
+    state.playPauseBtn.setAttribute('aria-pressed', String(!playing));
+    var label = playing
+      ? state.playPauseBtn.getAttribute('data-label-pause')
+      : state.playPauseBtn.getAttribute('data-label-play');
+    if (label) state.playPauseBtn.setAttribute('aria-label', label);
+  }
+
+  function goToHeroSlide(state, index, announce) {
+    var count = state.slides.length;
+    if (!count) return;
+    var nextIndex = ((index % count) + count) % count;
+    if (nextIndex === state.currentIndex) return;
+
+    var previousSlide = state.slides[state.currentIndex];
+    var nextSlide = state.slides[nextIndex];
+    previousSlide.classList.remove('is-active');
+    previousSlide.setAttribute('aria-hidden', 'true');
+    nextSlide.classList.add('is-active');
+    nextSlide.removeAttribute('aria-hidden');
+
+    state.dots.forEach(function (dot, i) {
+      var isActive = i === nextIndex;
+      dot.classList.toggle('is-active', isActive);
+      dot.setAttribute('aria-selected', String(isActive));
+    });
+
+    state.currentIndex = nextIndex;
+
+    /* Automatic (autoplay-driven) transitions never touch the live region
+       — only a manual prev/next/dot/swipe/editor-select interaction does —
+       so autoplay never repeatedly interrupts screen reader users who
+       aren't actively engaging with the control. */
+    if (announce && state.announcer) {
+      state.announcer.textContent = nextSlide.getAttribute('data-slide-announcement') || '';
+    }
+  }
+
+  function heroAutoplayAllowed(state) {
+    return state.autoplayEnabled
+      && state.slides.length > 1
+      && !state.manuallyPaused
+      && !state.editorPaused
+      && !state.hovering
+      && !state.focused
+      && !document.hidden
+      && state.inViewport
+      && !(state.reducedMotionQuery && state.reducedMotionQuery.matches);
+  }
+
+  function startHeroAutoplay(state) {
+    stopHeroAutoplayTimer(state);
+    if (!heroAutoplayAllowed(state)) return;
+    state.timer = window.setInterval(function () {
+      // Defensive re-check: gating state (hover/focus/visibility/reduced
+      // motion/editor pause/etc.) can change between two ticks without
+      // always routing through refreshHeroAutoplay first, so this never
+      // advances a slide on a tick that shouldn't have fired at all —
+      // it just stops/refreshes instead.
+      if (!heroAutoplayAllowed(state)) {
+        refreshHeroAutoplay(state);
+        return;
+      }
+      goToHeroSlide(state, state.currentIndex + 1, false);
+    }, state.intervalMs);
+  }
+
+  function refreshHeroAutoplay(state) {
+    if (heroAutoplayAllowed(state)) {
+      startHeroAutoplay(state);
+    } else {
+      stopHeroAutoplayTimer(state);
+    }
+    updateHeroPlayPauseUI(state);
+  }
+
+  /* A manual nav action restarts the running timer's countdown, but never
+     un-pauses a slideshow the visitor explicitly paused via the play/pause
+     control. */
+  function restartHeroAutoplayFromManualNav(state) {
+    if (state.autoplayEnabled && !state.manuallyPaused) {
+      startHeroAutoplay(state);
+    }
+  }
+
+  function initHeroSlideshow(root) {
+    if (root.hasAttribute('data-hero-initialized')) return;
+    root.setAttribute('data-hero-initialized', 'true');
+
+    var slidesRoot = root.querySelector('.home-hero__slides');
+    var slides = slidesRoot ? Array.prototype.slice.call(slidesRoot.querySelectorAll('[data-hero-slide]')) : [];
+    // A single slide already renders with no controls/announcer in Liquid
+    // — nothing to wire up, no timer to create.
+    if (slides.length < 2) return;
+
+    var state = {
+      root: root,
+      slides: slides,
+      dots: Array.prototype.slice.call(root.querySelectorAll('[data-hero-dot]')),
+      announcer: root.querySelector('[data-hero-slide-announcer]'),
+      playPauseBtn: root.querySelector('[data-hero-playpause]'),
+      playPauseIcon: root.querySelector('[data-hero-playpause-icon]'),
+      currentIndex: 0,
+      timer: null,
+      autoplayEnabled: root.getAttribute('data-autoplay') === 'true',
+      intervalMs: parseInt(root.getAttribute('data-autoplay-interval'), 10) || 5000,
+      manuallyPaused: false,
+      editorPaused: false,
+      hovering: false,
+      focused: false,
+      inViewport: true,
+      observer: null,
+      reducedMotionQuery: null,
+      onReducedMotionChange: null
+    };
+    heroSlideshowStates.push(state);
+
+    root.addEventListener('pointerenter', function () {
+      state.hovering = true;
+      refreshHeroAutoplay(state);
+    });
+    root.addEventListener('pointerleave', function () {
+      state.hovering = false;
+      refreshHeroAutoplay(state);
+    });
+    root.addEventListener('focusin', function () {
+      state.focused = true;
+      refreshHeroAutoplay(state);
+    });
+    root.addEventListener('focusout', function () {
+      // Tabbing between two controls inside the slideshow fires focusin on
+      // the new control before this focusout's callback runs, so the
+      // deferred re-check below only ever un-sets focused when focus has
+      // genuinely left the whole component.
+      window.setTimeout(function () {
+        if (!root.contains(document.activeElement)) {
+          state.focused = false;
+          refreshHeroAutoplay(state);
+        }
+      }, 0);
+    });
+
+    if (typeof IntersectionObserver === 'function') {
+      state.observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          state.inViewport = entry.isIntersecting;
+          refreshHeroAutoplay(state);
+        });
+      }, { threshold: 0.25 });
+      state.observer.observe(root);
+    }
+
+    // Registered on document (there's no per-instance visibility event), so
+    // the handler is stored on state and explicitly removed in
+    // teardownHeroSlideshow — otherwise this closure would keep the whole
+    // state/root reachable via document's listener list for the rest of the
+    // page's lifetime even after the section is torn down in the editor.
+    state.onVisibilityChange = function () {
+      refreshHeroAutoplay(state);
+    };
+    document.addEventListener('visibilitychange', state.onVisibilityChange);
+
+    // One stored MediaQueryList per instance, reused for every
+    // heroAutoplayAllowed() check — window.matchMedia() itself is never
+    // called again after this — plus a change listener so a live OS-level
+    // preference toggle mid-session is honored immediately rather than only
+    // at the next unrelated gating re-check. Both listener APIs are
+    // supported since MediaQueryList.addEventListener is a fairly recent
+    // addition (older WebKit/Safari only had addListener/removeListener).
+    if (window.matchMedia) {
+      state.reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      state.onReducedMotionChange = function () {
+        refreshHeroAutoplay(state);
+      };
+      if (typeof state.reducedMotionQuery.addEventListener === 'function') {
+        state.reducedMotionQuery.addEventListener('change', state.onReducedMotionChange);
+      } else if (typeof state.reducedMotionQuery.addListener === 'function') {
+        state.reducedMotionQuery.addListener(state.onReducedMotionChange);
+      }
+    }
+
+    // Swipe: horizontal intent only. .home-hero__slides also carries
+    // touch-action:pan-y (theme.css) so normal vertical page scroll is
+    // handled natively by the browser and is never at risk here even
+    // before this threshold check runs.
+    var pointerStartX = null;
+    var pointerStartY = null;
+    var pointerId = null;
+    var SWIPE_THRESHOLD = 40;
+
+    slidesRoot.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      pointerStartX = e.clientX;
+      pointerStartY = e.clientY;
+      pointerId = e.pointerId;
+    });
+    slidesRoot.addEventListener('pointerup', function (e) {
+      if (pointerStartX === null || e.pointerId !== pointerId) return;
+      var deltaX = e.clientX - pointerStartX;
+      var deltaY = e.clientY - pointerStartY;
+      pointerStartX = null;
+      if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+        goToHeroSlide(state, state.currentIndex + (deltaX < 0 ? 1 : -1), true);
+        restartHeroAutoplayFromManualNav(state);
+      }
+    });
+    slidesRoot.addEventListener('pointercancel', function () {
+      pointerStartX = null;
+    });
+
+    root.addEventListener('click', function (e) {
+      if (e.target.closest('[data-hero-prev]')) {
+        goToHeroSlide(state, state.currentIndex - 1, true);
+        restartHeroAutoplayFromManualNav(state);
+        return;
+      }
+      if (e.target.closest('[data-hero-next]')) {
+        goToHeroSlide(state, state.currentIndex + 1, true);
+        restartHeroAutoplayFromManualNav(state);
+        return;
+      }
+      var dotBtn = e.target.closest('[data-hero-dot]');
+      if (dotBtn) {
+        var index = parseInt(dotBtn.getAttribute('data-slide-index'), 10);
+        if (!isNaN(index)) {
+          goToHeroSlide(state, index, true);
+          restartHeroAutoplayFromManualNav(state);
+        }
+        return;
+      }
+      if (e.target.closest('[data-hero-playpause]')) {
+        state.manuallyPaused = !!state.timer;
+        refreshHeroAutoplay(state);
+      }
+    });
+
+    refreshHeroAutoplay(state);
+  }
+
+  function initHeroSlideshows(scope) {
+    pruneDetachedHeroSlideshows();
+    var scopeEl = scope || document;
+    scopeEl.querySelectorAll('[data-hero-slideshow]').forEach(function (root) {
+      initHeroSlideshow(root);
+    });
+  }
+
+  /* Shopify Theme Editor: a section setting change reloads that section's
+     markup in place (a fresh [data-hero-slideshow] with no
+     data-hero-initialized), so it's re-initialized the same way as first
+     page load. Selecting a "Hero slide" block jumps the preview to that
+     slide and pauses autoplay for the duration of the selection, matching
+     how block selection behaves for other repeatable-block sections in the
+     editor; deselecting resumes autoplay unless something else (including a
+     storefront visitor's own Pause click) still applies.
+
+     editorPaused is tracked separately from manuallyPaused specifically so
+     these two handlers never touch manuallyPaused — a visitor's Pause/Play
+     control is the only thing that may ever set or clear manuallyPaused.
+     Without that separation, selecting then deselecting a slide block in
+     the editor would silently clear a visitor's own prior Pause choice
+     (manuallyPaused set to true, then unconditionally reset to false on
+     deselect) the next time this same state object were reused. These two
+     events also only ever run inside the Theme Editor's design-mode iframe
+     — they never fire for a normal storefront visitor. */
+  function initHeroSlideshowEditorEvents() {
+    document.addEventListener('shopify:section:load', function (e) {
+      initHeroSlideshows(e.target);
+    });
+    document.addEventListener('shopify:section:unload', function (e) {
+      if (!e.target.querySelectorAll) return;
+      e.target.querySelectorAll('[data-hero-slideshow]').forEach(function (root) {
+        var state = findHeroSlideshowState(root);
+        if (state) teardownHeroSlideshow(state);
+      });
+    });
+    document.addEventListener('shopify:block:select', function (e) {
+      var slideEl = e.target.closest && e.target.closest('[data-hero-slide]');
+      if (!slideEl) return;
+      var root = slideEl.closest('[data-hero-slideshow]');
+      var state = root && findHeroSlideshowState(root);
+      if (!state) return;
+      var index = parseInt(slideEl.getAttribute('data-slide-index'), 10);
+      if (!isNaN(index)) goToHeroSlide(state, index, false);
+      state.editorPaused = true;
+      refreshHeroAutoplay(state);
+    });
+    document.addEventListener('shopify:block:deselect', function (e) {
+      var slideEl = e.target.closest && e.target.closest('[data-hero-slide]');
+      if (!slideEl) return;
+      var root = slideEl.closest('[data-hero-slideshow]');
+      var state = root && findHeroSlideshowState(root);
+      if (!state) return;
+      state.editorPaused = false;
+      refreshHeroAutoplay(state);
+    });
+  }
+
   /* ---------------- Announcement bar rotation ---------------- */
   function initAnnouncementBar() {
     var el = document.querySelector('[data-announcement-bar]');
@@ -901,5 +1258,7 @@
     initCollectionToolbar();
     initProductGallery();
     initProductRecommendations();
+    initHeroSlideshows();
+    initHeroSlideshowEditorEvents();
   });
 })();
