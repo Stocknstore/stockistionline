@@ -2,6 +2,11 @@
   "sections": {
     "home-hero": {
       "type": "home-hero",
+      "settings": {
+        "primary_button_link": "/collections/footwear",
+        "secondary_button_link": "/collections/new-stock",
+        "brands_more_link": "/collections/brands-a-z"
+      },
       "blocks": {
         "brand-a": {
           "type": "featured_brand",
@@ -20,26 +25,32 @@
     },
     "home-start-shopping": {
       "type": "home-start-shopping",
+      "settings": {
+        "browse_all_link": "/collections/footwear"
+      },
       "blocks": {
         "dept-women": {
           "type": "department",
           "settings": {
             "title": "Women",
-            "style_count": "3 styles"
+            "style_count": "Coming soon",
+            "link": "/collections/women"
           }
         },
         "dept-men": {
           "type": "department",
           "settings": {
             "title": "Men",
-            "style_count": "4 styles"
+            "style_count": "8 styles",
+            "link": "/collections/men"
           }
         },
         "dept-kids": {
           "type": "department",
           "settings": {
             "title": "Kids",
-            "style_count": "1 style"
+            "style_count": "Coming soon",
+            "link": "/collections/kids"
           }
         },
         "arriving-home-living": {
@@ -61,6 +72,9 @@
     },
     "home-brand-wall": {
       "type": "home-brand-wall",
+      "settings": {
+        "az_link": "/collections/brands-a-z"
+      },
       "blocks": {
         "brand-01": { "type": "brand", "settings": { "name": "Solo Suprani", "note": "new today" } },
         "brand-02": { "type": "brand", "settings": { "name": "US GRAND Polo", "note": "32 styles" } },
@@ -88,7 +102,14 @@
       ]
     },
     "home-just-arrived": {
-      "type": "home-just-arrived"
+      "type": "home-just-arrived",
+      "settings": {
+        "collection": "new-stock",
+        "women_link": "/collections/women",
+        "men_link": "/collections/men",
+        "kids_link": "/collections/kids",
+        "see_all_link": "/collections/new-stock"
+      }
     },
     "home-special-stock": {
       "type": "home-special-stock",
