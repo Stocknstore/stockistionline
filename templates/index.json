@@ -123,10 +123,10 @@
     "home-coming-soon": {
       "type": "home-coming-soon",
       "blocks": {
-        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels" } },
-        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding" } },
-        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion" } },
-        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories" } }
+        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels", "image": "shopify://shop_images/Coming_soon_page_banner_B.png", "alt_text": "Stack of white towels on a neatly made bed" } },
+        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding", "image": "shopify://shop_images/Coming_soon_page_banner_A.png", "alt_text": "Neutral living room with sectional sofa, floor lamp and coffee table" } },
+        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion", "image": "shopify://shop_images/Coming_soon_page_banner_C.png", "alt_text": "Men's, women's and children's clothing arranged on a garment rack" } },
+        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories", "image": "shopify://shop_images/Coming_soon_page_banner_C_copy.png", "alt_text": "Handbags and fashion accessories arranged on a neutral display" } }
       },
       "block_order": ["teaser-1", "teaser-2", "teaser-3", "teaser-4"]
     }
