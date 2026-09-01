@@ -1548,6 +1548,15 @@ body.scroll-locked { overflow: hidden; }
    theme's existing .hidden-mobile/.hidden-desktop utilities (section 10
    above), which already toggle at the same 768px boundary as the
    prototype's .not-mobile-only/.mobile-only classes.
+
+   .home-just-arrived__grid's and .home-just-arrived__rails' own "shown"
+   display values are deliberately scoped inside the same min-width:768px /
+   max-width:767px ranges .hidden-mobile/.hidden-desktop already use to
+   reveal each of them — not set unconditionally, which silently defeated
+   both utilities' display:none at the width where each element must stay
+   hidden (equal-specificity, later-in-source-order always won), showing
+   both the grid and the rail simultaneously at every width (the same
+   cascade bug the section 30/31 comments document and avoid).
    -------------------------------------------------------------------------- */
 .home-just-arrived {
   --just-arrived-pad-x: 40px;
@@ -1609,13 +1618,15 @@ body.scroll-locked { overflow: hidden; }
 }
 .home-just-arrived__see-all::after { content: " \2192"; }
 
-.home-just-arrived__grid {
-  display: grid;
-  grid-template-columns: var(--prod-cols);
-  gap: 24px;
+@media (min-width: 768px) {
+  .home-just-arrived__grid {
+    display: grid;
+    grid-template-columns: var(--prod-cols);
+    gap: 24px;
+  }
 }
 
-.home-just-arrived__rails { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.home-just-arrived__rails { flex-direction: column; gap: 24px; min-width: 0; }
 .home-just-arrived__rail-group { min-width: 0; }
 .home-just-arrived__rail-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .home-just-arrived__rail-tag {
@@ -1665,6 +1676,7 @@ body.scroll-locked { overflow: hidden; }
     --sec-head-align: stretch;
     --sec-head-gap: 14px;
   }
+  .home-just-arrived__rails { display: flex; }
 }
 
 /* --------------------------------------------------------------------------
