@@ -727,9 +727,34 @@
     });
   }
 
+  /* "Would autoplay be running right now, ignoring only the ephemeral
+     hover/focus blockers?" This is the root-cause fix for the
+     Play-after-Pause bug: the Play/Pause button's own displayed state and
+     what a click on it toggles both used to be driven by !!state.timer —
+     the ACTUAL, literal running state — but hover/focus can (and in any
+     realistic mouse-driven interaction, reliably DO) already null
+     state.timer before a click on the button ever fires, since
+     pointerenter/focusin necessarily happen first as the cursor/focus
+     travels onto the button. That made every click's "was it playing"
+     read unreliable — up to and including registering a genuine Pause
+     click as if it were a Play click. This ignores only hover/focus (still
+     respecting manual pause, editor pause, tab visibility, viewport, and
+     reduced motion exactly like heroAutoplayAllowed() does) so neither the
+     button's label nor a click's effect can ever be thrown off by mere
+     pointer position or focus location. */
+  function heroLogicalPlaying(state) {
+    return state.autoplayEnabled
+      && state.slides.length > 1
+      && !state.manuallyPaused
+      && !state.editorPaused
+      && !document.hidden
+      && state.inViewport
+      && !(state.reducedMotionQuery && state.reducedMotionQuery.matches);
+  }
+
   function updateHeroPlayPauseUI(state) {
     if (!state.playPauseBtn) return;
-    var playing = !!state.timer;
+    var playing = heroLogicalPlaying(state);
     if (state.playPauseIcon) state.playPauseIcon.classList.toggle('is-playing', playing);
     state.playPauseBtn.setAttribute('aria-pressed', String(!playing));
     var label = playing
@@ -769,12 +794,21 @@
   }
 
   function heroAutoplayAllowed(state) {
+    // explicitPlayOverride suppresses ONLY the hover/focus blockers below —
+    // it exists because the Play control that triggers this is itself
+    // always inside the hovered/focused region it would otherwise be gated
+    // by, which would make an explicit Play click permanently unable to
+    // restart autoplay (see the click handler for how/when this is set and
+    // cleared). It never touches manuallyPaused, editorPaused, tab
+    // visibility, viewport, or reduced motion.
+    var hoverBlocked = state.hovering && !state.explicitPlayOverride;
+    var focusBlocked = state.focused && !state.explicitPlayOverride;
     return state.autoplayEnabled
       && state.slides.length > 1
       && !state.manuallyPaused
       && !state.editorPaused
-      && !state.hovering
-      && !state.focused
+      && !hoverBlocked
+      && !focusBlocked
       && !document.hidden
       && state.inViewport
       && !(state.reducedMotionQuery && state.reducedMotionQuery.matches);
@@ -838,6 +872,7 @@
       intervalMs: parseInt(root.getAttribute('data-autoplay-interval'), 10) || 5000,
       manuallyPaused: false,
       editorPaused: false,
+      explicitPlayOverride: false,
       hovering: false,
       focused: false,
       inViewport: true,
@@ -849,14 +884,35 @@
 
     root.addEventListener('pointerenter', function () {
       state.hovering = true;
+      // A NEW hover interaction is what "restores normal hover-pause
+      // behavior" — not the act of leaving. Clicking Play with the mouse
+      // leaves the Play button focused (state.focused stays true after the
+      // pointer is gone), so clearing the override on pointerleave instead
+      // of here would let that lingering focus immediately re-block
+      // autoplay the moment the visitor moves the mouse away — the same
+      // failure this override exists to fix, just via focus instead of
+      // hover. Clearing it here means it only ever affects THIS hover
+      // interaction going forward, never the exit that preceded it.
+      state.explicitPlayOverride = false;
       refreshHeroAutoplay(state);
     });
     root.addEventListener('pointerleave', function () {
       state.hovering = false;
+      // Deliberately does NOT clear explicitPlayOverride — see the
+      // pointerenter comment above. Leaving must not itself interrupt
+      // playback that an explicit Play just started, even though the
+      // clicked button typically still has focus at this point.
       refreshHeroAutoplay(state);
     });
-    root.addEventListener('focusin', function () {
+    root.addEventListener('focusin', function (e) {
       state.focused = true;
+      // Moving focus to a DIFFERENT control than the one that triggered an
+      // explicit Play clears the override, so normal focus-pause applies to
+      // that new control — the override only ever protects the Play click
+      // itself from being immediately undone by its own resulting focus.
+      if (e.target !== state.playPauseBtn) {
+        state.explicitPlayOverride = false;
+      }
       refreshHeroAutoplay(state);
     });
     root.addEventListener('focusout', function () {
@@ -961,7 +1017,23 @@
         return;
       }
       if (e.target.closest('[data-hero-playpause]')) {
-        state.manuallyPaused = !!state.timer;
+        // Toggling off heroLogicalPlaying() (not !!state.timer — see its
+        // comment above for why) makes this immune to whatever hover/focus
+        // happen to be at click-time: a click on a "Pause"-labeled button
+        // always pauses, a click on a "Play"-labeled button always plays,
+        // matching exactly what the visitor just saw and clicked.
+        var wasLogicallyPlaying = heroLogicalPlaying(state);
+        state.manuallyPaused = wasLogicallyPlaying;
+        // A Play action (was showing "Play", i.e. not logically playing)
+        // needs a temporary, targeted bypass of just the hover/focus
+        // blockers — this button lives inside the very region those two
+        // gate, so clicking it necessarily makes at least one of them true
+        // at the exact moment manuallyPaused is cleared, and
+        // heroAutoplayAllowed() would otherwise immediately re-block the
+        // restart this click was meant to cause. A Pause action never
+        // needs this and always clears it (see also the pointerleave/
+        // focusin handlers above, the other two places this is cleared).
+        state.explicitPlayOverride = !wasLogicallyPlaying;
         refreshHeroAutoplay(state);
       }
     });
