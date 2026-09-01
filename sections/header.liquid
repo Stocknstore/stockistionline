@@ -64,8 +64,8 @@
           </button>
         {%- endif -%}
 
-        {%- if section.settings.show_wishlist -%}
-          <a href="{{ section.settings.wishlist_url | default: '#' }}" class="header-icon-btn" aria-label="{{ 'header.wishlist' | t }}">
+        {%- if section.settings.show_wishlist and section.settings.wishlist_url != blank -%}
+          <a href="{{ section.settings.wishlist_url }}" class="header-icon-btn" aria-label="{{ 'header.wishlist' | t }}">
             {% render 'icon', icon: 'heart' %}
             <span class="header-icon-btn__count" data-wishlist-count hidden>0</span>
           </a>

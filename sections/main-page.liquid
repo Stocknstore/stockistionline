@@ -1,0 +1,49 @@
+{%- comment -%}
+  Section: Main page
+  Phase 7, Stage 2. Minimal Online Store 2.0 template for any ordinary
+  Shopify "Page" resource — renders exactly what the merchant has written
+  in Admin (Online Store → Pages), nothing invented. A blank page.content
+  shows a short setup hint ONLY inside the Theme Editor (request.design_mode
+  — never on the live storefront), matching the same established pattern
+  already used for the PDP details accordion's placeholder copy
+  (sections/main-product.liquid, product.accordion_details_placeholder).
+
+  Deliberately has no settings/blocks: nothing about a generic page's
+  content is theme-configurable — it's whatever the Page resource itself
+  contains. Contact forms, Shipping & Returns copy and legal policy text
+  are all explicitly out of scope for this stage; this only builds the
+  shell every future Page (Contact included) will render inside.
+{%- endcomment -%}
+<section class="page" {{ section.shopify_attributes }}>
+  <div class="page__inner container container--small">
+    <nav class="page__breadcrumb" aria-label="{{ 'page.breadcrumb_label' | t }}">
+      <a href="{{ routes.root_url }}">{{ 'general.home' | t }}</a>
+      <span class="page__breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="page__breadcrumb-current" aria-current="page">{{ page.title }}</span>
+    </nav>
+
+    <h1 class="page__title">{{ page.title }}</h1>
+
+    {%- liquid
+      assign body = page.content
+      assign show_empty_hint = false
+      if body == blank and request.design_mode
+        assign show_empty_hint = true
+      endif
+    -%}
+    {%- if body != blank -%}
+      <div class="page__content">
+        {{ body }}
+      </div>
+    {%- elsif show_empty_hint -%}
+      <p class="page__empty-hint">{{ 'page.empty_content_hint' | t }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page",
+  "settings": []
+}
+{% endschema %}

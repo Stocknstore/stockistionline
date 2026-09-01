@@ -3620,3 +3620,98 @@ body.scroll-locked { overflow: hidden; }
   .wishlist-page { padding-left: 16px; padding-right: 16px; }
   .wishlist-page__grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
 }
+
+/* --------------------------------------------------------------------------
+   43. Generic page — sections/main-page.liquid
+   Phase 7, Stage 2. .container--small (720px, section 3) keeps merchant
+   rich text at a readable line length regardless of viewport — the same
+   container class already used elsewhere for narrow prose-like content.
+   Breadcrumb/heading styles reuse the exact tokens and proportions already
+   established for .product__breadcrumb/.product__title (section 34) so a
+   generic page reads as part of the same theme, not a bolted-on template.
+   -------------------------------------------------------------------------- */
+.page__inner { padding: 20px var(--container-padding) var(--space-8); }
+
+.page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(2, 38, 63, 0.5);
+  margin-bottom: var(--space-4);
+}
+.page__breadcrumb a:hover { color: var(--color-text); }
+.page__breadcrumb-sep { color: rgba(2, 38, 63, 0.3); }
+.page__breadcrumb-current { color: var(--color-text); }
+
+.page__title {
+  font-weight: 900;
+  font-size: var(--text-4xl);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-6);
+}
+
+.page__content {
+  font-size: var(--text-base);
+  line-height: 1.7;
+  color: var(--color-text);
+}
+.page__content > * + * { margin-top: var(--space-5); }
+.page__content h1,
+.page__content h2,
+.page__content h3,
+.page__content h4,
+.page__content h5,
+.page__content h6 {
+  font-weight: 800;
+  line-height: 1.25;
+  margin: var(--space-7) 0 var(--space-3);
+}
+.page__content > :first-child { margin-top: 0; }
+.page__content h1 { font-size: var(--text-3xl); }
+.page__content h2 { font-size: var(--text-2xl); }
+.page__content h3 { font-size: var(--text-xl); }
+.page__content h4,
+.page__content h5,
+.page__content h6 { font-size: var(--text-lg); }
+.page__content p { margin: 0; }
+.page__content ul,
+.page__content ol {
+  margin: 0;
+  padding-left: 1.25em;
+}
+.page__content li + li { margin-top: var(--space-2); }
+.page__content a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.page__content a:hover { color: var(--color-text); }
+.page__content img { max-width: 100%; height: auto; }
+.page__content blockquote {
+  margin: 0;
+  padding-left: var(--space-5);
+  border-left: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+.page__content hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-7) 0;
+}
+
+.page__empty-hint {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  border: 1px dashed var(--color-border);
+  padding: var(--space-5);
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .page__title { font-size: var(--text-3xl); }
+}

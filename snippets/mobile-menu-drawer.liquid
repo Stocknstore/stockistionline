@@ -18,6 +18,12 @@
     logo_image            - section.settings.logo
     logo_width             - section.settings.logo_width_mobile
 
+  Phase 7, Stage 2: the Wishlist row now follows the same blank-URL guard
+  already used for shipping_returns_url just below it — a real link (with
+  its count badge) when wishlist_url is configured, otherwise the same
+  non-interactive .mobile-nav-row--soon <span> pattern, never a dead `#`
+  href.
+
   Visual correction pass (Phase 6, Stage 2 follow-up): the root panel header
   now shows the real configured logo instead of a generic "Menu" heading,
   and an outlined "× Close" button instead of an icon-only circle — a new
@@ -62,10 +68,16 @@
             <span>{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}</span>
           </a>
         {%- endif -%}
-        <a href="{{ wishlist_url | default: '#' }}" class="mobile-nav-row">
-          <span>{{ 'header.wishlist_label' | t }}</span>
-          <span class="mobile-nav-row__count" data-wishlist-count hidden>0</span>
-        </a>
+        {%- if wishlist_url != blank -%}
+          <a href="{{ wishlist_url }}" class="mobile-nav-row">
+            <span>{{ 'header.wishlist_label' | t }}</span>
+            <span class="mobile-nav-row__count" data-wishlist-count hidden>0</span>
+          </a>
+        {%- else -%}
+          <span class="mobile-nav-row mobile-nav-row--soon">
+            <span>{{ 'header.wishlist_label' | t }}</span>
+          </span>
+        {%- endif -%}
         {%- if shipping_returns_url != blank -%}
           <a href="{{ shipping_returns_url }}" class="mobile-nav-row">
             <span>{{ 'header.shipping_returns' | t }}</span>
