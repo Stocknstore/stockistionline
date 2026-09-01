@@ -29,7 +29,8 @@
           "settings": {
             "title": "Women",
             "style_count": "Coming soon",
-            "link": "/collections/women"
+            "link": "/collections/women",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_A.png"
           }
         },
         "dept-men": {
@@ -37,7 +38,8 @@
           "settings": {
             "title": "Men",
             "style_count": "8 styles",
-            "link": "/collections/men"
+            "link": "/collections/men",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_B.png"
           }
         },
         "dept-kids": {
@@ -45,21 +47,24 @@
           "settings": {
             "title": "Kids",
             "style_count": "Coming soon",
-            "link": "/collections/kids"
+            "link": "/collections/kids",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_C.png"
           }
         },
         "arriving-home-living": {
           "type": "arriving_soon_item",
           "settings": {
             "title": "Home & Living",
-            "arrival_text": "arriving September 2026"
+            "arrival_text": "arriving September 2026",
+            "image": "shopify://shop_images/Coming_soon_page_banner_A.png"
           }
         },
         "arriving-clothing": {
           "type": "arriving_soon_item",
           "settings": {
             "title": "Clothing",
-            "arrival_text": "arriving Winter 2026"
+            "arrival_text": "arriving Winter 2026",
+            "image": "shopify://shop_images/Coming_soon_page_banner_C.png"
           }
         }
       },
