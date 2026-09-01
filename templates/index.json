@@ -12,9 +12,9 @@
         "auto_vendor_list": true
       },
       "blocks": {
-        "hero-slide-1": { "type": "hero_slide" },
-        "hero-slide-2": { "type": "hero_slide" },
-        "hero-slide-3": { "type": "hero_slide" }
+        "hero-slide-1": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti.png", "mobile_image": "shopify://shop_images/main_banner_stockisti.png", "alt_text": "Best Seller NASA Edition white and olive sneaker" } },
+        "hero-slide-2": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti_3.png", "mobile_image": "shopify://shop_images/main_banner_stockisti_3.png", "alt_text": "Six sneakers from NASA, Lee Cooper, Carrera and other brands" } },
+        "hero-slide-3": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti_2.png", "mobile_image": "shopify://shop_images/main_banner_stockisti_2.png", "alt_text": "Model wearing white Carrera sneakers against a navy background" } }
       },
       "block_order": ["hero-slide-1", "hero-slide-2", "hero-slide-3"]
     },
