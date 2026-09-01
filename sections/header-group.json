@@ -97,6 +97,7 @@
         "sticky": true,
         "show_language_selector": true,
         "show_wishlist": true,
+        "wishlist_url": "shopify://pages/wishlist",
         "color_background": "#FFFFFF",
         "color_text": "#141414",
         "color_utility_background": "#141414",
