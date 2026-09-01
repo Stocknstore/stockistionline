@@ -39,9 +39,61 @@
     },
     "header": {
       "type": "header",
+      "blocks": {
+        "nav-metadata-footwear": {
+          "type": "nav_metadata",
+          "settings": {
+            "menu_item_title": "Footwear",
+            "metadata_source": "static",
+            "metadata_text": "current"
+          }
+        },
+        "nav-metadata-clothing": {
+          "type": "nav_metadata",
+          "settings": {
+            "menu_item_title": "Clothing",
+            "metadata_source": "static",
+            "metadata_text": "Winter 2026"
+          }
+        },
+        "nav-metadata-brands": {
+          "type": "nav_metadata",
+          "settings": {
+            "menu_item_title": "Brands A-Z",
+            "metadata_source": "vendor_count",
+            "metadata_text": "brands"
+          }
+        },
+        "nav-metadata-new-stock": {
+          "type": "nav_metadata",
+          "settings": {
+            "menu_item_title": "New stock",
+            "metadata_source": "collection_count",
+            "metadata_text": "items",
+            "metadata_collection": "new-stock"
+          }
+        },
+        "nav-metadata-home-living": {
+          "type": "nav_metadata",
+          "settings": {
+            "menu_item_title": "Home & Living",
+            "metadata_source": "static",
+            "metadata_text": "September 2026"
+          }
+        }
+      },
+      "block_order": [
+        "nav-metadata-footwear",
+        "nav-metadata-clothing",
+        "nav-metadata-brands",
+        "nav-metadata-new-stock",
+        "nav-metadata-home-living"
+      ],
       "settings": {
+        "logo": "shopify://shop_images/Stockisti__Online_Logo_v1_POLISHED_final_WOC-01.png",
         "logo_width": 130,
         "logo_width_mobile": 110,
+        "main_menu": "stockisti-custom-navigation",
         "sticky": true,
         "show_language_selector": true,
         "show_wishlist": true,

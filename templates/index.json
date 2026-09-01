@@ -2,58 +2,69 @@
   "sections": {
     "home-hero": {
       "type": "home-hero",
-      "blocks": {
-        "brand-a": {
-          "type": "featured_brand",
-          "settings": {
-            "name": "Brand A"
-          }
-        },
-        "brand-d": {
-          "type": "featured_brand",
-          "settings": {
-            "name": "Brand D"
-          }
-        }
+      "settings": {
+        "heading": "New stock.\nTrusted brands.",
+        "primary_button_link": "/collections/footwear",
+        "secondary_button_link": "/collections/new-stock",
+        "brands_more_link": "/collections/brands-a-z",
+        "data_source": "collection",
+        "source_collection": "new-stock",
+        "auto_vendor_list": true
       },
-      "block_order": ["brand-a", "brand-d"]
+      "blocks": {
+        "hero-slide-1": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti.png", "mobile_image": "shopify://shop_images/main_banner_stockisti.png", "alt_text": "Best Seller NASA Edition white and olive sneaker" } },
+        "hero-slide-2": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti_3.png", "mobile_image": "shopify://shop_images/main_banner_stockisti_3.png", "alt_text": "Six sneakers from NASA, Lee Cooper, Carrera and other brands" } },
+        "hero-slide-3": { "type": "hero_slide", "settings": { "desktop_image": "shopify://shop_images/main_banner_stockisti_2.png", "mobile_image": "shopify://shop_images/main_banner_stockisti_2.png", "alt_text": "Model wearing white Carrera sneakers against a navy background" } }
+      },
+      "block_order": ["hero-slide-1", "hero-slide-2", "hero-slide-3"]
     },
     "home-start-shopping": {
       "type": "home-start-shopping",
+      "settings": {
+        "browse_all_link": "/collections/footwear"
+      },
       "blocks": {
         "dept-women": {
           "type": "department",
           "settings": {
             "title": "Women",
-            "style_count": "3 styles"
+            "style_count": "Coming soon",
+            "link": "/collections/women",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_A.png"
           }
         },
         "dept-men": {
           "type": "department",
           "settings": {
             "title": "Men",
-            "style_count": "4 styles"
+            "style_count": "8 styles",
+            "link": "/collections/men",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_B.png"
           }
         },
         "dept-kids": {
           "type": "department",
           "settings": {
             "title": "Kids",
-            "style_count": "1 style"
+            "style_count": "Coming soon",
+            "link": "/collections/kids",
+            "image": "shopify://shop_images/Coming_soon_page_footwear_C.png"
           }
         },
         "arriving-home-living": {
           "type": "arriving_soon_item",
           "settings": {
             "title": "Home & Living",
-            "arrival_text": "arriving September"
+            "arrival_text": "arriving September 2026",
+            "image": "shopify://shop_images/Coming_soon_page_banner_A.png"
           }
         },
         "arriving-clothing": {
           "type": "arriving_soon_item",
           "settings": {
             "title": "Clothing",
-            "arrival_text": "arriving Winter 2026"
+            "arrival_text": "arriving Winter 2026",
+            "image": "shopify://shop_images/Coming_soon_page_banner_C.png"
           }
         }
       },
@@ -61,50 +72,49 @@
     },
     "home-brand-wall": {
       "type": "home-brand-wall",
-      "blocks": {
-        "brand-01": { "type": "brand", "settings": { "name": "Solo Suprani", "note": "new today" } },
-        "brand-02": { "type": "brand", "settings": { "name": "US GRAND Polo", "note": "32 styles" } },
-        "brand-03": { "type": "brand", "settings": { "name": "Carrera", "note": "11 styles" } },
-        "brand-04": { "type": "brand", "settings": { "name": "MARS", "note": "new today" } },
-        "brand-05": { "type": "brand", "settings": { "name": "Zaenobi", "note": "7 styles" } },
-        "brand-06": { "type": "brand", "settings": { "name": "NASA", "note": "58 styles" } },
-        "brand-07": { "type": "brand", "settings": { "name": "Brand 07", "note": "24 styles" } },
-        "brand-08": { "type": "brand", "settings": { "name": "Brand 08", "note": "new today" } },
-        "brand-09": { "type": "brand", "settings": { "name": "Brand 09", "note": "16 styles" } },
-        "brand-10": { "type": "brand", "settings": { "name": "Brand 10", "note": "9 styles" } },
-        "brand-11": { "type": "brand", "settings": { "name": "Brand 11", "note": "41 styles" } },
-        "brand-12": { "type": "brand", "settings": { "name": "Brand 12", "note": "13 styles" } },
-        "brand-13": { "type": "brand", "settings": { "name": "Brand 13", "note": "22 styles" } },
-        "brand-14": { "type": "brand", "settings": { "name": "Brand 14", "note": "new today" } },
-        "brand-15": { "type": "brand", "settings": { "name": "Brand 15", "note": "6 styles" } },
-        "brand-16": { "type": "brand", "settings": { "name": "Brand 16", "note": "35 styles" } },
-        "brand-17": { "type": "brand", "settings": { "name": "Brand 17", "note": "19 styles" } },
-        "brand-18": { "type": "brand", "settings": { "name": "Brand 18", "note": "new today" } }
-      },
-      "block_order": [
-        "brand-01", "brand-02", "brand-03", "brand-04", "brand-05", "brand-06",
-        "brand-07", "brand-08", "brand-09", "brand-10", "brand-11", "brand-12",
-        "brand-13", "brand-14", "brand-15", "brand-16", "brand-17", "brand-18"
-      ]
+      "settings": {
+        "az_link": "/collections/brands-a-z",
+        "source_mode": "automatic"
+      }
     },
     "home-just-arrived": {
-      "type": "home-just-arrived"
+      "type": "home-just-arrived",
+      "settings": {
+        "eyebrow": "New arrivals",
+        "collection": "new-stock",
+        "women_link": "/collections/women",
+        "men_link": "/collections/men",
+        "kids_link": "/collections/kids",
+        "see_all_link": "/collections/new-stock"
+      }
     },
     "home-special-stock": {
       "type": "home-special-stock",
+      "settings": {
+        "heading": "Single pairs,\none-off sizes.",
+        "body": "Discover low-stock pairs and limited sizes available from our current inventory.",
+        "mobile_body": "Discover low-stock pairs and limited sizes available from our current inventory.",
+        "source_collection": "brands-a-z",
+        "last_pair_threshold": 1
+      },
       "blocks": {
         "tile-1": { "type": "photo" },
-        "tile-2": { "type": "stat", "settings": { "number": "96", "label": "last pairs\nin single sizes" } },
+        "tile-2": { "type": "stat", "settings": { "stat_source": "last_pair_auto", "label": "last pairs\nin single sizes" } },
         "tile-3": { "type": "photo" },
-        "tile-4": { "type": "stat", "settings": { "number": "−62%", "label": "average discount\noff list price" } },
+        "tile-4": { "type": "stat", "settings": { "stat_source": "discount_auto", "label": "average discount\noff list price" } },
         "tile-5": { "type": "photo" }
       },
       "block_order": ["tile-1", "tile-2", "tile-3", "tile-4", "tile-5"]
     },
     "home-story": {
       "type": "home-story",
+      "settings": {
+        "body": "Since 2000, we have worked across wholesale and retail in Italy, sourcing genuine stock and serving every customer with care.",
+        "image": "shopify://shop_images/coming_soon_warehouse_banner.png",
+        "alt_text": "Footwear warehouse workflow from stock arrival and unpacking to product photography, order packing and delivery"
+      },
       "blocks": {
-        "stat-1": { "type": "stat", "settings": { "value": "44", "label": "brands carried\nin stock now" } },
+        "stat-1": { "type": "stat", "settings": { "value": "44+", "label": "brands across our\nrotating stock" } },
         "stat-2": { "type": "stat", "settings": { "value": "100%", "label": "genuine products\nguaranteed" } },
         "stat-3": { "type": "stat", "settings": { "value": "2–4 days", "label": "delivery\nin Italy" } }
       },
@@ -113,10 +123,10 @@
     "home-coming-soon": {
       "type": "home-coming-soon",
       "blocks": {
-        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels" } },
-        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding" } },
-        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion" } },
-        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories" } }
+        "teaser-1": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Towels", "image": "shopify://shop_images/Coming_soon_page_banner_B.png", "alt_text": "Stack of white towels on a neatly made bed" } },
+        "teaser-2": { "type": "category_teaser", "settings": { "date": "September 2026", "title": "Bedding", "image": "shopify://shop_images/Coming_soon_page_banner_A.png", "alt_text": "Neutral living room with sectional sofa, floor lamp and coffee table" } },
+        "teaser-3": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Fashion", "image": "shopify://shop_images/Coming_soon_page_banner_C.png", "alt_text": "Men's, women's and children's clothing arranged on a garment rack" } },
+        "teaser-4": { "type": "category_teaser", "settings": { "date": "Winter 2026", "title": "Bags & Accessories", "image": "shopify://shop_images/Coming_soon_page_banner_C_copy.png", "alt_text": "Handbags and fashion accessories arranged on a neutral display" } }
       },
       "block_order": ["teaser-1", "teaser-2", "teaser-3", "teaser-4"]
     }

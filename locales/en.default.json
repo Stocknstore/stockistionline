@@ -20,13 +20,34 @@
     "newsletter_success": "Thanks — you're on the list."
   },
   "home_hero": {
-    "placeholder": "Add a hero image"
+    "placeholder": "Add a hero image",
+    "counter_note_collection": {
+      "one": "styles online, {{ count }} brand.",
+      "other": "styles online, {{ count }} brands."
+    },
+    "counter_note_empty": "No styles online right now.",
+    "slideshow_label": "Featured images",
+    "slide_role": "slide",
+    "slide_position": "Slide {{ index }} of {{ total }}",
+    "previous_slide": "Previous slide",
+    "next_slide": "Next slide",
+    "slide_picker_label": "Choose a slide to display",
+    "go_to_slide": "Go to slide {{ index }}",
+    "pause_slideshow": "Pause slideshow",
+    "play_slideshow": "Play slideshow"
+  },
+  "home_brand_wall": {
+    "eyebrow_auto": {
+      "one": "{{ count }} brand currently online",
+      "other": "{{ count }} brands currently online"
+    }
   },
   "home_start_shopping": {
     "placeholder": "Add an image"
   },
   "home_special_stock": {
-    "placeholder": "Add an image"
+    "placeholder": "Add an image",
+    "discount_unavailable": "—"
   },
   "home_story": {
     "placeholder": "Add an image"
@@ -157,7 +178,10 @@
     "region": "Country/region",
     "region_and_language": "Region and language",
     "wishlist": "Wishlist",
-    "wishlist_label": "Wish lists",
+    "wishlist_label": "Wishlist",
+    "shipping_returns": "Shipping & Returns",
+    "new_stock": "New stock",
+    "brands": "Brands",
     "cart": "Cart",
     "search": "Search",
     "go_to": "Go to",

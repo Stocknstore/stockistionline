@@ -109,10 +109,12 @@
   {%- comment -%}
     Global overlays — rendered once, outside the header, so they sit above all
     page content regardless of which section triggers them. The mobile menu
-    drawer is rendered inside sections/header.liquid instead of here, so it
-    can be passed the header's own configured menu setting directly rather
-    than re-resolving a hardcoded linklist handle that could drift out of
-    sync with what the merchant picked in the header section.
+    drawer AND the mobile bottom bar are both rendered inside sections/
+    header.liquid instead of here (Phase 6, Stage 2 moved the bottom bar
+    there too), so both can be passed the header's own configured menu
+    setting directly rather than re-resolving a hardcoded linklist handle
+    that could drift out of sync with what the merchant picked in the
+    header section.
   {%- endcomment -%}
   {% render 'search-drawer' %}
   {% section 'cart-drawer' %}
@@ -124,8 +126,6 @@
   </main>
 
   {% section 'footer' %}
-
-  {% render 'mobile-bottom-bar' %}
 
 </body>
 </html>

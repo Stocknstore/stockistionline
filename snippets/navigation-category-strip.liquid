@@ -5,10 +5,13 @@
   strip of departments/utility links. Items are entirely merchant-configured
   via the header section's menu setting — nothing here is hardcoded.
 
-  Convention: a menu item titled with a trailing " · soon" (e.g.
-  "Clothing · soon") renders as an inert, muted label instead of a link — a
-  lightweight way to reproduce the reference's non-clickable "coming soon"
-  categories without a dedicated settings field for it.
+  Convention: a menu item titled with a trailing " · soon" (or " - soon" / "
+  . soon", in case a merchant typed a plain hyphen/period instead of the
+  middot — Phase 6, Stage 2) renders as an inert, muted label instead of a
+  link. Detection is case-insensitive: the downcased title is matched to find
+  the split point, then that same character count is sliced from the
+  ORIGINAL-cased title, so the visible clean title keeps whatever casing the
+  merchant actually typed.
 
   Params:
     menu - a linklist object (section.settings.main_menu)
@@ -18,11 +21,24 @@
     <ul class="category-strip__list" role="list">
       {%- for link in menu.links -%}
         {%- liquid
+          assign title_down = link.title | downcase | strip
+          assign strip_title = link.title | strip
           assign is_soon = false
-          assign strip_title = link.title
-          if link.title contains ' · soon'
+
+          if title_down contains ' · soon'
+            assign soon_prefix = title_down | split: ' · soon' | first
             assign is_soon = true
-            assign strip_title = link.title | remove: ' · soon'
+          elsif title_down contains ' - soon'
+            assign soon_prefix = title_down | split: ' - soon' | first
+            assign is_soon = true
+          elsif title_down contains ' . soon'
+            assign soon_prefix = title_down | split: ' . soon' | first
+            assign is_soon = true
+          endif
+
+          if is_soon
+            assign soon_prefix_len = soon_prefix | size
+            assign strip_title = strip_title | slice: 0, soon_prefix_len
           endif
         -%}
         <li class="category-strip__item">

@@ -12,6 +12,13 @@
   text, never behind/under it, so category/date text is never at risk of
   being illegible over a busy photo (image_fit is merchant-configurable:
   "contain" for transparent PNG/item graphics, "cover" for full photography).
+
+  Phase 6, Stage 4B: the "Notify me" action only renders when its link is
+  actually set — no `| default: '#'` fallback. Each tile stays visible
+  regardless of whether it has a real link: with one, it's a real <a>;
+  without one, it renders as a plain, non-interactive <div> with the exact
+  same classes/layout — never a dead `#` link, and deliberately no
+  role="link"/tabindex added to fake interactivity that doesn't exist yet.
 {%- endcomment -%}
 {%- assign image_fit = section.settings.image_fit | default: 'cover' -%}
 <section class="home-coming-soon home-coming-soon--fit-{{ image_fit }}" {{ section.shopify_attributes }}>
@@ -24,8 +31,8 @@
         <h2 class="home-coming-soon__heading">{{ section.settings.heading }}</h2>
       {%- endif -%}
     </div>
-    {%- if section.settings.notify_label != blank -%}
-      <a href="{{ section.settings.notify_link | default: '#' }}" class="home-coming-soon__notify">{{ section.settings.notify_label }}</a>
+    {%- if section.settings.notify_label != blank and section.settings.notify_link != blank -%}
+      <a href="{{ section.settings.notify_link }}" class="home-coming-soon__notify">{{ section.settings.notify_label }}</a>
     {%- endif -%}
   </div>
 
@@ -33,7 +40,11 @@
     {%- for block in section.blocks -%}
       {%- if block.type == 'category_teaser' -%}
         {%- assign img = block.settings.image -%}
-        <a href="{{ block.settings.link | default: '#' }}" class="home-coming-soon__tile" {{ block.shopify_attributes }}>
+        {%- assign has_link = false -%}
+        {%- if block.settings.link != blank -%}
+          {%- assign has_link = true -%}
+        {%- endif -%}
+        {%- capture tile_content -%}
           <div class="home-coming-soon__tile-image">
             {%- if img != blank -%}
               {%- assign widths = "200,300,450,600" | split: ',' -%}
@@ -65,7 +76,12 @@
               <span class="home-coming-soon__tile-title">{{ block.settings.title }}</span>
             {%- endif -%}
           </div>
-        </a>
+        {%- endcapture -%}
+        {%- if has_link -%}
+          <a href="{{ block.settings.link }}" class="home-coming-soon__tile" {{ block.shopify_attributes }}>{{ tile_content }}</a>
+        {%- else -%}
+          <div class="home-coming-soon__tile" {{ block.shopify_attributes }}>{{ tile_content }}</div>
+        {%- endif -%}
       {%- endif -%}
     {%- endfor -%}
   </div>

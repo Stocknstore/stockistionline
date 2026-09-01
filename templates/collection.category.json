@@ -6,19 +6,22 @@
         "dept-women": {
           "type": "department",
           "settings": {
-            "title": "Women"
+            "title": "Women",
+            "collection": "women"
           }
         },
         "dept-men": {
           "type": "department",
           "settings": {
-            "title": "Men"
+            "title": "Men",
+            "collection": "men"
           }
         },
         "dept-kids": {
           "type": "department",
           "settings": {
-            "title": "Kids"
+            "title": "Kids",
+            "collection": "kids"
           }
         }
       },

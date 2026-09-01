@@ -15,13 +15,18 @@
 
   If no collection is selected, or the collection has no products, a plain
   onboarding message is shown instead — no fake/placeholder products.
+
+  Phase 6, Stage 3A fix: `collection.products | slice: 0, limit` produced
+  blank placeholder products once limit exceeded the real count. Every
+  loop below uses Liquid's native `limit:` instead, which clamps to
+  whatever the collection actually has.
 {%- endcomment -%}
 {%- liquid
   assign collection = section.settings.collection
   assign limit = section.settings.product_limit | default: 12
-  assign products = blank
-  if collection != blank
-    assign products = collection.products | slice: 0, limit
+  assign has_products = false
+  if collection != blank and collection.products_count > 0
+    assign has_products = true
   endif
 -%}
 <section class="home-just-arrived" {{ section.shopify_attributes }}>
@@ -50,7 +55,7 @@
     </div>
   </div>
 
-  {%- if products.size > 0 -%}
+  {%- if has_products -%}
     {%- liquid
       assign grid_html = ''
       assign new_today_html = ''
@@ -58,7 +63,7 @@
       assign last_pair_html = ''
       assign last_pair_count = 0
 
-      for product in products
+      for product in collection.products limit: limit
         assign badge_key = ''
         for tag in product.tags
           assign tag_down = tag | downcase
@@ -109,7 +114,7 @@
             <span class="home-just-arrived__rail-hint">{{ 'home_just_arrived.swipe_hint' | t }}</span>
           </div>
           <div class="home-just-arrived__rail">
-            {%- for product in products -%}
+            {%- for product in collection.products limit: limit -%}
               {%- render 'product-card-home', product: product, variant: 'rail' -%}
             {%- endfor -%}
           </div>
@@ -156,7 +161,7 @@
       "type": "text",
       "id": "eyebrow",
       "label": "Eyebrow text",
-      "default": "Updated today at 14:20"
+      "default": "New arrivals"
     },
     {
       "type": "text",

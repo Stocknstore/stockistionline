@@ -2,10 +2,35 @@
   Mobile menu — slide-in drawer with drill-down navigation (matches live reference:
   tapping a parent item replaces the panel content with a back button + that
   item's children, rather than expanding an inline accordion).
-  Params: menu (linklist), featured_count (number of top items shown in the shaded card)
+
+  Phase 6, Stage 2: primary rows now carry the same robust "· soon" detection
+  as the desktop strip (case-insensitive, tolerates " - soon"/" . soon"), plus
+  merchant-editable right-side metadata sourced from the header section's
+  nav_metadata blocks (matched by clean title, never encoded in the menu
+  title itself). A "soon" row renders as a plain, non-interactive <span> —
+  never an <a> or <button> — so it's never in the tab order.
+
+  Params:
+    menu                 - a linklist object (section.settings.main_menu)
+    blocks                - section.blocks (filtered internally to nav_metadata)
+    wishlist_url          - section.settings.wishlist_url
+    shipping_returns_url  - section.settings.shipping_returns_url
+    logo_image            - section.settings.logo
+    logo_width             - section.settings.logo_width_mobile
+
+  Visual correction pass (Phase 6, Stage 2 follow-up): the root panel header
+  now shows the real configured logo instead of a generic "Menu" heading,
+  and an outlined "× Close" button instead of an icon-only circle — a new
+  .mobile-menu-drawer__close-btn class, kept separate from the shared
+  .icon-close-btn used by the search/cart drawers and this drawer's own
+  drill-down sub-panels, so neither of those is affected. All five primary
+  menu items now render in ONE continuous list (the old "featured" 4-item
+  rounded card + separate "rest" list was a leftover split with no purpose
+  once every item gets identical styling — removed rather than special-
+  cased around).
 {%- endcomment -%}
 {%- liquid
-  assign featured_count = featured_count | default: 4
+  assign metadata_blocks = blocks | where: 'type', 'nav_metadata'
 -%}
 <div class="mobile-menu-drawer" data-mobile-menu-drawer aria-hidden="true">
   <div class="mobile-menu-drawer__overlay" data-mobile-menu-close></div>
@@ -15,59 +40,41 @@
     {%- comment -%} Root panel {%- endcomment -%}
     <div class="mobile-nav-panel is-active" data-menu-panel data-panel-id="root">
       <div class="mobile-menu-drawer__header">
-        <span class="mobile-menu-drawer__title">{{ 'header.menu' | t }}</span>
-        <button type="button" class="icon-close-btn" data-mobile-menu-close aria-label="{{ 'general.close' | t }}">
-          {% render 'icon', icon: 'close' %}
+        <div class="mobile-menu-drawer__logo">
+          {%- render 'logo', logo_image: logo_image, logo_width: logo_width -%}
+        </div>
+        <button type="button" class="mobile-menu-drawer__close-btn" data-mobile-menu-close>
+          <span class="mobile-menu-drawer__close-icon" aria-hidden="true">&times;</span>
+          <span>{{ 'general.close' | t }}</span>
         </button>
       </div>
 
-      <ul class="mobile-nav-list mobile-nav-list--featured" role="list">
-        {%- for link in menu.links limit: featured_count -%}
-          <li class="mobile-nav-item">
-            {%- if link.links != blank -%}
-              <button type="button" class="mobile-nav-row" data-drill-in data-target="panel-{{ forloop.index }}">
-                <span>{{ link.title }}</span>
-                {% render 'icon', icon: 'arrow-right', size: 16 %}
-              </button>
-            {%- else -%}
-              <a href="{{ link.url }}" class="mobile-nav-row">
-                <span>{{ link.title }}</span>
-              </a>
-            {%- endif -%}
-          </li>
+      <ul class="mobile-nav-list mobile-nav-list--primary" role="list">
+        {%- for link in menu.links -%}
+          {%- assign drill_target = 'panel-' | append: forloop.index -%}
+          {%- render 'nav-drawer-row', link: link, metadata_blocks: metadata_blocks, drill_target: drill_target -%}
         {%- endfor -%}
       </ul>
 
-      {%- if menu.links.size > featured_count -%}
-        <ul class="mobile-nav-list" role="list">
-          {%- for link in menu.links offset: featured_count -%}
-            <li class="mobile-nav-item">
-              {%- if link.links != blank -%}
-                <button type="button" class="mobile-nav-row" data-drill-in data-target="panel-{{ forloop.index0 | plus: featured_count | plus: 1 }}">
-                  <span>{{ link.title }}</span>
-                  {% render 'icon', icon: 'arrow-right', size: 16 %}
-                </button>
-              {%- else -%}
-                <a href="{{ link.url }}" class="mobile-nav-row">
-                  <span>{{ link.title }}</span>
-                </a>
-              {%- endif -%}
-            </li>
-          {%- endfor -%}
-        </ul>
-      {%- endif -%}
-
       <div class="mobile-menu-drawer__extra">
         {%- if shop.customer_accounts_enabled -%}
-          <a href="{{ routes.account_url }}" class="mobile-nav-row mobile-nav-row--icon">
-            {% render 'icon', icon: 'user', size: 18 %}
+          <a href="{{ routes.account_url }}" class="mobile-nav-row">
             <span>{% if customer %}{{ 'header.account' | t }}{% else %}{{ 'header.sign_in' | t }}{% endif %}</span>
           </a>
         {%- endif -%}
-        <a href="{{ wishlist_url | default: '#' }}" class="mobile-nav-row mobile-nav-row--icon">
-          {% render 'icon', icon: 'heart', size: 18 %}
+        <a href="{{ wishlist_url | default: '#' }}" class="mobile-nav-row">
           <span>{{ 'header.wishlist_label' | t }}</span>
+          <span class="mobile-nav-row__count" data-wishlist-count hidden>0</span>
         </a>
+        {%- if shipping_returns_url != blank -%}
+          <a href="{{ shipping_returns_url }}" class="mobile-nav-row">
+            <span>{{ 'header.shipping_returns' | t }}</span>
+          </a>
+        {%- else -%}
+          <span class="mobile-nav-row mobile-nav-row--soon">
+            <span>{{ 'header.shipping_returns' | t }}</span>
+          </span>
+        {%- endif -%}
       </div>
 
       {%- if localization.available_countries.size > 1 or localization.available_languages.size > 1 -%}

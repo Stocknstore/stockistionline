@@ -89,6 +89,17 @@
     ]
   },
   {
+    "name": "Favicon",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon image",
+        "info": "Displayed in browser tabs. A square image works best, at least 32 x 32px."
+      }
+    ]
+  },
+  {
     "name": "Typography",
     "settings": [
       {

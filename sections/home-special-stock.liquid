@@ -13,11 +13,68 @@
   position-based, not tied to a block type, so they're generalized here to
   "when there are exactly 5 blocks" — the prototype's own configuration —
   while still degrading safely to plain DOM order with fewer blocks.
+
+  Phase 6, Stage 3B: a `stat` block's number can come from real inventory
+  math over settings.source_collection instead of typed text — set the
+  block's own "Stat source" to Last-pair units or Average discount. Both
+  figures are scoped to that one collection only (never the whole catalog)
+  and a verified manual override always wins when set above 0. If there's
+  no valid compare-at pricing in the collection, the discount figure is
+  suppressed rather than showing a fabricated percentage.
+
+  Phase 6, Stage 4B: the CTA only renders when BOTH cta_label and cta_link
+  are set — no `| default: '#'` fallback. No real "Special Stock" collection
+  exists yet, so the link intentionally stays unset; rendering no CTA at
+  all is safer than a dead `#` link or (worse) pointing it at New Stock,
+  which is a different, real collection.
 {%- endcomment -%}
 {%- liquid
   assign blocks = section.blocks
   assign block_count = blocks.size
   assign mobile_body = section.settings.mobile_body | default: section.settings.body
+
+  assign stock_collection = section.settings.source_collection
+  assign last_pair_threshold = section.settings.last_pair_threshold | default: 1
+  assign manual_last_pair = section.settings.manual_last_pair_override | default: 0
+  assign manual_discount = section.settings.manual_discount_override | default: 0
+
+  assign last_pair_count = 0
+  assign discount_sum = 0.0
+  assign discount_qualifying_count = 0
+
+  if stock_collection != blank
+    for product in stock_collection.products
+      for variant in product.variants
+        if variant.inventory_management != blank and variant.inventory_quantity > 0 and variant.inventory_quantity <= last_pair_threshold
+          assign last_pair_count = last_pair_count | plus: variant.inventory_quantity
+        endif
+        if variant.available and variant.compare_at_price > variant.price
+          assign discount_diff = variant.compare_at_price | minus: variant.price
+          assign discount_pct = discount_diff | times: 100.0 | divided_by: variant.compare_at_price
+          assign discount_sum = discount_sum | plus: discount_pct
+          assign discount_qualifying_count = discount_qualifying_count | plus: 1
+        endif
+      endfor
+    endfor
+  endif
+
+  if manual_last_pair > 0
+    assign last_pair_count = manual_last_pair
+  endif
+
+  assign has_discount_data = false
+  assign average_discount_display = blank
+  if manual_discount > 0
+    assign has_discount_data = true
+    assign average_discount_display = '−' | append: manual_discount | append: '%'
+  elsif discount_qualifying_count > 0
+    assign avg_discount_pct = discount_sum | divided_by: discount_qualifying_count | round
+    if avg_discount_pct > 0
+      assign has_discount_data = true
+      assign average_discount_display = '−' | append: avg_discount_pct | append: '%'
+    endif
+  endif
+  assign discount_unavailable_symbol = 'home_special_stock.discount_unavailable' | t
 -%}
 <section class="home-special-stock" {{ section.shopify_attributes }}>
   <div class="home-special-stock__inner">
@@ -38,13 +95,13 @@
         {%- if mobile_body != blank -%}
           <p class="home-special-stock__mobile-body">{{ mobile_body }}</p>
         {%- endif -%}
-        {%- if section.settings.cta_label != blank -%}
-          <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta home-special-stock__cta--compact">{{ section.settings.cta_label }}</a>
+        {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="home-special-stock__cta home-special-stock__cta--compact">{{ section.settings.cta_label }}</a>
         {%- endif -%}
       </div>
 
-      {%- if section.settings.cta_label != blank -%}
-        <a href="{{ section.settings.cta_link | default: '#' }}" class="home-special-stock__cta hidden-mobile">{{ section.settings.cta_label }}</a>
+      {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+        <a href="{{ section.settings.cta_link }}" class="home-special-stock__cta hidden-mobile">{{ section.settings.cta_label }}</a>
       {%- endif -%}
     </div>
 
@@ -102,9 +159,22 @@
             {%- endif -%}
           </div>
         {%- elsif block.type == 'stat' -%}
+          {%- liquid
+            assign stat_number = block.settings.number
+            case block.settings.stat_source
+              when 'last_pair_auto'
+                assign stat_number = last_pair_count
+              when 'discount_auto'
+                if has_discount_data
+                  assign stat_number = average_discount_display
+                else
+                  assign stat_number = discount_unavailable_symbol
+                endif
+            endcase
+          -%}
           <div class="home-special-stock__tile home-special-stock__tile--stat" style="--tile-order: {{ mobile_order }}" {{ block.shopify_attributes }}>
-            {%- if block.settings.number != blank -%}
-              <span class="home-special-stock__stat-number">{{ block.settings.number }}</span>
+            {%- if stat_number != blank -%}
+              <span class="home-special-stock__stat-number">{{ stat_number }}</span>
             {%- endif -%}
             {%- if block.settings.label != blank -%}
               <span class="home-special-stock__stat-label">{{ block.settings.label | newline_to_br }}</span>
@@ -141,14 +211,14 @@
       "type": "textarea",
       "id": "body",
       "label": "Body copy (desktop)",
-      "default": "The best lots arrive in small quantities: one or two pairs per size. Stock prices, the same quality — and once they're gone they don't come back."
+      "default": "Discover low-stock pairs and limited sizes available from our current inventory."
     },
     {
       "type": "textarea",
       "id": "mobile_body",
       "label": "Body copy (mobile)",
       "info": "Optional shorter copy for small screens. Falls back to the body copy above if left blank.",
-      "default": "One or two pairs per size. Stock prices, same quality — gone for good."
+      "default": "Discover low-stock pairs and limited sizes available from our current inventory."
     },
     {
       "type": "header",
@@ -164,6 +234,37 @@
       "type": "url",
       "id": "cta_link",
       "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Automatic figures"
+    },
+    {
+      "type": "paragraph",
+      "content": "Last-pair and average-discount figures are calculated automatically from the selected collection's current products only — never the full catalog. A manual override, when set above 0, always takes precedence and must be a verified, real operational figure, not an estimate. As the catalog grows, prefer sourcing this figure from the warehouse/inventory system rather than relying on this theme re-scanning every product on every page load."
+    },
+    {
+      "type": "collection",
+      "id": "source_collection",
+      "label": "Source collection"
+    },
+    {
+      "type": "number",
+      "id": "last_pair_threshold",
+      "label": "Last-pair inventory threshold",
+      "info": "A variant counts as a \"last pair\" when its remaining inventory is greater than 0 and at or below this number. Default 1."
+    },
+    {
+      "type": "number",
+      "id": "manual_last_pair_override",
+      "label": "Manual last-pair override",
+      "info": "Optional verified figure. Takes precedence over the automatic count only when set above 0."
+    },
+    {
+      "type": "number",
+      "id": "manual_discount_override",
+      "label": "Manual average-discount override (%)",
+      "info": "Optional verified whole-percentage figure. Takes precedence over the automatic calculation only when set above 0."
     }
   ],
   "blocks": [
@@ -195,9 +296,21 @@
       "name": "Stat",
       "settings": [
         {
+          "type": "select",
+          "id": "stat_source",
+          "label": "Stat source",
+          "options": [
+            { "value": "manual", "label": "Manual (typed number below)" },
+            { "value": "last_pair_auto", "label": "Automatic — last-pair units in stock" },
+            { "value": "discount_auto", "label": "Automatic — average discount" }
+          ],
+          "default": "manual",
+          "info": "Automatic sources use the section's \"Automatic figures\" settings above. The label below is always typed by you, in either mode."
+        },
+        {
           "type": "text",
           "id": "number",
-          "label": "Number",
+          "label": "Number (manual mode)",
           "default": "0"
         },
         {

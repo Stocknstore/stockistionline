@@ -449,6 +449,23 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   .hidden-desktop { display: none; }
 }
 
+/* --------------------------------------------------------------------------
+   10b. Header-only breakpoint (Phase 6, Stage 2)
+   Deliberately separate from .hidden-mobile/.hidden-desktop above, which
+   stay at 768px for every other component on the site (product grids,
+   cards, recommendations, etc.). The header alone switches at 1024px so
+   tablet widths (e.g. 834px) still get the compact header + hamburger
+   drawer, matching the approved navigation reference — sections/
+   header.liquid's .site-header__main/.site-header__mobile no longer carry
+   the shared utility classes, only these two scoped rules.
+   -------------------------------------------------------------------------- */
+.site-header__main { display: none; }
+.site-header__mobile { display: block; }
+@media (min-width: 1024px) {
+  .site-header__main { display: block; }
+  .site-header__mobile { display: none; }
+}
+
 /* Fine-tuning at the specified breakpoints — mobile is a separate composition,
    these are density/spacing adjustments within each range, not a full re-layout. */
 @media (min-width: 1441px) {
@@ -509,11 +526,15 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .cart-drawer[data-open] .cart-drawer__overlay,
 .filter-drawer[data-open] .filter-drawer__overlay { opacity: 1; }
 
-/* Mobile menu: slide from left. Search: slide from top. Cart: slide from right. */
+/* Mobile menu: slide from left. Search: slide from top. Cart: slide from right.
+   border-radius explicitly 0 — square corners, always a left-side sliding
+   panel (never a centered modal) at every width, since nothing here keys
+   off viewport size at all. */
 .mobile-menu-drawer__panel {
   position: absolute; top: 0; left: 0; bottom: 0;
   width: 100%; max-width: 400px;
   background: var(--color-background);
+  border-radius: 0;
   transform: translateX(-100%);
   transition: transform var(--transition-normal) var(--ease);
   overflow-y: auto;
@@ -582,6 +603,34 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   font-weight: 600;
 }
 
+/* Root panel header: real logo (never stretched — snippets/logo.liquid
+   already sets explicit width/height from the image's own aspect ratio)
+   + an outlined "× Close" button, kept as its own class so the shared
+   .icon-close-btn used by search/cart drawers and this drawer's own
+   drill-down sub-panel headers is completely unaffected. */
+.mobile-menu-drawer__logo { display: flex; align-items: center; max-width: 140px; }
+/* max-height capped at 32px, not higher — the close button next to it
+   (padding + border + line-height) renders at ~34.5px tall, and this row
+   uses align-items:center with no explicit height, so whichever child is
+   taller sets the header's height. Staying under that keeps the drawer
+   header exactly as tall as it already was. width:auto (not a fixed
+   width) is what guarantees the aspect ratio holds at any height. */
+.mobile-menu-drawer__logo .site-logo__image { max-height: 32px; width: auto; }
+.mobile-menu-drawer__close-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+.mobile-menu-drawer__close-btn:hover { border-color: var(--color-text); }
+.mobile-menu-drawer__close-icon { font-size: var(--text-lg); line-height: 1; }
+
 .mobile-nav-panel {
   display: none;
   padding: 0 var(--space-5) var(--space-5);
@@ -589,17 +638,19 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
 .mobile-nav-panel[data-panel-id="root"] { padding-top: 0; }
 .mobile-nav-panel.is-active { display: block; }
 
-.mobile-nav-list--featured {
-  background: var(--color-background-secondary);
-  border-radius: 10px;
-  padding: var(--space-2) var(--space-4);
+/* Phase 6, Stage 2 visual correction: the old 4-item rounded/beige
+   "featured card" + separate plain "rest" list is gone — all five primary
+   items now render in one continuous list (snippets/mobile-menu-drawer.
+   liquid), styled as one thin-bordered box with thin row separators and
+   square corners, matching the approved reference exactly. */
+.mobile-nav-list--primary {
+  border: 1px solid var(--color-border);
   margin-bottom: var(--space-2);
 }
-.mobile-nav-list:not(.mobile-nav-list--featured) {
+.mobile-nav-list:not(.mobile-nav-list--primary) {
   padding-block: var(--space-2);
 }
 .mobile-nav-item + .mobile-nav-item { border-top: 1px solid var(--color-border); }
-.mobile-nav-list--featured .mobile-nav-item + .mobile-nav-item { border-top-color: rgba(0,0,0,0.06); }
 
 .mobile-nav-row {
   display: flex;
@@ -611,9 +662,54 @@ label { display: block; font-size: var(--text-sm); margin-bottom: var(--space-2)
   text-align: left;
 }
 .mobile-nav-row--muted { color: var(--color-text-secondary); font-size: var(--text-base); }
-.mobile-nav-row--icon { display: inline-flex; justify-content: flex-start; gap: var(--space-3); }
 
+/* Primary rows only: compact height/padding, uppercase/bold left label —
+   scoped to .mobile-nav-list--primary so drill-down sub-panel rows (a
+   currently-unreachable path with the real 5-item menu, since none of its
+   items have children) keep their original, unrelated presentation. */
+.mobile-nav-list--primary .mobile-nav-row {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mobile-nav-row--soon { color: var(--color-text-secondary); cursor: default; }
+.mobile-nav-row--accent { color: var(--color-accent); }
+.mobile-nav-row__metadata {
+  font-size: var(--text-sm);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  margin-left: var(--space-3);
+}
+.mobile-nav-row--soon .mobile-nav-row__metadata,
+.mobile-nav-row--accent .mobile-nav-row__metadata { color: inherit; }
+
+/* Wishlist row's live count — parens are pure CSS (::before/::after), so
+   assets/wishlist.js's existing [data-wishlist-count] handling (plain
+   textContent + hidden toggle, shared with the header icon badge) needs no
+   changes at all; hiding the element also hides its generated content. */
+.mobile-nav-row__count::before { content: "("; }
+.mobile-nav-row__count::after { content: ")"; }
+
+/* Utility rows (Account/Wishlist/Shipping & Returns): compact uppercase
+   text, no leading icons, packed left (rather than the primary rows'
+   label/metadata space-between split) so "WISHLIST (4)" reads as one
+   phrase, matching the reference. */
 .mobile-menu-drawer__extra { padding: var(--space-4) var(--space-1) 0; border-top: 1px solid var(--color-border); margin-top: var(--space-2); }
+.mobile-menu-drawer__extra .mobile-nav-row {
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.mobile-menu-drawer__extra .mobile-nav-row__count { margin-left: 0; }
 .mobile-menu-drawer__region-toggle {
   display: block;
   width: 100%;
@@ -865,6 +961,152 @@ body.scroll-locked { overflow: hidden; }
   font-size: 10px;
   color: #6B6257;
   padding: var(--space-2);
+}
+
+/* Phase 6, Stage 4C: Hero slideshow. .home-hero__slideshow fills
+   .home-hero__photo exactly like the single-image/placeholder states above
+   (same position:absolute; inset:0 technique), so the container's own
+   grid-based sizing — already stable before any image loads — continues to
+   reserve the image area with zero additional layout-shift handling
+   needed here. Each .home-hero__slide reuses .home-hero__photo-img's own
+   object-fit:cover rule for its <img>, so cropping stays identical to the
+   legacy single-image path. */
+.home-hero__slideshow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.home-hero__slides {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Lets the browser handle vertical page scroll natively over the
+     slideshow while horizontal swipe gestures are still delivered to JS
+     as pointer events. */
+  touch-action: pan-y;
+}
+.home-hero__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.home-hero__slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+.home-hero__slide picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.home-hero__slide-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 38, 63, 0.55);
+  color: #F6F4F0;
+  border-radius: 999px;
+}
+.home-hero__slide-arrow--prev { left: 14px; }
+.home-hero__slide-arrow--next { right: 14px; }
+.home-hero__slide-arrow:hover,
+.home-hero__slide-arrow:focus-visible {
+  background: rgba(2, 38, 63, 0.8);
+}
+
+.home-hero__slideshow-bottom {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.home-hero__slide-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-hero__slide-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(246, 244, 240, 0.5);
+}
+.home-hero__slide-dot.is-active { background: #F6F4F0; }
+.home-hero__slide-dot:focus-visible {
+  outline: 2px solid #F6F4F0;
+  outline-offset: 2px;
+}
+
+.home-hero__slide-playpause {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  background: rgba(2, 38, 63, 0.55);
+  border-radius: 999px;
+}
+.home-hero__slide-playpause:hover,
+.home-hero__slide-playpause:focus-visible {
+  background: rgba(2, 38, 63, 0.8);
+}
+/* CSS-only play/pause glyph — two bars by default (autoplay running, so
+   the control offers to Pause), swapped to a triangle by JS toggling
+   .is-playing off whenever autoplay is actually stopped/paused. */
+.home-hero__slide-playpause-icon {
+  position: relative;
+  width: 10px;
+  height: 11px;
+}
+.home-hero__slide-playpause-icon.is-playing::before,
+.home-hero__slide-playpause-icon.is-playing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 11px;
+  background: #F6F4F0;
+}
+.home-hero__slide-playpause-icon.is-playing::before { left: 1px; }
+.home-hero__slide-playpause-icon.is-playing::after { right: 1px; }
+.home-hero__slide-playpause-icon:not(.is-playing) {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #F6F4F0;
+}
+
+/* Autoplay itself is already stopped for these users at the JS layer
+   (assets/theme.js, heroAutoplayAllowed). This additionally makes manual
+   prev/next/dot navigation an instant cut rather than a crossfade — section
+   17's blanket transition-duration override already achieves this
+   incidentally via !important, but this rule states it explicitly and
+   locally so it keeps working even if that global rule ever changes. */
+@media (prefers-reduced-motion: reduce) {
+  .home-hero__slide {
+    transition: none;
+  }
 }
 
 .home-hero__content {
@@ -1306,6 +1548,15 @@ body.scroll-locked { overflow: hidden; }
    theme's existing .hidden-mobile/.hidden-desktop utilities (section 10
    above), which already toggle at the same 768px boundary as the
    prototype's .not-mobile-only/.mobile-only classes.
+
+   .home-just-arrived__grid's and .home-just-arrived__rails' own "shown"
+   display values are deliberately scoped inside the same min-width:768px /
+   max-width:767px ranges .hidden-mobile/.hidden-desktop already use to
+   reveal each of them — not set unconditionally, which silently defeated
+   both utilities' display:none at the width where each element must stay
+   hidden (equal-specificity, later-in-source-order always won), showing
+   both the grid and the rail simultaneously at every width (the same
+   cascade bug the section 30/31 comments document and avoid).
    -------------------------------------------------------------------------- */
 .home-just-arrived {
   --just-arrived-pad-x: 40px;
@@ -1367,13 +1618,15 @@ body.scroll-locked { overflow: hidden; }
 }
 .home-just-arrived__see-all::after { content: " \2192"; }
 
-.home-just-arrived__grid {
-  display: grid;
-  grid-template-columns: var(--prod-cols);
-  gap: 24px;
+@media (min-width: 768px) {
+  .home-just-arrived__grid {
+    display: grid;
+    grid-template-columns: var(--prod-cols);
+    gap: 24px;
+  }
 }
 
-.home-just-arrived__rails { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.home-just-arrived__rails { flex-direction: column; gap: 24px; min-width: 0; }
 .home-just-arrived__rail-group { min-width: 0; }
 .home-just-arrived__rail-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .home-just-arrived__rail-tag {
@@ -1423,6 +1676,7 @@ body.scroll-locked { overflow: hidden; }
     --sec-head-align: stretch;
     --sec-head-gap: 14px;
   }
+  .home-just-arrived__rails { display: flex; }
 }
 
 /* --------------------------------------------------------------------------

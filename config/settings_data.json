@@ -8,7 +8,37 @@
  * ------------------------------------------------------------
  */
 {
-  "current": "Default",
+  "current": {
+    "color_background": "#F6F4F0",
+    "color_background_secondary": "#E8E4DC",
+    "color_text": "#02263F",
+    "color_text_secondary": "#5A6B78",
+    "color_border": "#B9C2C9",
+    "color_primary": "#02263F",
+    "color_primary_contrast": "#F6F4F0",
+    "color_accent": "#CE9C59",
+    "color_link": "#8A5F22",
+    "color_sale": "#8A5F22",
+    "color_success": "#1E7E4A",
+    "color_error": "#B3261E",
+    "color_utility_background": "#02263F",
+    "color_utility_text": "#F6F4F0",
+    "favicon": "shopify://shop_images/Stockisti__Online_Logo_v1_POLISHED_logo_mark-01.png",
+    "font_body": "assistant_n4",
+    "font_heading": "assistant_n6",
+    "font_display": "assistant_n7",
+    "page_width": 1440,
+    "container_padding": 24,
+    "animations_enabled": true,
+    "sections": {
+      "footer": {
+        "type": "footer",
+        "settings": {
+          "logo": "shopify://shop_images/Stockisti__Online_Logo_v1_POLISHED_final_WOC-01.png"
+        }
+      }
+    }
+  },
   "presets": {
     "Default": {
       "color_background": "#F6F4F0",
