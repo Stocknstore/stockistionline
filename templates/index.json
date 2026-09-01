@@ -104,7 +104,9 @@
     "home-story": {
       "type": "home-story",
       "settings": {
-        "body": "Since 2000, we have worked across wholesale and retail in Italy, sourcing genuine stock and serving every customer with care."
+        "body": "Since 2000, we have worked across wholesale and retail in Italy, sourcing genuine stock and serving every customer with care.",
+        "image": "shopify://shop_images/coming_soon_warehouse_banner.png",
+        "alt_text": "Footwear warehouse workflow from stock arrival and unpacking to product photography, order packing and delivery"
       },
       "blocks": {
         "stat-1": { "type": "stat", "settings": { "value": "44+", "label": "brands across our\nrotating stock" } },
