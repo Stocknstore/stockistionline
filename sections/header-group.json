@@ -98,6 +98,7 @@
         "show_language_selector": true,
         "show_wishlist": true,
         "wishlist_url": "shopify://pages/wishlist",
+        "shipping_returns_url": "shopify://pages/shipping-returns",
         "color_background": "#FFFFFF",
         "color_text": "#141414",
         "color_utility_background": "#141414",
