@@ -1,0 +1,156 @@
+{%- comment -%}
+  Section: Main contact
+  Phase 7, Stage 3C. Dedicated template for the canonical /pages/contact
+  page — deliberately a separate section from sections/main-page.liquid
+  (the generic Page template), not a page-handle condition bolted onto it,
+  so every other ordinary Page stays on the simple generic shell untouched.
+
+  Reuses the exact same .page__inner/.page__breadcrumb/.page__title/
+  .page__content classes main-page.liquid already established, so this
+  reads as the same page type with one addition: a native Shopify
+  {% form 'contact' %} rendered after the merchant-managed page.content.
+  No custom endpoint, no JavaScript submission, no CAPTCHA — Shopify
+  handles delivery and spam protection server-side on its own.
+
+  form.name/form.email/form.phone/form.body are Shopify's own documented
+  contact-form properties (the same ones Shopify's reference theme uses) —
+  populated with the visitor's submitted values whenever the form redisplays
+  after a validation error, which is what preserves their input without any
+  theme code reconstructing it. Deliberately never reads from `customer` —
+  a logged-in visitor's account email/name is not pre-filled into a public
+  contact form. Every one of those four values is escaped before being
+  written back into an attribute/textarea, since they're raw visitor input
+  echoed straight into HTML.
+
+  Field-level errors (email, body) get both an entry in the linked summary
+  at the top AND aria-invalid/aria-describedby pointing at a short error
+  string beside that specific field — not a duplicate announcement, but two
+  different ways to reach the same information: the summary for someone
+  tabbing straight to Submit, the inline text for someone already focused
+  on that field.
+{%- endcomment -%}
+<section class="page" {{ section.shopify_attributes }}>
+  <div class="page__inner container container--small">
+    <nav class="page__breadcrumb" aria-label="{{ 'page.breadcrumb_label' | t }}">
+      <a href="{{ routes.root_url }}">{{ 'general.home' | t }}</a>
+      <span class="page__breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="page__breadcrumb-current" aria-current="page">{{ page.title }}</span>
+    </nav>
+
+    <h1 class="page__title">{{ page.title }}</h1>
+
+    {%- if page.content != blank -%}
+      <div class="page__content">
+        {{ page.content }}
+      </div>
+    {%- endif -%}
+
+    {%- form 'contact', id: 'ContactForm', class: 'contact-form' -%}
+      <h2 class="contact-form__heading">{{ 'contact.form_heading' | t }}</h2>
+
+      {%- liquid
+        assign email_has_error = false
+        assign body_has_error = false
+        if form.errors contains 'email'
+          assign email_has_error = true
+        endif
+        if form.errors contains 'body'
+          assign body_has_error = true
+        endif
+      -%}
+
+      {%- if form.posted_successfully? -%}
+        <p class="contact-form__message contact-form__message--success" role="status">
+          {{ 'contact.success' | t }}
+        </p>
+      {%- elsif form.errors -%}
+        <div class="contact-form__message contact-form__message--error" role="alert">
+          <p class="contact-form__message-heading">{{ 'contact.error_heading' | t }}</p>
+          <ul class="contact-form__error-list">
+            {%- for field in form.errors -%}
+              <li>
+                {%- if field == 'form' -%}
+                  {{ form.errors.messages[field] }}
+                {%- else -%}
+                  <a href="#ContactForm-{{ field }}">{{ form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}</a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      <div class="contact-form__field">
+        <label for="ContactForm-name">{{ 'contact.name_label' | t }}</label>
+        <input
+          type="text"
+          name="contact[name]"
+          id="ContactForm-name"
+          value="{{ form.name | escape }}"
+          autocomplete="name"
+        >
+      </div>
+
+      <div class="contact-form__field">
+        <label for="ContactForm-email">{{ 'contact.email_label' | t }}</label>
+        <input
+          type="email"
+          name="contact[email]"
+          id="ContactForm-email"
+          value="{{ form.email | escape }}"
+          autocomplete="email"
+          aria-required="true"
+          {%- if email_has_error %}
+          aria-invalid="true"
+          aria-describedby="ContactForm-email-error"
+          {%- endif %}
+          required
+        >
+        {%- if email_has_error -%}
+          <p id="ContactForm-email-error" class="contact-form__field-error">{{ form.errors.messages['email'] }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="contact-form__field">
+        <label for="ContactForm-phone">{{ 'contact.phone_label' | t }}</label>
+        <input
+          type="tel"
+          name="contact[phone]"
+          id="ContactForm-phone"
+          value="{{ form.phone | escape }}"
+          autocomplete="tel"
+        >
+      </div>
+
+      <div class="contact-form__field">
+        <label for="ContactForm-body">{{ 'contact.message_label' | t }}</label>
+        <textarea
+          name="contact[body]"
+          id="ContactForm-body"
+          class="contact-form__textarea"
+          rows="6"
+          aria-required="true"
+          {%- if body_has_error %}
+          aria-invalid="true"
+          aria-describedby="ContactForm-body-error"
+          {%- endif %}
+          required
+        >{{ form.body | escape }}</textarea>
+        {%- if body_has_error -%}
+          <p id="ContactForm-body-error" class="contact-form__field-error">{{ form.errors.messages['body'] }}</p>
+        {%- endif -%}
+      </div>
+
+      <button type="submit" class="button button--primary contact-form__submit">
+        {{ 'contact.submit_label' | t }}
+      </button>
+    {%- endform -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main contact",
+  "settings": []
+}
+{% endschema %}

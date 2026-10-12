@@ -3715,3 +3715,64 @@ body.scroll-locked { overflow: hidden; }
 @media (max-width: 767px) {
   .page__title { font-size: var(--text-3xl); }
 }
+
+/* --------------------------------------------------------------------------
+   44. Contact form — sections/main-contact.liquid
+   Phase 7, Stage 3C. Lives inside the same .page__inner/.container--small
+   shell as section 43 above (not duplicated here). Reuses the theme's
+   existing .button/.button--primary (section 4) for Submit, and the
+   existing global input[type="email"/"text"/"password"/"search"] styling
+   for the name/email fields — only input[type="tel"] and textarea are
+   added here, scoped to .contact-form, since neither is covered by that
+   global selector and section 4 itself is intentionally left unchanged.
+   -------------------------------------------------------------------------- */
+.contact-form { margin-top: var(--space-7); }
+.contact-form__heading {
+  font-weight: 800;
+  font-size: var(--text-2xl);
+  line-height: 1.25;
+  margin: 0 0 var(--space-5);
+}
+.contact-form__field { margin-top: var(--space-5); }
+.contact-form__field:first-of-type { margin-top: 0; }
+.contact-form__field-error {
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  margin: var(--space-2) 0 0;
+}
+
+.contact-form input[type="tel"],
+.contact-form__textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+.contact-form__textarea { resize: vertical; min-height: 140px; }
+
+.contact-form__submit { margin-top: var(--space-6); }
+
+.contact-form__message {
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-sm);
+}
+.contact-form__message--success {
+  background: color-mix(in srgb, var(--color-success) 10%, white);
+  color: var(--color-success);
+}
+.contact-form__message--error {
+  background: color-mix(in srgb, var(--color-error) 10%, white);
+  color: var(--color-error);
+}
+.contact-form__message-heading { font-weight: 700; margin: 0 0 var(--space-2); }
+.contact-form__error-list {
+  margin: 0;
+  padding-left: 1.1em;
+}
+.contact-form__error-list a {
+  color: var(--color-error);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
