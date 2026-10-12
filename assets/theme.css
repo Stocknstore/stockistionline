@@ -828,15 +828,36 @@ body.scroll-locked { overflow: hidden; }
 .site-footer__newsletter-message--success { color: var(--color-success); }
 .site-footer__newsletter-message--error { color: var(--color-error); }
 
+/* Phase 7, Stage 3D.1: a flexible (fr) first track combined with an
+   auto-fit/auto-fill repeat() in the same grid-template-columns is a known
+   CSS Grid footgun — auto-fit's column-count calculation and the fr
+   track's size both depend on "available space" in a way that creates a
+   circular result, and in practice it was collapsing every column (brand,
+   Customer Care, Legal) onto a single narrow left-hand track instead of
+   spreading across the row. Replaced with three explicit, differently-
+   sized tracks matching the three real columns this footer actually has
+   today. Any 4th+ column (a later merchant link_column block) still lands
+   safely — CSS grid wraps items beyond the defined column count onto a
+   new row using the same template, never overlapping or overflowing —
+   just without the auto-fit column count adapting to it, which the
+   original rule never achieved correctly either. */
 .site-footer__main-inner {
   display: grid;
-  grid-template-columns: 3fr repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: minmax(240px, 1.8fr) minmax(140px, 1fr) minmax(160px, 1.3fr);
   gap: var(--space-7);
   padding-block: var(--space-8) var(--space-7);
   border-bottom: 1px solid rgba(246, 244, 240, 0.25);
 }
 .site-footer__brand { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-4); }
 .site-footer__brand .site-logo__text { color: var(--color-primary-contrast); }
+/* The configured logo image's own colors are unknown and may include dark
+   artwork that disappears against this dark-blue background; brightness(0)
+   + invert(1) renders it as a clean, fully legible white silhouette
+   regardless of its original colors — a pure color filter, so the image's
+   aspect ratio, its existing width setting, and the underlying Shopify
+   asset are all untouched. Scoped to .site-footer__brand only — the
+   identical .site-logo__image class in the header is not affected. */
+.site-footer__brand .site-logo__image { filter: brightness(0) invert(1); }
 .site-footer__tagline { font-size: var(--text-sm); color: rgba(246, 244, 240, 0.75); max-width: 32ch; margin: 0; }
 .site-footer__column { display: flex; flex-direction: column; gap: var(--space-3); }
 .site-footer__column-heading { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); }
@@ -857,6 +878,10 @@ body.scroll-locked { overflow: hidden; }
 @media (max-width: 1279px) {
   .site-footer__newsletter-inner { grid-template-columns: 1fr; }
   .site-footer__main-inner { grid-template-columns: 1fr 1fr; }
+  /* Brand spans the full row above the two-column Customer Care/Legal
+     (and any merchant columns) below it — cleaner than squeezing the
+     brand/tagline into one of two equal tablet columns. */
+  .site-footer__brand { grid-column: 1 / -1; }
 }
 @media (max-width: 767px) {
   .site-footer__main-inner { grid-template-columns: 1fr; }
