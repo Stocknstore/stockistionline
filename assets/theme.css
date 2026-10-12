@@ -3801,3 +3801,97 @@ body.scroll-locked { overflow: hidden; }
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* --------------------------------------------------------------------------
+   45. Shopify policy pages — /policies/* (Privacy, Refund and return,
+   Terms of service, Shipping, Contact information, Legal notice)
+   Phase 7, Stage 3D.2. Shopify renders these routes itself using fixed,
+   documented class names — .shopify-policy__container/__title/__body —
+   there is no Liquid template or markup in this theme to edit, only these
+   selectors to style. Proportions mirror section 43's .page__title/
+   .page__content (same container width, heading scale, line-height) so a
+   policy page reads as part of the same "long-form content" system,
+   without touching .page__* itself or any global h1/.rte/container rule.
+   text-align: left is set on the container as well as the title and body
+   so both share the same left/right edges regardless of which element
+   Shopify's own default center-alignment happened to land on.
+   -------------------------------------------------------------------------- */
+.shopify-policy__container {
+  max-width: 720px;
+  margin-inline: auto;
+  padding: 20px var(--container-padding) var(--space-8);
+  text-align: left;
+}
+
+.shopify-policy__title {
+  text-align: left;
+  font-weight: 900;
+  font-size: var(--text-4xl);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--space-6);
+}
+
+.shopify-policy__body {
+  text-align: left;
+  font-size: var(--text-base);
+  line-height: 1.7;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+.shopify-policy__body > * + * { margin-top: var(--space-5); }
+.shopify-policy__body h1,
+.shopify-policy__body h2,
+.shopify-policy__body h3,
+.shopify-policy__body h4,
+.shopify-policy__body h5,
+.shopify-policy__body h6 {
+  font-weight: 800;
+  line-height: 1.25;
+  margin: var(--space-7) 0 var(--space-3);
+}
+.shopify-policy__body > :first-child { margin-top: 0; }
+.shopify-policy__body h1 { font-size: var(--text-3xl); }
+.shopify-policy__body h2 { font-size: var(--text-2xl); }
+.shopify-policy__body h3 { font-size: var(--text-xl); }
+.shopify-policy__body h4,
+.shopify-policy__body h5,
+.shopify-policy__body h6 { font-size: var(--text-lg); }
+.shopify-policy__body p { margin: 0; }
+.shopify-policy__body ul,
+.shopify-policy__body ol {
+  margin: 0;
+  padding-left: 1.25em;
+}
+.shopify-policy__body li + li { margin-top: var(--space-2); }
+.shopify-policy__body a {
+  color: var(--color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+.shopify-policy__body a:hover { color: var(--color-text); }
+.shopify-policy__body img { max-width: 100%; height: auto; }
+/* A wide table becomes its own horizontally scrollable box rather than
+   forcing the page to scroll — display:block lets overflow-x apply to a
+   <table>, which ignores it in its default table display mode. */
+.shopify-policy__body table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.shopify-policy__body blockquote {
+  margin: 0;
+  padding-left: var(--space-5);
+  border-left: 2px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+.shopify-policy__body hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-7) 0;
+}
+
+@media (max-width: 767px) {
+  .shopify-policy__title { font-size: var(--text-3xl); }
+}
