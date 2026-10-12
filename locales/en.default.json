@@ -17,7 +17,10 @@
   },
   "footer": {
     "newsletter_email_label": "Your email",
-    "newsletter_success": "Thanks — you're on the list."
+    "newsletter_success": "Thanks — you're on the list.",
+    "customer_care_heading": "Customer care",
+    "contact_link_label": "Contact",
+    "legal_heading": "Legal"
   },
   "home_hero": {
     "placeholder": "Add a hero image",

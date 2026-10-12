@@ -62,6 +62,60 @@
         {%- endif -%}
       </div>
 
+      {%- comment -%}
+        Phase 7, Stage 3D: automatic Customer care / Legal columns.
+        Intentionally separate from the optional merchant `link_column`
+        blocks below — those stay manually configured; these two always
+        resolve from real Shopify data (pages['contact']/
+        pages['shipping-returns'] and shop.policies) with no Admin setup,
+        and each is guarded so its column never renders with nothing real
+        inside it.
+      {%- endcomment -%}
+      {%- liquid
+        assign contact_page = pages['contact']
+        assign shipping_returns_page = pages['shipping-returns']
+        assign has_customer_care = false
+        if contact_page != blank or shipping_returns_page != blank
+          assign has_customer_care = true
+        endif
+
+        assign published_policy_count = 0
+        for policy in shop.policies
+          if policy.url != blank
+            assign published_policy_count = published_policy_count | plus: 1
+          endif
+        endfor
+      -%}
+      {%- if has_customer_care -%}
+        <div class="site-footer__column">
+          <span class="site-footer__column-heading">{{ 'footer.customer_care_heading' | t }}</span>
+          <nav aria-label="{{ 'footer.customer_care_heading' | t }}">
+            <ul class="site-footer__column-list" role="list">
+              {%- if contact_page != blank -%}
+                <li><a href="{{ contact_page.url }}">{{ 'footer.contact_link_label' | t }}</a></li>
+              {%- endif -%}
+              {%- if shipping_returns_page != blank -%}
+                <li><a href="{{ shipping_returns_page.url }}">{{ 'header.shipping_returns' | t }}</a></li>
+              {%- endif -%}
+            </ul>
+          </nav>
+        </div>
+      {%- endif -%}
+      {%- if published_policy_count > 0 -%}
+        <div class="site-footer__column">
+          <span class="site-footer__column-heading">{{ 'footer.legal_heading' | t }}</span>
+          <nav aria-label="{{ 'footer.legal_heading' | t }}">
+            <ul class="site-footer__column-list" role="list">
+              {%- for policy in shop.policies -%}
+                {%- if policy.url != blank -%}
+                  <li><a href="{{ policy.url }}">{{ policy.title }}</a></li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </nav>
+        </div>
+      {%- endif -%}
+
       {%- for block in section.blocks -%}
         {%- if block.type == 'link_column' -%}
           <div class="site-footer__column" {{ block.shopify_attributes }}>
