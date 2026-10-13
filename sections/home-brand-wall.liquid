@@ -57,7 +57,7 @@
           assign logo = blank
           assign note = blank
           assign vendor_param = vendor | url_param_escape
-          assign tile_link = routes.all_products_collection_url | append: '?filter.v.vendor=' | append: vendor_param
+          assign tile_link = routes.collections_url | append: '/vendors?q=' | append: vendor_param
           if override != blank
             assign logo = override.settings.logo
             if override.settings.note != blank
