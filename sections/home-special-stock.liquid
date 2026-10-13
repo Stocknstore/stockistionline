@@ -27,6 +27,19 @@
   exists yet, so the link intentionally stays unset; rendering no CTA at
   all is safer than a dead `#` link or (worse) pointing it at New Stock,
   which is a different, real collection.
+
+  Phase 7, Stage 4D: this section now points at the real, existing New
+  Stock collection (no separate "Special Stock" collection ever existed),
+  with two more automatic stat sources — product_count_auto/
+  vendor_count_auto — alongside the existing last-pair/discount ones. Blank
+  photo blocks also auto-fill with real product images: a manually picked
+  block image always wins; otherwise the block takes the featured image of
+  the next product in source_collection, using a running index that only
+  advances for photo blocks (stat blocks never touch it), so interspersed
+  stat tiles can't shift which product lands in which photo slot. A
+  missing collection, a missing product at that index, or a product with
+  no featured image all fall through to the existing safe placeholder —
+  never a broken <img>.
 {%- endcomment -%}
 {%- liquid
   assign blocks = section.blocks
@@ -75,6 +88,8 @@
     endif
   endif
   assign discount_unavailable_symbol = 'home_special_stock.discount_unavailable' | t
+
+  assign auto_photo_index = 0
 -%}
 <section class="home-special-stock" {{ section.shopify_attributes }}>
   <div class="home-special-stock__inner">
@@ -121,7 +136,18 @@
         {%- endif -%}
 
         {%- if block.type == 'photo' -%}
-          {%- assign img = block.settings.image -%}
+          {%- liquid
+            assign img = block.settings.image
+            assign auto_product_title = blank
+            if img == blank and stock_collection != blank
+              assign auto_product = stock_collection.products[auto_photo_index]
+              assign auto_photo_index = auto_photo_index | plus: 1
+              if auto_product != blank and auto_product.featured_image != blank
+                assign img = auto_product.featured_image
+                assign auto_product_title = auto_product.title
+              endif
+            endif
+          -%}
           <div
             class="home-special-stock__tile home-special-stock__tile--photo{% if is_wide %} home-special-stock__tile--wide{% endif %}"
             style="--tile-order: {{ mobile_order }}"
@@ -138,7 +164,7 @@
                   {%- endfor -%}
                 "
                 sizes="{% if is_wide %}(min-width: 768px) 50vw, 100vw{% else %}(min-width: 768px) 20vw, 50vw{% endif %}"
-                alt="{{ block.settings.alt_text | default: img.alt | default: block.settings.caption | default: 'Special stock photo' | strip_newlines }}"
+                alt="{{ block.settings.alt_text | default: img.alt | default: auto_product_title | default: block.settings.caption | default: 'Special stock photo' | strip_newlines }}"
                 width="{{ img.width }}"
                 height="{{ img.height }}"
                 loading="lazy"
@@ -170,6 +196,10 @@
                 else
                   assign stat_number = discount_unavailable_symbol
                 endif
+              when 'product_count_auto'
+                assign stat_number = stock_collection.products_count
+              when 'vendor_count_auto'
+                assign stat_number = shop.vendors.size
             endcase
           -%}
           <div class="home-special-stock__tile home-special-stock__tile--stat" style="--tile-order: {{ mobile_order }}" {{ block.shopify_attributes }}>
@@ -302,7 +332,9 @@
           "options": [
             { "value": "manual", "label": "Manual (typed number below)" },
             { "value": "last_pair_auto", "label": "Automatic — last-pair units in stock" },
-            { "value": "discount_auto", "label": "Automatic — average discount" }
+            { "value": "discount_auto", "label": "Automatic — average discount" },
+            { "value": "product_count_auto", "label": "Automatic — product count in collection" },
+            { "value": "vendor_count_auto", "label": "Automatic — total vendor count" }
           ],
           "default": "manual",
           "info": "Automatic sources use the section's \"Automatic figures\" settings above. The label below is always typed by you, in either mode."
