@@ -3,9 +3,30 @@
   Compact promotional strip: rotating messages via blocks (left) plus a short
   static utility strip of merchant-editable text items (right) — e.g.
   shipping/returns copy — matching the reference design's two-part bar.
+
+  Phase 7, Stage 9: on mobile this becomes a single static line — no
+  rotation, no utility strip — reusing whichever existing utility_text item
+  the merchant already configured (mobile_message_position, 1-indexed into
+  the same pipe-separated list the desktop utility strip already renders;
+  no separate/duplicated text setting). The rotating blocks and the full
+  utility list are left completely unchanged in markup; only CSS (section
+  6 of theme.css) swaps what's visible per breakpoint. The rotating track
+  is display:none on mobile, which also removes its links from the tab
+  order — never a visually-hidden-but-still-focusable state.
 {%- endcomment -%}
 {%- if section.settings.enable and section.blocks.size > 0 -%}
-  {%- assign utility_items = section.settings.utility_text | split: '|' -%}
+  {%- liquid
+    assign utility_items = section.settings.utility_text | split: '|'
+    assign mobile_position = section.settings.mobile_message_position | default: 1
+    assign mobile_index = mobile_position | minus: 1
+    assign mobile_message = ''
+    if mobile_index >= 0
+      assign mobile_message = utility_items[mobile_index] | strip
+    endif
+    if mobile_message == blank and utility_items.first != blank
+      assign mobile_message = utility_items.first | strip
+    endif
+  -%}
   <div
     class="announcement-bar"
     {{ section.shopify_attributes }}
@@ -48,6 +69,10 @@
           {%- endfor -%}
         </ul>
       {%- endif -%}
+
+      {%- if mobile_message != blank -%}
+        <p class="announcement-bar__mobile-message">{{ mobile_message }}</p>
+      {%- endif -%}
     </div>
   </div>
 {%- endif -%}
@@ -82,6 +107,13 @@
       "label": "Utility text items",
       "info": "Short items shown on the right, separated by a vertical bar ( | ). Leave blank to hide.",
       "default": "Free shipping over €79|30-day returns"
+    },
+    {
+      "type": "number",
+      "id": "mobile_message_position",
+      "label": "Mobile message (utility item #)",
+      "default": 1,
+      "info": "On mobile, only this one utility text item shows (counting from 1, left to right above). Everything else — the rotating messages and the rest of the utility strip — is hidden. Defaults to the first item."
     },
     {
       "type": "header",

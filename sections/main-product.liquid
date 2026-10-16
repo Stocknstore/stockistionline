@@ -18,6 +18,11 @@
   panel) — except Details in the Theme Editor specifically, where a
   placeholder string takes over so the block stays visible/selectable
   while merchants are looking at a product with no description yet.
+  Returns additionally rewrites a literal "Return and Refund Policy"
+  substring in its content into a real link to shop.refund_policy.url
+  (only when that policy is configured) — this works on the schema
+  default and on any merchant-edited text that keeps the same phrase,
+  without baking a URL into the static richtext default.
 
   Stage 5: availability is driven entirely by variant.available/product.
   available (never inventory_quantity, which isn't exposed to the
@@ -266,9 +271,20 @@
                 {%- if details_content != blank -%}
                   {%- render 'product-accordion', heading: block.settings.heading, content: details_content, id: block.id, block: block -%}
                 {%- endif -%}
-              {%- when 'delivery' or 'returns' -%}
+              {%- when 'delivery' -%}
                 {%- if block.settings.content != blank -%}
                   {%- render 'product-accordion', heading: block.settings.heading, content: block.settings.content, id: block.id, block: block -%}
+                {%- endif -%}
+              {%- when 'returns' -%}
+                {%- liquid
+                  assign returns_content = block.settings.content
+                  if returns_content != blank and shop.refund_policy.url != blank
+                    assign policy_link = '<a href="' | append: shop.refund_policy.url | append: '">Return and Refund Policy</a>'
+                    assign returns_content = returns_content | replace: 'Return and Refund Policy', policy_link
+                  endif
+                -%}
+                {%- if returns_content != blank -%}
+                  {%- render 'product-accordion', heading: block.settings.heading, content: returns_content, id: block.id, block: block -%}
                 {%- endif -%}
             {%- endcase -%}
           {%- endfor -%}
@@ -309,7 +325,7 @@
           "type": "richtext",
           "id": "content",
           "label": "Content",
-          "default": "<p>Orders are processed within 1–2 business days and ship from our warehouse. Delivery typically takes 2–4 business days once dispatched, and you'll get a shipping confirmation email with tracking as soon as it's on its way.</p>"
+          "default": "<p>Orders are normally processed within 1 business day, excluding weekends and public holidays. Standard delivery within Italy is estimated at 3–5 business days after dispatch. We'll email you a shipping confirmation with tracking when your order is dispatched.</p>"
         }
       ]
     },
@@ -327,7 +343,7 @@
           "type": "richtext",
           "id": "content",
           "label": "Content",
-          "default": "<p>Not the right fit? Items can be returned within 30 days of delivery, unworn and in their original packaging. Get in touch and we'll walk you through the next steps.</p>"
+          "default": "<p>Consumers may exercise their statutory right of withdrawal within 14 days of delivery. We also offer an additional voluntary return period of up to 30 days, subject to the conditions in our Return and Refund Policy. Your statutory rights remain unaffected.</p>"
         }
       ]
     }

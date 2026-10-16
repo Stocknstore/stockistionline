@@ -1,0 +1,192 @@
+{%- comment -%}
+  Section: Main brand directory
+  Phase 7, Stage 8. Server-rendered, fully dynamic A–Z list of every real
+  Shopify vendor (shop.vendors — already deduplicated by Shopify to vendors
+  with at least one product) grouped under a letter heading, with an
+  accessible jump nav above the groups. Nothing here is merchant-maintained
+  content: no blocks, no hardcoded brand names or counts, so a newly
+  uploaded product's vendor appears here with no theme edit required —
+  the same "automatic" principle already established for
+  sections/home-brand-wall.liquid's automatic mode.
+
+  Grouping: a vendor's group key is its first character, uppercased. Any
+  vendor whose first character isn't a plain ASCII A–Z letter (a digit, a
+  symbol, or an accented/non-Latin character — Liquid has no case-folding
+  for those) falls into one shared "0–9 / Other" group, listed first
+  (matching how digits already sort before letters in a case-insensitive
+  ASCII-based ordering). This is a deliberate, documented simplification,
+  not an attempt at full Unicode-aware alphabetization.
+
+  Jump nav: every one of the 26 letters plus the "0–9 / Other" entry is
+  always listed, in a fixed, predictable order, but only groups that
+  actually have at least one vendor render as a real <a href="#...">; an
+  empty group renders as a plain, non-interactive <span> (same convention
+  snippets/navigation-category-strip.liquid already uses for an inert
+  "· soon" item) so there is never a dead anchor and no group heading
+  without any content ever gets linked to.
+
+  Links: every brand links to routes.collections_url + '/vendors?q=' +
+  the url_param_escape'd vendor name — the exact locale-aware, per-vendor
+  filtered-browsing pattern already proven on the homepage
+  (sections/home-brand-wall.liquid's automatic mode), reused verbatim
+  rather than reinvented.
+
+  Deliberately independent of the existing `brands-a-z` collection and of
+  home-brand-wall.liquid — this section doesn't read, render, or alter
+  either, so the homepage brand wall and that collection keep behaving
+  exactly as before.
+{%- endcomment -%}
+{%- liquid
+  assign sorted_vendors = shop.vendors | sort_natural
+  assign alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" | split: ''
+  assign other_heading = 'brand_directory.other_heading' | t
+-%}
+<section class="brand-directory" {{ section.shopify_attributes }}>
+  <div class="brand-directory__header">
+    <h1 class="brand-directory__heading">{{ section.settings.heading }}</h1>
+    {%- if section.settings.body != blank -%}
+      <div class="brand-directory__body rte">{{ section.settings.body }}</div>
+    {%- endif -%}
+  </div>
+
+  {%- if sorted_vendors.size == 0 -%}
+    <div class="brand-directory__empty">
+      <p class="brand-directory__empty-heading">{{ section.settings.empty_heading }}</p>
+      {%- if section.settings.empty_body != blank -%}
+        <p class="brand-directory__empty-body">{{ section.settings.empty_body }}</p>
+      {%- endif -%}
+    </div>
+  {%- else -%}
+    <nav class="brand-directory__jump" aria-label="{{ 'brand_directory.jump_nav_label' | t }}">
+      <ul class="brand-directory__jump-list" role="list">
+        {%- liquid
+          assign other_has_match = false
+          for vendor in sorted_vendors
+            assign first_char = vendor | slice: 0, 1 | upcase
+            unless alphabet contains first_char
+              assign other_has_match = true
+            endunless
+          endfor
+        -%}
+        <li class="brand-directory__jump-item">
+          {%- if other_has_match -%}
+            <a href="#brand-group-other" class="brand-directory__jump-link">{{ other_heading }}</a>
+          {%- else -%}
+            <span class="brand-directory__jump-link brand-directory__jump-link--inert">{{ other_heading }}</span>
+          {%- endif -%}
+        </li>
+        {%- for letter in alphabet -%}
+          {%- liquid
+            assign letter_has_match = false
+            for vendor in sorted_vendors
+              assign first_char = vendor | slice: 0, 1 | upcase
+              if first_char == letter
+                assign letter_has_match = true
+              endif
+            endfor
+          -%}
+          <li class="brand-directory__jump-item">
+            {%- if letter_has_match -%}
+              <a href="#brand-group-{{ letter }}" class="brand-directory__jump-link">{{ letter }}</a>
+            {%- else -%}
+              <span class="brand-directory__jump-link brand-directory__jump-link--inert">{{ letter }}</span>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+
+    <div class="brand-directory__groups">
+      {%- liquid
+        assign other_vendors_joined = ''
+        for vendor in sorted_vendors
+          assign first_char = vendor | slice: 0, 1 | upcase
+          unless alphabet contains first_char
+            assign other_vendors_joined = other_vendors_joined | append: vendor | append: '||'
+          endunless
+        endfor
+        assign other_vendor_list = other_vendors_joined | split: '||'
+      -%}
+      {%- if other_vendor_list.size > 0 -%}
+        <div class="brand-directory__group" id="brand-group-other">
+          <h2 class="brand-directory__group-heading">{{ other_heading }}</h2>
+          <ul class="brand-directory__group-list" role="list">
+            {%- for vendor in other_vendor_list -%}
+              {%- liquid
+                assign vendor_param = vendor | url_param_escape
+                assign vendor_link = routes.collections_url | append: '/vendors?q=' | append: vendor_param
+              -%}
+              <li class="brand-directory__group-item">
+                <a href="{{ vendor_link }}" class="brand-directory__group-link">{{ vendor }}</a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- for letter in alphabet -%}
+        {%- liquid
+          assign group_vendors_joined = ''
+          for vendor in sorted_vendors
+            assign first_char = vendor | slice: 0, 1 | upcase
+            if first_char == letter
+              assign group_vendors_joined = group_vendors_joined | append: vendor | append: '||'
+            endif
+          endfor
+          assign group_vendor_list = group_vendors_joined | split: '||'
+        -%}
+        {%- if group_vendor_list.size > 0 -%}
+          <div class="brand-directory__group" id="brand-group-{{ letter }}">
+            <h2 class="brand-directory__group-heading">{{ letter }}</h2>
+            <ul class="brand-directory__group-list" role="list">
+              {%- for vendor in group_vendor_list -%}
+                {%- liquid
+                  assign vendor_param = vendor | url_param_escape
+                  assign vendor_link = routes.collections_url | append: '/vendors?q=' | append: vendor_param
+                -%}
+                <li class="brand-directory__group-item">
+                  <a href="{{ vendor_link }}" class="brand-directory__group-link">{{ vendor }}</a>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Main brand directory",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Brands A–Z"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body text"
+    },
+    {
+      "type": "header",
+      "content": "Empty state"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty heading",
+      "default": "No brands yet"
+    },
+    {
+      "type": "text",
+      "id": "empty_body",
+      "label": "Empty body",
+      "default": "Brands will appear here as soon as products are added to the store."
+    }
+  ]
+}
+{% endschema %}

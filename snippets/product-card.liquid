@@ -19,6 +19,18 @@
     product     - required, a Shopify product object
     above_fold  - true to load the image eagerly (first row); omit/false
                   for lazy loading everywhere else
+
+  Phase 7, Stage 4F: at <=749px, vendor/title truncate and the sizes row
+  switches from the full dot-separated list to a compact "min–max" range
+  (same dynamic option-position + numeric-aware logic as snippets/
+  product-card-home.liquid's rail card) — but since this one Liquid render
+  can't know the viewport, BOTH the full list and the compact range are
+  rendered as separate .product-card__sizes--full/--range spans, and CSS
+  (assets/theme.css) shows exactly one of the two at a time via the same
+  749px breakpoint. This snippet is shared by sections/collection-grid.liquid
+  (PLP) and sections/product-recommendations.liquid ("You might also
+  like"), so the mobile behavior applies to both — there's only one card
+  component, not a per-page fork of it.
 {%- endcomment -%}
 {%- liquid
   assign loading = 'lazy'
@@ -52,9 +64,11 @@
   endif
 
   assign size_position = 0
+  assign size_option_values = blank
   for option in product.options_with_values
     if option.name == 'Size'
       assign size_position = forloop.index
+      assign size_option_values = option.values
     endif
   endfor
   assign available_size_values = ''
@@ -73,6 +87,60 @@
     endfor
   endif
   assign available_sizes = available_size_values | split: '||' | uniq
+
+  assign size_display = ''
+  if available_sizes.size == 1
+    assign size_display = available_sizes.first
+  elsif available_sizes.size > 1
+    assign all_numeric = true
+    for size_value in available_sizes
+      assign size_chars = size_value | split: ''
+      if size_chars.size == 0
+        assign all_numeric = false
+      endif
+      for ch in size_chars
+        unless ch == '0' or ch == '1' or ch == '2' or ch == '3' or ch == '4' or ch == '5' or ch == '6' or ch == '7' or ch == '8' or ch == '9' or ch == '.'
+          assign all_numeric = false
+        endunless
+      endfor
+    endfor
+
+    if all_numeric
+      assign is_first_size = true
+      for size_value in available_sizes
+        assign size_num = size_value | times: 1.0
+        if is_first_size
+          assign min_size_num = size_num
+          assign max_size_num = size_num
+          assign min_size_display = size_value
+          assign max_size_display = size_value
+          assign is_first_size = false
+        else
+          if size_num < min_size_num
+            assign min_size_num = size_num
+            assign min_size_display = size_value
+          endif
+          if size_num > max_size_num
+            assign max_size_num = size_num
+            assign max_size_display = size_value
+          endif
+        endif
+      endfor
+      assign size_display = min_size_display | append: '–' | append: max_size_display
+    else
+      assign ordered_available = ''
+      for val in size_option_values
+        if available_sizes contains val
+          assign ordered_available = ordered_available | append: val | append: '||'
+        endif
+      endfor
+      assign ordered_available_list = ordered_available | split: '||'
+      if ordered_available_list.size == 0
+        assign ordered_available_list = available_sizes
+      endif
+      assign size_display = ordered_available_list.first | append: '–' | append: ordered_available_list.last
+    endif
+  endif
 -%}
 <div class="product-card">
 <a
@@ -119,7 +187,10 @@
       {%- endif -%}
     </span>
     {%- if available_sizes.size > 0 -%}
-      <span class="product-card__sizes">{{ available_sizes | join: ' · ' }}</span>
+      <span class="product-card__sizes product-card__sizes--full">{{ available_sizes | join: ' · ' }}</span>
+    {%- endif -%}
+    {%- if size_display != blank -%}
+      <span class="product-card__sizes product-card__sizes--range">{{ size_display }}</span>
     {%- endif -%}
   </div>
 </a>

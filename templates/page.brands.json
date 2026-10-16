@@ -1,0 +1,8 @@
+{
+  "sections": {
+    "main-brand-directory": {
+      "type": "main-brand-directory"
+    }
+  },
+  "order": ["main-brand-directory"]
+}

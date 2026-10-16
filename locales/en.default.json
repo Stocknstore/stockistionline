@@ -217,6 +217,10 @@
     "breadcrumb_label": "Breadcrumb",
     "empty_content_hint": "This page has no content yet. Add it in Shopify admin under Online Store → Pages."
   },
+  "brand_directory": {
+    "jump_nav_label": "Jump to letter",
+    "other_heading": "0–9 / Other"
+  },
   "contact": {
     "form_heading": "Send us a message",
     "name_label": "Name",
